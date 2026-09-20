@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media Foundation for West Africa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<!-- ============================ EN-TÊTE ============================ -->
+<header class="header">
+  <div class="header__inner">
+
+    <a class="brand" href="/" aria-label="Media Foundation for West Africa — accueil">
+      <img class="logo" src="assets/images/mfwa-logo-01.png" alt="">
+      <span class="brand__name">Media Foundation<br>for West Africa</span>
+    </a>
+
+    <nav class="nav" aria-label="Navigation principale">
+      <a class="nav__link" href="#our-work">Our Work</a>
+      <a class="nav__link" href="#stories">Stories</a>
+      <a class="nav__link" href="#impact">Impact</a>
+      <a class="nav__link" href="#about">About</a>
+    </nav>
+
+    <div class="header__actions">
+      <button class="icon-btn" type="button" aria-label="Rechercher">
+        <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+          <circle cx="8.6" cy="8.6" r="6.2"/><path d="M13.2 13.2 18 18"/>
+        </svg>
+      </button>
+      <a class="btn btn--donate" href="#donate">
+        Donate
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+</header>
+
+<!-- ============================== HERO ============================== -->
+<section class="hero" id="hero" data-hero aria-roledescription="carrousel" aria-label="À la une">
+
+  <!-- Colonne 1 : accroche -->
+  <div class="hero__intro">
+
+    <p class="eyebrow">Media Foundation for West Africa</p>
+
+    <div class="hero__slides" data-hero-slides>
+
+      <article class="hero-slide is-active" aria-roledescription="diapositive" aria-label="1 sur 4">
+        <h1 class="hero__title">Media &amp; Voices for Public Good</h1>
+        <p class="hero__lede">
+          Strengthening media, freedom of expression and democratic participation
+          across West Africa.
+        </p>
+        <a class="btn btn--hero hero__cta" href="#our-work">
+          Explore our work
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 5h14M10.2 1 14 5l-3.8 4"/>
+          </svg>
+        </a>
+      </article>
+
+      <article class="hero-slide" aria-roledescription="diapositive" aria-label="2 sur 4">
+        <h2 class="hero__title">Defending Journalists on the Front Line</h2>
+        <p class="hero__lede">
+          Legal support, safety training and rapid response for reporters
+          facing threats across the region.
+        </p>
+        <a class="btn btn--hero hero__cta" href="#safety">
+          See how we help
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 5h14M10.2 1 14 5l-3.8 4"/>
+          </svg>
+        </a>
+      </article>
+
+      <article class="hero-slide" aria-roledescription="diapositive" aria-label="3 sur 4">
+        <h2 class="hero__title">Fighting Disinformation with Facts</h2>
+        <p class="hero__lede">
+          Fact-checking newsrooms and media literacy campaigns that help
+          citizens tell truth from noise.
+        </p>
+        <a class="btn btn--hero hero__cta" href="#fact-checking">
+          See the initiative
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 5h14M10.2 1 14 5l-3.8 4"/>
+          </svg>
+        </a>
+      </article>
+
+      <article class="hero-slide" aria-roledescription="diapositive" aria-label="4 sur 4">
+        <h2 class="hero__title">Digital Rights Are Human Rights</h2>
+        <p class="hero__lede">
+          Pushing back on internet shutdowns, surveillance and laws that
+          silence people online.
+        </p>
+        <a class="btn btn--hero hero__cta" href="#digital-rights">
+          Read the campaign
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 5h14M10.2 1 14 5l-3.8 4"/>
+          </svg>
+        </a>
+      </article>
+
+    </div>
+
+    <div class="slider">
+      <p class="slider__count" aria-live="polite"><b data-hero-current>01</b>/ <span data-hero-total>04</span></p>
+      <div class="slider__nav">
+        <button class="slider__btn" type="button" data-hero-prev aria-label="Diapositive précédente">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 5.5H1M5.2 1 1 5.5 5.2 10"/>
+          </svg>
+        </button>
+        <button class="slider__btn" type="button" data-hero-next aria-label="Diapositive suivante">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 5.5h16M11.8 1 16 5.5 11.8 10"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bloc fusionné : article en vogue (indépendant du carrousel de hero__intro) -->
+  <!-- API WordPress (à brancher) : featured_article { image, region, country, title, excerpt, link, gallery[] } -->
+  <div class="hero__feature">
+
+    <!-- API: featured_article.image + .region + .country -->
+    <div class="hero__media">
+      <figure class="hero__shot is-active">
+        <img src="assets/images/1.jpg" alt="Image d'illustration : un arbre couvert de neige dans un paysage hivernal." onerror="this.remove()">
+        <figcaption class="hero__caption">West Africa <span></span> Ghana</figcaption>
+      </figure>
+    </div>
+
+    <!-- API: featured_article.title + .excerpt + .link -->
+    <aside class="hero__news" aria-label="Article en vogue">
+      <p class="eyebrow">Latest news</p>
+
+      <h2 class="news__title">Journalists in Ghana demand stronger protection for media freedom</h2>
+
+      <p class="news__text">
+        Media professionals are calling for urgent measures to ensure the safety
+        and independence of journalists in the country.
+      </p>
+
+      <a class="news__link" href="#article">
+        Read more
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+        </svg>
+      </a>
+
+      <!-- API: featured_article.gallery[] — images intérieures de l'article, défilement automatique -->
+      <div class="news__thumb" data-article-gallery aria-label="Images de l'article">
+        <figure class="news__thumb-slide is-active">
+          <img src="assets/images/thumb3.jpg" alt="Image d'illustration : lisière de forêt enneigée, vue panoramique." onerror="this.remove()">
+        </figure>
+        <figure class="news__thumb-slide">
+          <img src="assets/images/2.jpg" alt="Image d'illustration : sapin isolé sur une colline enneigée." onerror="this.remove()">
+        </figure>
+        <figure class="news__thumb-slide">
+          <img src="assets/images/4.jpg" alt="Image d'illustration : arbre nu se dressant dans un champ de neige." onerror="this.remove()">
+        </figure>
+      </div>
+    </aside>
+
+  </div>
+
+</section>
+
+<!-- ========================= ACTUALITÉS / LATEST ========================= -->
+<section class="latest" id="stories">
+
+  <!-- API: taxonomy list (catégories WordPress) — le premier item est le fil "à la une",
+       les suivants filtrent la liste d'articles ci-dessous par catégorie -->
+  <nav class="topics" aria-label="Filtrer les actualités par thème" data-topics>
+    <button class="topics__item is-active" type="button" data-topic="mfwa-now" aria-current="true">
+      <span class="topics__dot" aria-hidden="true"></span>
+      MFWA Now
+    </button>
+    <span class="topics__sep" aria-hidden="true">&middot;</span>
+    <button class="topics__item" type="button" data-topic="freedom-of-expression">Freedom of Expression</button>
+    <span class="topics__sep" aria-hidden="true">&middot;</span>
+    <button class="topics__item" type="button" data-topic="digital-rights">Digital Rights</button>
+    <span class="topics__sep" aria-hidden="true">&middot;</span>
+    <button class="topics__item" type="button" data-topic="investigative-journalism">Investigative Journalism</button>
+    <span class="topics__sep" aria-hidden="true">&middot;</span>
+    <button class="topics__item" type="button" data-topic="democracy">Democracy</button>
+    <span class="topics__sep" aria-hidden="true">&middot;</span>
+    <button class="topics__item" type="button" data-topic="west-africa">West Africa</button>
+  </nav>
+
+  <div class="latest__head">
+    <p class="eyebrow">What&rsquo;s happening</p>
+    <a class="latest__all" href="#stories-archive">
+      <span>View all stories</span>
+      <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+      </svg>
+    </a>
+  </div>
+
+  <h2 class="latest__title">The latest from MFWA</h2>
+
+  <div class="latest__grid">
+
+    <article class="story">
+      <a class="story__link" href="#article-ghana">
+        <figure class="story__media">
+          <img src="assets/images/4.jpg" alt="Image d'illustration : arbre nu se dressant dans un champ de neige." onerror="this.remove()">
+        </figure>
+        <div class="story__body">
+          <p class="story__tag">Ghana <span>&middot;</span> Investigative journalism</p>
+          <h3 class="story__heading">Every Dollar Invested, Millions Returned</h3>
+          <p class="story__meta">
+            <span>12 Sep 2026 <i>&middot;</i> 4 min read</span>
+            <svg class="story__arrow" width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+            </svg>
+          </p>
+        </div>
+      </a>
+    </article>
+
+    <article class="story">
+      <a class="story__link" href="#article-digital-rights">
+        <figure class="story__media">
+          <img src="assets/images/thumb2.jpg" alt="Image d'illustration : sapin isolé dans un paysage enneigé." onerror="this.remove()">
+        </figure>
+        <div class="story__body">
+          <p class="story__tag">Digital rights <span>&middot;</span> West Africa</p>
+          <h3 class="story__heading">The digital rights challenges facing young people in West Africa</h3>
+          <p class="story__meta">
+            <span>10 Sep 2026 <i>&middot;</i> 5 min read</span>
+            <svg class="story__arrow" width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+            </svg>
+          </p>
+        </div>
+      </a>
+    </article>
+
+    <article class="story">
+      <a class="story__link" href="#article-young-journalists">
+        <figure class="story__media">
+          <img src="assets/images/thumb1.jpg" alt="Image d'illustration : arbre enneigé au premier plan d'un paysage hivernal." onerror="this.remove()">
+        </figure>
+        <div class="story__body">
+          <p class="story__tag">Media <span>&middot;</span> Sierra Leone</p>
+          <h3 class="story__heading">Supporting young journalists in Sierra Leone: from training to impact</h3>
+          <p class="story__meta">
+            <span>07 Sep 2026 <i>&middot;</i> 3 min read</span>
+            <svg class="story__arrow" width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+            </svg>
+          </p>
+        </div>
+      </a>
+    </article>
+
+    <article class="story">
+      <a class="story__link" href="#article-community-radio">
+        <figure class="story__media">
+          <img src="assets/images/thumb3.jpg" alt="Image d'illustration : conifère isolé dans la neige." onerror="this.remove()">
+        </figure>
+        <div class="story__body">
+          <p class="story__tag">Democracy <span>&middot;</span> West Africa</p>
+          <h3 class="story__heading">Why community radio remains vital for democracy in West Africa</h3>
+          <p class="story__meta">
+            <span>04 Sep 2026 <i>&middot;</i> 6 min read</span>
+            <svg class="story__arrow" width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+            </svg>
+          </p>
+        </div>
+      </a>
+    </article>
+
+  </div>
+
+</section>
+
+<!-- ============================ CE QUE NOUS FAISONS ============================ -->
+<!-- API: work_areas[] (custom post type WordPress) — icon (slug), number, title, description -->
+<section class="work" id="our-work">
+
+  <div class="work__head">
+    <div class="work__intro">
+      <p class="eyebrow">Our work</p>
+      <h2 class="work__title">What we do</h2>
+    </div>
+
+    <div class="work__summary">
+      <p class="work__text">
+        MFWA works to promote press freedom, strengthen independent media, and protect journalists
+        through advocacy, capacity building and research.
+      </p>
+      <a class="work__link" href="#programmes">
+        Discover our work
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="work__grid">
+
+    <article class="work__item">
+      <div class="work__top">
+        <span class="work__num">01</span>
+        <svg class="work__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z"/>
+        </svg>
+      </div>
+      <h3 class="work__heading">Freedom of Expression</h3>
+      <p class="work__desc">Protecting journalists and media rights.</p>
+    </article>
+
+    <article class="work__item">
+      <div class="work__top">
+        <span class="work__num">02</span>
+        <svg class="work__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="8" r="3"/>
+          <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+          <path d="M16 8a3 3 0 1 0 0-6"/>
+          <path d="M22 20c0-2.6-1.7-4.8-4-5.6"/>
+        </svg>
+      </div>
+      <h3 class="work__heading">Digital Rights</h3>
+      <p class="work__desc">Safer digital spaces for everyone.</p>
+    </article>
+
+    <article class="work__item">
+      <div class="work__top">
+        <span class="work__num">03</span>
+        <svg class="work__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 2h9l5 5v15H6z"/>
+          <path d="M15 2v5h5"/>
+          <line x1="9" y1="13" x2="15" y2="13"/>
+          <line x1="9" y1="17" x2="15" y2="17"/>
+        </svg>
+      </div>
+      <h3 class="work__heading">Media &amp; Democracy</h3>
+      <p class="work__desc">Stronger media for informed societies.</p>
+    </article>
+
+    <article class="work__item">
+      <div class="work__top">
+        <span class="work__num">04</span>
+        <svg class="work__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"/>
+          <circle cx="6" cy="12" r="3"/>
+          <circle cx="18" cy="19" r="3"/>
+          <line x1="8.6" y1="10.6" x2="15.4" y2="6.4"/>
+          <line x1="8.6" y1="13.4" x2="15.4" y2="17.6"/>
+        </svg>
+      </div>
+      <h3 class="work__heading">Peace &amp; Social Cohesion</h3>
+      <p class="work__desc">Media for more inclusive and resilient communities.</p>
+    </article>
+
+  </div>
+
+</section>
+
+<!-- ============================ IMPACT ============================ -->
+<!-- API: impact.media.image, impact.stats[] { number, label } -->
+<section class="impact" id="impact">
+
+  <div class="impact__media" aria-hidden="true">
+    <img src="assets/images/3.jpg" alt="" onerror="this.remove()">
+  </div>
+
+  <div class="impact__inner">
+
+    <div class="impact__intro">
+      <p class="eyebrow">Our impact</p>
+      <h2 class="impact__title">From story<br>to change.</h2>
+      <p class="impact__text">
+        Through investigative reporting, research and advocacy, MFWA has helped expose
+        injustice, strengthen media and drive real change across West Africa.
+      </p>
+      <a class="btn btn--light impact__cta" href="#impact-report">
+        See our impact
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+        </svg>
+      </a>
+    </div>
+
+    <ul class="impact__stats">
+      <li class="impact__stat">
+        <span class="impact__num">16</span>
+        <span class="impact__label">countries</span>
+      </li>
+      <li class="impact__stat">
+        <span class="impact__num">100+</span>
+        <span class="impact__label">partners</span>
+      </li>
+      <li class="impact__stat">
+        <span class="impact__num">1,000+</span>
+        <span class="impact__label">journalists supported</span>
+      </li>
+      <li class="impact__stat">
+        <span class="impact__num">300+</span>
+        <span class="impact__label">stories with impact</span>
+      </li>
+    </ul>
+
+  </div>
+
+</section>
+
+<!-- ============================ NOTRE PRÉSENCE / REACH ============================ -->
+<!-- API: reach.countries[] { name, slug, link } — la carte deviendra cliquable
+     (chaque pays renverra vers sa page dédiée une fois l'API WordPress branchée) -->
+<section class="reach" id="reach">
+
+  <div class="reach__inner">
+
+    <div class="reach__intro">
+      <p class="eyebrow">Our reach</p>
+      <h2 class="reach__title">16 countries.<br>One region.</h2>
+      <p class="reach__text">
+        We work across West Africa, supporting independent media and protecting
+        press freedom in some of the region&rsquo;s most challenging environments.
+      </p>
+      <a class="reach__link" href="#countries">
+        Explore our countries
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="reach__map" data-reach-map>
+      <svg viewBox="78 -6 372 312" role="img" aria-label="Carte des 16 pays d'Afrique de l'Ouest où intervient la MFWA">
+
+        <!-- Reste du continent (non couvert), simplifié, décoratif -->
+        <path class="reach__context" d="M280 4 L365 0 L408 18 L432 48 L442 90 L438 140 L420 190 L430 230 L412 270 L380 296 L352 280 L350 240 L330 210 L336 170 L320 130 L300 95 L286 55 Z"/>
+        <g class="reach__context-lines">
+          <path d="M365 0 L358 90 L372 180 L358 240"/>
+          <path d="M408 18 L398 110 L420 190"/>
+          <path d="M286 55 L322 90 L322 130"/>
+          <path d="M330 210 L370 220 L380 296"/>
+        </g>
+
+        <!-- Cabo Verde (archipel, au large) -->
+        <g class="reach__islands">
+          <circle cx="92" cy="168" r="3.2"/>
+          <circle cx="100" cy="177" r="2.4"/>
+          <circle cx="86" cy="180" r="2"/>
+        </g>
+
+        <!-- Silhouette Afrique de l'Ouest (16 pays) -->
+        <path class="reach__silhouette" d="
+          M145 75
+          L160 50 L220 40 L280 42 L310 55 L330 75
+          L350 100 L365 135 L372 170
+          L385 195 L390 215 L378 235 L355 248
+          L320 252 L290 250 L260 248 L230 244
+          L200 238 L178 222 L165 200 L158 180
+          L152 160 L145 140 L138 118 L132 100
+          L140 80 Z"/>
+
+        <!-- Frontières internes (décoratives) -->
+        <g class="reach__borders">
+          <path d="M200 42 L202 148"/>
+          <path d="M300 46 L302 172"/>
+          <path d="M148 146 L370 168"/>
+          <path d="M160 196 L385 202"/>
+          <path d="M140 88 L175 108 L200 148"/>
+          <path d="M136 112 L145 138"/>
+          <path d="M145 140 L156 162"/>
+          <path d="M155 162 L166 198"/>
+          <path d="M167 202 L182 220"/>
+          <path d="M180 222 L204 236"/>
+          <path d="M243 200 L248 249"/>
+          <path d="M283 197 L286 251"/>
+          <path d="M298 197 L301 251"/>
+          <path d="M311 197 L318 251"/>
+          <path d="M345 172 L386 198"/>
+        </g>
+
+        <!-- Zones cliquables (une par pays — point d'extension pour la navigation finale) -->
+        <g class="reach__hits" data-reach-hits>
+          <ellipse class="reach__hit" data-country="Mauritania" cx="176" cy="88" rx="27" ry="30" tabindex="0" role="button" aria-label="Mauritania"><title>Mauritania</title></ellipse>
+          <ellipse class="reach__hit" data-country="Mali" cx="238" cy="100" rx="32" ry="34" tabindex="0" role="button" aria-label="Mali"><title>Mali</title></ellipse>
+          <ellipse class="reach__hit" data-country="Niger" cx="315" cy="115" rx="30" ry="40" tabindex="0" role="button" aria-label="Niger"><title>Niger</title></ellipse>
+          <ellipse class="reach__hit" data-country="Burkina Faso" cx="252" cy="176" rx="22" ry="18" tabindex="0" role="button" aria-label="Burkina Faso"><title>Burkina Faso</title></ellipse>
+          <ellipse class="reach__hit" data-country="Senegal" cx="160" cy="106" rx="16" ry="20" tabindex="0" role="button" aria-label="Senegal"><title>Senegal</title></ellipse>
+          <ellipse class="reach__hit" data-country="The Gambia" cx="158" cy="140" rx="9" ry="6" tabindex="0" role="button" aria-label="The Gambia"><title>The Gambia</title></ellipse>
+          <ellipse class="reach__hit" data-country="Guinea-Bissau" cx="149" cy="151" rx="10" ry="9" tabindex="0" role="button" aria-label="Guinea-Bissau"><title>Guinea-Bissau</title></ellipse>
+          <ellipse class="reach__hit" data-country="Guinea" cx="170" cy="180" rx="16" ry="18" tabindex="0" role="button" aria-label="Guinea"><title>Guinea</title></ellipse>
+          <ellipse class="reach__hit" data-country="Sierra Leone" cx="167" cy="206" rx="12" ry="12" tabindex="0" role="button" aria-label="Sierra Leone"><title>Sierra Leone</title></ellipse>
+          <ellipse class="reach__hit" data-country="Liberia" cx="186" cy="223" rx="14" ry="14" tabindex="0" role="button" aria-label="Liberia"><title>Liberia</title></ellipse>
+          <ellipse class="reach__hit" data-country="Côte d'Ivoire" cx="226" cy="220" rx="22" ry="22" tabindex="0" role="button" aria-label="Côte d'Ivoire"><title>Côte d'Ivoire</title></ellipse>
+          <ellipse class="reach__hit" data-country="Ghana" cx="272" cy="218" rx="16" ry="24" tabindex="0" role="button" aria-label="Ghana"><title>Ghana</title></ellipse>
+          <ellipse class="reach__hit" data-country="Togo" cx="293" cy="222" rx="7" ry="28" tabindex="0" role="button" aria-label="Togo"><title>Togo</title></ellipse>
+          <ellipse class="reach__hit" data-country="Benin" cx="308" cy="220" rx="8" ry="28" tabindex="0" role="button" aria-label="Benin"><title>Benin</title></ellipse>
+          <ellipse class="reach__hit" data-country="Nigeria" cx="347" cy="196" rx="30" ry="32" tabindex="0" role="button" aria-label="Nigeria"><title>Nigeria</title></ellipse>
+          <ellipse class="reach__hit" data-country="Cabo Verde" cx="97" cy="179" rx="16" ry="15" tabindex="0" role="button" aria-label="Cabo Verde"><title>Cabo Verde</title></ellipse>
+        </g>
+
+      </svg>
+    </div>
+
+    <div class="reach__list">
+      <ul class="reach__col">
+        <li data-country="Benin">Benin</li>
+        <li data-country="Burkina Faso">Burkina Faso</li>
+        <li data-country="Cabo Verde">Cabo Verde</li>
+        <li data-country="Côte d'Ivoire">C&ocirc;te d&rsquo;Ivoire</li>
+        <li data-country="The Gambia">The Gambia</li>
+        <li data-country="Ghana">Ghana</li>
+        <li data-country="Guinea">Guinea</li>
+        <li data-country="Guinea-Bissau">Guinea-Bissau</li>
+      </ul>
+      <ul class="reach__col">
+        <li data-country="Liberia">Liberia</li>
+        <li data-country="Mali">Mali</li>
+        <li data-country="Mauritania">Mauritania</li>
+        <li data-country="Niger">Niger</li>
+        <li data-country="Nigeria">Nigeria</li>
+        <li data-country="Senegal">Senegal</li>
+        <li data-country="Sierra Leone">Sierra Leone</li>
+        <li data-country="Togo">Togo</li>
+      </ul>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================ NOTRE EXPERTISE / EXPERTISE ============================ -->
+<!-- API: expertise.pillars[] { icon, title, text, link } -->
+<section class="expertise" id="expertise">
+
+  <div class="expertise__inner">
+
+    <div class="expertise__intro">
+      <p class="eyebrow">Our expertise</p>
+      <h2 class="expertise__title">Knowledge. Analysis. Impact.</h2>
+      <p class="expertise__text">
+        We generate evidence and share insights to inform better
+        policies, stronger media and more resilient democracies.
+      </p>
+      <a class="expertise__link" href="#expertise-detail">
+        Explore our expertise
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="expertise__grid">
+
+      <div class="expertise__item">
+        <svg class="expertise__icon" width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="13" cy="13" r="9"/>
+          <path d="M19.5 19.5 27 27"/>
+        </svg>
+        <h3 class="expertise__heading">Research &amp; Analysis</h3>
+        <p class="expertise__desc">Evidence for lasting change.</p>
+      </div>
+
+      <div class="expertise__item">
+        <svg class="expertise__icon" width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 14v4l4 1v-6z"/>
+          <path d="M7 13.2 22 7v14L7 14.8"/>
+          <path d="M9 19.5 10.5 26.5c.2 1 1.6 1 2 0L11.5 19"/>
+          <path d="M22 12.5c1.8.4 3 1.6 3 3s-1.2 2.6-3 3"/>
+        </svg>
+        <h3 class="expertise__heading">Policy &amp; Advocacy</h3>
+        <p class="expertise__desc">Amplifying voices, shaping policy.</p>
+      </div>
+
+      <div class="expertise__item">
+        <svg class="expertise__icon" width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 6 2 12l13 6 13-6z"/>
+          <path d="M8 15v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>
+          <path d="M28 12v8"/>
+        </svg>
+        <h3 class="expertise__heading">Capacity Building</h3>
+        <p class="expertise__desc">Stronger skills, stronger media.</p>
+      </div>
+
+      <div class="expertise__item">
+        <svg class="expertise__icon" width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="6" width="20" height="13" rx="1.2"/>
+          <path d="M2 23h26l-2.5-4h-21z"/>
+        </svg>
+        <h3 class="expertise__heading">Media Innovation</h3>
+        <p class="expertise__desc">Technology for media freedom.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================ APPEL À L'ACTION / CTA ============================ -->
+<!-- API: cta.title, cta.text, cta.button{label,link} -->
+<section class="cta" id="take-action">
+
+  <div class="cta__media" aria-hidden="true">
+    <img src="assets/images/4.jpg" alt="" onerror="this.remove()">
+  </div>
+
+  <div class="cta__inner">
+
+    <div class="cta__intro">
+      <p class="eyebrow">Take action</p>
+      <h2 class="cta__title">Stronger media. Stronger voices.<br>A more democratic West Africa.</h2>
+    </div>
+
+    <div class="cta__aside">
+      <p class="cta__text">
+        Support our work and help build a future where media, rights
+        and democracy thrive.
+      </p>
+      <a class="btn btn--cta" href="#donate">
+        Support MFWA
+        <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================ PIED DE PAGE / FOOTER ============================ -->
+<!-- API: footer.nav[], footer.social[] { network, url }, footer.legal[] -->
+<footer class="site-footer">
+
+  <div class="footer-links">
+
+    <div class="footer-brand">
+      <a class="footer-logo-crop" href="/" aria-label="Media Foundation for West Africa — accueil">
+        <img src="assets/images/mfwa-logo-01.png" alt="MFWA">
+      </a>
+      <span class="footer-brand__name">Media Foundation<br>for West Africa</span>
+    </div>
+
+    <nav class="footer-nav" aria-label="Navigation du pied de page">
+      <a href="#our-work">Our Work</a>
+      <a href="#stories">Stories</a>
+      <a href="#impact">Impact</a>
+      <a href="#about">About</a>
+    </nav>
+
+    <div class="footer-social">
+      <div class="footer-social__icons">
+        <a href="#" aria-label="LinkedIn">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.84v2.05h.05c.53-1 1.84-2.05 3.79-2.05 4.05 0 4.8 2.67 4.8 6.14V23h-4v-6.9c0-1.65-.03-3.77-2.3-3.77-2.3 0-2.66 1.8-2.66 3.65V23h-4V8z"/></svg>
+        </a>
+        <a href="#" aria-label="X (Twitter)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.5h3.68l-8.04 9.19L24 22.5h-7.4l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.5h7.59l5.24 6.93 6.07-6.93zm-1.29 18.81h2.04L6.5 3.58H4.31l13.3 16.73z"/></svg>
+        </a>
+        <a href="#" aria-label="YouTube">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+        </a>
+        <a href="#" aria-label="Facebook">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.23.2 2.23.2v2.45h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.77l-.44 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/></svg>
+        </a>
+        <a href="#" aria-label="Instagram">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none"/></svg>
+        </a>
+      </div>
+      <p class="footer-social__tagline">For a free and independent media<br>in West Africa.</p>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p class="footer-copy">&copy; 2026 MFWA. All rights reserved.</p>
+    <nav class="footer-legal" aria-label="Mentions légales">
+      <a href="#privacy">Privacy</a>
+      <a href="#terms">Terms</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+
+</footer>
+
+<script src="assets/js/main.js" defer></script>
+</body>
+</html>
