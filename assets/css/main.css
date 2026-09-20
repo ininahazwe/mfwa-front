@@ -92,6 +92,70 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 [data-reveal="stagger"].is-visible > *{ opacity:1; transform:none; }
 
 /* =========================================================
+   Barre utilitaire (label partenaire + langues)
+   ========================================================= */
+.utility-bar{
+  background:var(--cream);
+  border-bottom:1px solid var(--hairline);
+}
+.utility-bar__inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:9px var(--gutter);
+}
+
+.utility-bar__badge{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  min-width:0;
+}
+.utility-bar__badge-mark{
+  flex:none;
+  font-family:var(--font-sans);
+  font-weight:700;
+  font-size:13px;
+  letter-spacing:-.01em;
+  color:var(--blue);
+}
+.utility-bar__badge-mark em{ font-style:italic; font-weight:600; }
+.utility-bar__badge-text{
+  font-size:11px;
+  color:var(--ink-muted);
+  letter-spacing:.01em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.lang-switch{
+  flex:none;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+.lang-switch__link{
+  color:var(--ink-muted);
+  transition:color var(--dur-fast) var(--ease);
+}
+.lang-switch__link:hover,
+.lang-switch__link.is-active{ color:var(--navy); }
+.lang-switch__sep{ color:var(--hairline); }
+
+@media (max-width:760px){
+  .utility-bar__badge-text{ display:none; }
+}
+@media (max-width:420px){
+  .utility-bar__badge{ display:none; }
+  .utility-bar__inner{ justify-content:flex-end; }
+}
+
+/* =========================================================
    En-tête
    ========================================================= */
 .header{
