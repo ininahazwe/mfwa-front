@@ -21,6 +21,11 @@
 
   --font-serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
   --font-sans: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --ease: cubic-bezier(.4,0,.2,1);
+  --dur-fast: .18s;
+  --dur-slow: .5s;
+  --radius-sm: 4px;
 }
 /* La maquette est une identité de marque : elle ne s'inverse pas
    selon le thème du visiteur. On fige les valeurs. */
@@ -52,6 +57,39 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
 @media (prefers-reduced-motion: reduce){
   *{ transition-duration:.01ms !important; animation-duration:.01ms !important; }
 }
+
+/* -- Lien d'évitement -------------------------------------- */
+.skip-link{
+  position:absolute;
+  top:-48px; left:16px;
+  z-index:100;
+  padding:12px 20px;
+  background:var(--navy);
+  color:var(--white);
+  font-size:14px;
+  font-weight:600;
+  border-radius:0 0 var(--radius-sm) var(--radius-sm);
+  transition:top var(--dur-fast) var(--ease);
+}
+.skip-link:focus{ top:0; }
+
+/* -- Chargement progressif des images ------------------------ */
+img.is-loading{ opacity:0; }
+img{ transition:opacity var(--dur-slow) var(--ease); }
+
+/* -- Révélation au défilement -------------------------------- */
+[data-reveal]{
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+}
+[data-reveal].is-visible{ opacity:1; transform:none; }
+[data-reveal="stagger"] > *{
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+}
+[data-reveal="stagger"].is-visible > *{ opacity:1; transform:none; }
 
 /* =========================================================
    En-tête
@@ -124,7 +162,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   background:var(--red);
   transform:scaleX(0);
   transform-origin:left;
-  transition:transform .22s ease;
+  transition:transform var(--dur-fast) var(--ease);
 }
 .nav__link:hover::after,
 .nav__link[aria-current="page"]::after{ transform:scaleX(1); }
@@ -141,7 +179,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   display:grid; place-items:center;
   border-radius:50%;
   color:var(--navy);
-  transition:background-color .2s ease;
+  transition:background-color var(--dur-fast) var(--ease);
 }
 .icon-btn:hover{ background:#f1f1ee; }
 
@@ -155,11 +193,11 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   text-transform:uppercase;
   background:var(--red);
   color:var(--white);
-  transition:background-color .2s ease;
+  transition:background-color var(--dur-fast) var(--ease);
 }
 .btn:hover{ background:var(--red-dark); }
-.btn--donate{ height:44px; padding:0 22px; border-radius:6px; }
-.btn--hero{ height:clamp(44px, 5.4vh, 52px); padding:0 clamp(22px, 2vw, 30px); border-radius:4px; }
+.btn--donate{ height:44px; padding:0 22px; border-radius:var(--radius-sm); }
+.btn--hero{ height:clamp(44px, 5.4vh, 52px); padding:0 clamp(22px, 2vw, 30px); border-radius:var(--radius-sm); }
 .btn svg{ flex:none; }
 
 /* =========================================================
@@ -237,7 +275,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   font-size:clamp(32px, 3.75vw, 54px);
   line-height:1.1;
-  letter-spacing:-.01em;
+  letter-spacing:-.015em;
   color:var(--navy-ink);
   max-width:14ch;
 }
@@ -277,7 +315,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   border-radius:50%;
   display:grid; place-items:center;
   color:var(--navy-ink);
-  transition:border-color .2s ease, background-color .2s ease;
+  transition:border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
 }
 .slider__btn:hover{ border-color:var(--navy-ink); background:rgba(15,46,85,.05); }
 
@@ -366,7 +404,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   color:var(--white);
   align-self:flex-start;
 }
-.news__link svg{ transition:transform .2s ease; }
+.news__link svg{ transition:transform var(--dur-fast) var(--ease); }
 .news__link:hover svg{ transform:translateX(4px); }
 .news__thumb{
   position:relative;
@@ -479,7 +517,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   background:var(--red);
   transform:scaleX(0);
   transform-origin:left;
-  transition:transform .22s ease;
+  transition:transform var(--dur-fast) var(--ease);
 }*/
 .topics__item:hover{ color:var(--red-dark); }
 .topics__item:hover::after,
@@ -527,7 +565,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   color:var(--navy);
 }
-.latest__all svg{ flex:none; transition:transform .2s ease; }
+.latest__all svg{ flex:none; transition:transform var(--dur-fast) var(--ease); }
 .latest__all:hover svg{ transform:translateX(4px); }
 
 .latest__title{
@@ -536,7 +574,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   font-size:clamp(32px, 3.4vw, 48px);
   line-height:1.16;
-  letter-spacing:-.012em;
+  letter-spacing:-.015em;
   color:var(--navy-ink);
 }
 
@@ -563,7 +601,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   position:absolute; inset:0;
   width:100%; height:100%;
   object-fit:cover;
-  transition:transform .5s ease;
+  transition:transform var(--dur-slow) var(--ease), opacity var(--dur-slow) var(--ease);
 }
 .story__link:hover .story__media img{ transform:scale(1.045); }
 
@@ -587,7 +625,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   line-height:1.32;
   color:var(--navy-ink);
   letter-spacing:-.005em;
-  transition:color .2s ease;
+  transition:color var(--dur-fast) var(--ease);
   /* 3 lignes max, pour garder des cartes de hauteur égale même si
      les titres n'ont pas tous la même longueur */
   display:-webkit-box;
@@ -610,7 +648,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   color:var(--ink-muted);
 }
 .story__meta i{ font-style:normal; margin:0 2px; }
-.story__arrow{ flex:none; transition:transform .2s ease; }
+.story__arrow{ flex:none; transition:transform var(--dur-fast) var(--ease); }
 .story__link:hover .story__arrow{ transform:translateX(4px); }
 
 /* -- Carte d'article ---------------------------------------- */
@@ -670,7 +708,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   font-size:clamp(30px, 3.6vw, 44px);
   line-height:1.12;
-  letter-spacing:-.01em;
+  letter-spacing:-.015em;
   color:var(--navy-ink);
 }
 
@@ -690,7 +728,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   color:var(--blue);
 }
-.work__link svg{ flex:none; transition:transform .2s ease; }
+.work__link svg{ flex:none; transition:transform var(--dur-fast) var(--ease); }
 .work__link:hover svg{ transform:translateX(4px); }
 
 .work__grid{
@@ -818,7 +856,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   font-size:clamp(30px, 3.4vw, 42px);
   line-height:1.14;
-  letter-spacing:-.01em;
+  letter-spacing:-.015em;
   color:var(--white);
 }
 .impact__text{
@@ -832,7 +870,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
 .btn--light{
   height:44px;
   padding:0 22px;
-  border-radius:4px;
+  border-radius:var(--radius-sm);
   background:var(--white);
   color:var(--navy-ink);
 }
@@ -857,6 +895,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-size:clamp(22px, 1.8vw, 28px);
   line-height:1.1;
   color:var(--white);
+  font-variant-numeric:tabular-nums;
 }
 .impact__label{
   display:block;
@@ -915,7 +954,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   font-size:clamp(28px, 3vw, 38px);
   line-height:1.16;
-  letter-spacing:-.01em;
+  letter-spacing:-.015em;
   color:var(--navy-ink);
 }
 .reach__text{
@@ -934,7 +973,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   color:var(--blue);
 }
-.reach__link svg{ flex:none; transition:transform .2s ease; }
+.reach__link svg{ flex:none; transition:transform var(--dur-fast) var(--ease); }
 .reach__link:hover svg{ transform:translateX(4px); }
 
 /* -- Carte ------------------------------------------------- */
@@ -963,7 +1002,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   fill:rgba(255,255,255,0);
   stroke:none;
   cursor:pointer;
-  transition:fill .18s ease;
+  transition:fill var(--dur-fast) var(--ease);
 }
 .reach__hit:hover,
 .reach__hit:focus-visible{
@@ -991,7 +1030,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
 .reach__col li{
   font-size:14.5px;
   color:var(--ink-muted);
-  transition:color .18s ease;
+  transition:color var(--dur-fast) var(--ease);
 }
 .reach__col li.is-active{
   color:var(--blue);
@@ -1040,7 +1079,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   font-size:clamp(30px, 3.6vw, 44px);
   line-height:1.14;
-  letter-spacing:-.01em;
+  letter-spacing:-.015em;
   color:var(--navy-ink);
 }
 .expertise__text{
@@ -1059,7 +1098,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   color:var(--blue);
 }
-.expertise__link svg{ flex:none; transition:transform .2s ease; }
+.expertise__link svg{ flex:none; transition:transform var(--dur-fast) var(--ease); }
 .expertise__link:hover svg{ transform:translateX(4px); }
 
 /* -- Colonnes d'expertise ---------------------------------- */
@@ -1168,7 +1207,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-weight:600;
   font-size:clamp(26px, 3.2vw, 40px);
   line-height:1.2;
-  letter-spacing:-.01em;
+  letter-spacing:-.015em;
   color:var(--white);
 }
 
@@ -1182,7 +1221,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   line-height:1.65;
   color:rgba(255,255,255,.78);
 }
-.btn--cta{ height:48px; padding:0 24px; border-radius:4px; }
+.btn--cta{ height:48px; padding:0 24px; border-radius:var(--radius-sm); }
 
 /* -- Responsive ---------------------------------------------- */
 @media (max-width:900px){
@@ -1241,7 +1280,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   font-size:14px;
   font-weight:600;
   color:var(--white);
-  transition:color .18s ease;
+  transition:color var(--dur-fast) var(--ease);
 }
 .footer-nav a:hover{ color:var(--panel-muted); }
 
@@ -1261,7 +1300,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
   display:flex;
   color:var(--white);
   opacity:.9;
-  transition:opacity .18s ease;
+  transition:opacity var(--dur-fast) var(--ease);
 }
 .footer-social__icons a:hover{ opacity:1; }
 .footer-social__tagline{
@@ -1292,7 +1331,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
 .footer-legal a{
   font-size:12.5px;
   color:rgba(255,255,255,.5);
-  transition:color .18s ease;
+  transition:color var(--dur-fast) var(--ease);
 }
 .footer-legal a:hover{ color:var(--white); }
 

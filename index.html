@@ -11,6 +11,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main">Aller au contenu principal</a>
+
 <!-- ============================ EN-TÊTE ============================ -->
 <header class="header">
   <div class="header__inner">
@@ -43,6 +45,8 @@
 
   </div>
 </header>
+
+<main id="main">
 
 <!-- ============================== HERO ============================== -->
 <section class="hero" id="hero" data-hero aria-roledescription="carrousel" aria-label="À la une">
@@ -210,9 +214,9 @@
     </a>
   </div>
 
-  <h2 class="latest__title">The latest from MFWA</h2>
+  <h2 class="latest__title" data-reveal>The latest from MFWA</h2>
 
-  <div class="latest__grid">
+  <div class="latest__grid" data-reveal="stagger">
 
     <article class="story">
       <a class="story__link" href="#article-ghana">
@@ -295,7 +299,7 @@
 <section class="work" id="our-work">
 
   <div class="work__head">
-    <div class="work__intro">
+    <div class="work__intro" data-reveal>
       <p class="eyebrow">Our work</p>
       <h2 class="work__title">What we do</h2>
     </div>
@@ -314,7 +318,7 @@
     </div>
   </div>
 
-  <div class="work__grid">
+  <div class="work__grid" data-reveal="stagger">
 
     <article class="work__item">
       <div class="work__top">
@@ -384,7 +388,7 @@
 
   <div class="impact__inner">
 
-    <div class="impact__intro">
+    <div class="impact__intro" data-reveal>
       <p class="eyebrow">Our impact</p>
       <h2 class="impact__title">From story<br>to change.</h2>
       <p class="impact__text">
@@ -401,19 +405,19 @@
 
     <ul class="impact__stats">
       <li class="impact__stat">
-        <span class="impact__num">16</span>
+        <span class="impact__num" data-count="16" data-suffix="">16</span>
         <span class="impact__label">countries</span>
       </li>
       <li class="impact__stat">
-        <span class="impact__num">100+</span>
+        <span class="impact__num" data-count="100" data-suffix="+">100+</span>
         <span class="impact__label">partners</span>
       </li>
       <li class="impact__stat">
-        <span class="impact__num">1,000+</span>
+        <span class="impact__num" data-count="1000" data-suffix="+">1,000+</span>
         <span class="impact__label">journalists supported</span>
       </li>
       <li class="impact__stat">
-        <span class="impact__num">300+</span>
+        <span class="impact__num" data-count="300" data-suffix="+">300+</span>
         <span class="impact__label">stories with impact</span>
       </li>
     </ul>
@@ -429,7 +433,7 @@
 
   <div class="reach__inner">
 
-    <div class="reach__intro">
+    <div class="reach__intro" data-reveal>
       <p class="eyebrow">Our reach</p>
       <h2 class="reach__title">16 countries.<br>One region.</h2>
       <p class="reach__text">
@@ -549,7 +553,7 @@
 
   <div class="expertise__inner">
 
-    <div class="expertise__intro">
+    <div class="expertise__intro" data-reveal>
       <p class="eyebrow">Our expertise</p>
       <h2 class="expertise__title">Knowledge. Analysis. Impact.</h2>
       <p class="expertise__text">
@@ -564,7 +568,7 @@
       </a>
     </div>
 
-    <div class="expertise__grid">
+    <div class="expertise__grid" data-reveal="stagger">
 
       <div class="expertise__item">
         <svg class="expertise__icon" width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -642,6 +646,8 @@
   </div>
 
 </section>
+
+</main>
 
 <!-- ============================ PIED DE PAGE / FOOTER ============================ -->
 <!-- API: footer.nav[], footer.social[] { network, url }, footer.legal[] -->

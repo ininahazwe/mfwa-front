@@ -257,10 +257,117 @@
     document.querySelector(".reach__list").addEventListener("mouseleave", clearActive);
   }
 
+  /**
+   * Fondu d'apparition progressif des images. Amélioration
+   * progressive uniquement : si le script échoue ou n'a pas le temps
+   * de s'exécuter, les images restent visibles (opacité 1 par
+   * défaut en CSS) — aucune régression possible.
+   */
+  function initImageFade() {
+    const images = Array.from(document.querySelectorAll("img"));
+    images.forEach(function (img) {
+      if (img.complete) return; // déjà chargée (cache) : rien à faire
+      img.classList.add("is-loading");
+      img.addEventListener("load", function () {
+        img.classList.remove("is-loading");
+      }, { once: true });
+      img.addEventListener("error", function () {
+        img.classList.remove("is-loading");
+      }, { once: true });
+    });
+  }
+
+  /**
+   * Révélation au défilement : les blocs marqués [data-reveal]
+   * (ou [data-reveal="stagger"] pour un effet décalé sur leurs
+   * enfants directs) reçoivent la classe .is-visible une fois
+   * entrés dans le viewport. Volontairement exclu : le hero
+   * (au-dessus de la ligne de flottaison) et le pied de page.
+   */
+  function initScrollReveal() {
+    const targets = Array.from(document.querySelectorAll("[data-reveal]"));
+    if (!targets.length) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    if (!("IntersectionObserver" in window) || reducedMotion.matches) {
+      // Pas d'observateur disponible (ou animations désactivées) :
+      // on affiche tout immédiatement plutôt que de risquer un
+      // contenu invisible.
+      targets.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+
+    const observer = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" });
+
+    targets.forEach(function (el) { observer.observe(el); });
+  }
+
+  /**
+   * Compteurs animés pour les chiffres-clés de « Our impact »
+   * ([data-count] + [data-suffix]). Se déclenche une seule fois,
+   * quand la carte entre dans le viewport ; respecte
+   * prefers-reduced-motion (affichage immédiat de la valeur finale).
+   */
+  function initStatCounters() {
+    const nums = Array.from(document.querySelectorAll(".impact__num[data-count]"));
+    if (!nums.length) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const DURATION = 1200; // ms
+
+    function format(value, suffix) {
+      return Math.round(value).toLocaleString("en-US") + suffix;
+    }
+
+    function animate(el) {
+      const target = parseFloat(el.dataset.count) || 0;
+      const suffix = el.dataset.suffix || "";
+
+      if (reducedMotion.matches) {
+        el.textContent = format(target, suffix);
+        return;
+      }
+
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min(1, (now - start) / DURATION);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        el.textContent = format(target * eased, suffix);
+        if (progress < 1) window.requestAnimationFrame(tick);
+      }
+      window.requestAnimationFrame(tick);
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      nums.forEach(function (el) { el.textContent = format(parseFloat(el.dataset.count) || 0, el.dataset.suffix || ""); });
+      return;
+    }
+
+    const observer = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        animate(entry.target);
+        obs.unobserve(entry.target);
+      });
+    }, { threshold: 0.4 });
+
+    nums.forEach(function (el) { observer.observe(el); });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initHeroCarousel();
     initArticleGallery();
     initTopicsFilter();
     initReachMap();
+    initImageFade();
+    initScrollReveal();
+    initStatCounters();
   });
 })();
