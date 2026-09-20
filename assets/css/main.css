@@ -1058,6 +1058,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    Notre expertise — « Knowledge. Analysis. Impact. »
    ========================================================= */
 .expertise{
+  --work-hairline: #c9d6e2;
   background:#eef4f9;
   padding:clamp(36px, 4.5vh, 48px) var(--gutter);
 }
@@ -1136,7 +1137,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 /* En dessous de ~1620px, l'intro passe au-dessus : les 4 colonnes
    gagnent alors toute la largeur plutôt que de se resserrer à côté
    du titre (qui reste large même une fois passé en pleine largeur). */
-@media (max-width:1620px){
+@media (max-width:1100px){
   .expertise__inner{ flex-wrap:wrap; }
   .expertise__intro{ flex:1 1 100%; max-width:640px; }
   .expertise__grid{ flex:1 1 100%; }
