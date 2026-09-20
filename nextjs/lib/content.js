@@ -278,63 +278,44 @@ export async function getReach() {
   return {
     eyebrow: "Our reach",
     titleLines: ["16 countries.", "One region."],
-    text: "We work across West Africa, supporting independent media and protecting press freedom in some of the region’s most challenging environments.",
+    text: "We work across West Africa, supporting independent media and protecting press freedom in some of the region\u2019s most challenging environments.",
     link: { label: "Explore our countries", href: "#countries" },
     map: {
-      viewBox: "78 -6 372 312",
-      ariaLabel: "Carte des 16 pays d'Afrique de l'Ouest où intervient la MFWA",
-      contextPath:
-        "M280 4 L365 0 L408 18 L432 48 L442 90 L438 140 L420 190 L430 230 L412 270 L380 296 L352 280 L350 240 L330 210 L336 170 L320 130 L300 95 L286 55 Z",
-      contextLines: [
-        "M365 0 L358 90 L372 180 L358 240",
-        "M408 18 L398 110 L420 190",
-        "M286 55 L322 90 L322 130",
-        "M330 210 L370 220 L380 296",
-      ],
-      islands: [
-        { cx: 92, cy: 168, r: 3.2 },
-        { cx: 100, cy: 177, r: 2.4 },
-        { cx: 86, cy: 180, r: 2 },
-      ],
-      silhouettePath:
-        "M145 75 L160 50 L220 40 L280 42 L310 55 L330 75 L350 100 L365 135 L372 170 L385 195 L390 215 L378 235 L355 248 L320 252 L290 250 L260 248 L230 244 L200 238 L178 222 L165 200 L158 180 L152 160 L145 140 L138 118 L132 100 L140 80 Z",
-      borders: [
-        "M200 42 L202 148",
-        "M300 46 L302 172",
-        "M148 146 L370 168",
-        "M160 196 L385 202",
-        "M140 88 L175 108 L200 148",
-        "M136 112 L145 138",
-        "M145 140 L156 162",
-        "M155 162 L166 198",
-        "M167 202 L182 220",
-        "M180 222 L204 236",
-        "M243 200 L248 249",
-        "M283 197 L286 251",
-        "M298 197 L301 251",
-        "M311 197 L318 251",
-        "M345 172 L386 198",
-      ],
+      ariaLabel: "Carte des 16 pays d'Afrique de l'Ouest o\u00f9 intervient la MFWA",
+      // Base country geometries (Natural Earth 1:110m via world-atlas),
+      // self-hosted so the map never depends on a third-party CDN at runtime.
+      geographyUrl: "/data/countries-110m.json",
+      // Frames West Africa the way the reference design does. Tuned by eye
+      // against the rendered map \u2014 adjust `scale`/`center` together if the
+      // covered countries ever need to sit differently in the frame.
+      projection: "geoMercator",
+      projectionConfig: { scale: 950, center: [-4, 13] },
     },
     // Alphabetical, matching the order of the static two-column list
-    // (8 per column when rendered).
+    // (8 per column when rendered). `id` is the ISO 3166-1 numeric code,
+    // used to match this list against the topojson features \u2014 far more
+    // reliable than matching on country name spelling, which varies by
+    // dataset. `coordinates` is [longitude, latitude] of the capital, used
+    // to place each country's marker dot (Cabo Verde has no landmass in the
+    // 110m dataset at all, so it renders as a marker only, matching the
+    // reference design where it shows as a small offshore dot cluster).
     countries: [
-      { name: "Benin", cx: 308, cy: 220, rx: 8, ry: 28 },
-      { name: "Burkina Faso", cx: 252, cy: 176, rx: 22, ry: 18 },
-      { name: "Cabo Verde", cx: 97, cy: 179, rx: 16, ry: 15 },
-      { name: "Côte d’Ivoire", cx: 226, cy: 220, rx: 22, ry: 22 },
-      { name: "The Gambia", cx: 158, cy: 140, rx: 9, ry: 6 },
-      { name: "Ghana", cx: 272, cy: 218, rx: 16, ry: 24 },
-      { name: "Guinea", cx: 170, cy: 180, rx: 16, ry: 18 },
-      { name: "Guinea-Bissau", cx: 149, cy: 151, rx: 10, ry: 9 },
-      { name: "Liberia", cx: 186, cy: 223, rx: 14, ry: 14 },
-      { name: "Mali", cx: 238, cy: 100, rx: 32, ry: 34 },
-      { name: "Mauritania", cx: 176, cy: 88, rx: 27, ry: 30 },
-      { name: "Niger", cx: 315, cy: 115, rx: 30, ry: 40 },
-      { name: "Nigeria", cx: 347, cy: 196, rx: 30, ry: 32 },
-      { name: "Senegal", cx: 160, cy: 106, rx: 16, ry: 20 },
-      { name: "Sierra Leone", cx: 167, cy: 206, rx: 12, ry: 12 },
-      { name: "Togo", cx: 293, cy: 222, rx: 7, ry: 28 },
+      { name: "Benin", id: "204", coordinates: [2.3912, 6.3703] },
+      { name: "Burkina Faso", id: "854", coordinates: [-1.5197, 12.3714] },
+      { name: "Cabo Verde", id: "132", coordinates: [-23.5133, 14.9330] },
+      { name: "C\u00f4te d\u2019Ivoire", id: "384", coordinates: [-4.0083, 5.3599] },
+      { name: "The Gambia", id: "270", coordinates: [-16.5790, 13.4549] },
+      { name: "Ghana", id: "288", coordinates: [-0.1870, 5.6037] },
+      { name: "Guinea", id: "324", coordinates: [-13.5784, 9.6412] },
+      { name: "Guinea-Bissau", id: "624", coordinates: [-15.5977, 11.8636] },
+      { name: "Liberia", id: "430", coordinates: [-10.7605, 6.2907] },
+      { name: "Mali", id: "466", coordinates: [-8.0029, 12.6392] },
+      { name: "Mauritania", id: "478", coordinates: [-15.9582, 18.0735] },
+      { name: "Niger", id: "562", coordinates: [2.1128, 13.5127] },
+      { name: "Nigeria", id: "566", coordinates: [7.3986, 9.0765] },
+      { name: "Senegal", id: "686", coordinates: [-17.4677, 14.7167] },
+      { name: "Sierra Leone", id: "694", coordinates: [-13.2317, 8.4657] },
+      { name: "Togo", id: "768", coordinates: [1.2314, 6.1725] },
     ],
   };
 }

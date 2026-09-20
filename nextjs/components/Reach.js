@@ -1,41 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import Reveal from "./Reveal";
-
-// Ports initReachMap() from assets/js/main.js. A single piece of state —
-// the active country's name (or null) — is synced two ways between the
-// SVG hit regions and the two-column country list, replacing the
-// original's manual classList.toggle() pass over both node lists.
-//
-// Judgment call: content.js's `countries[]` is alphabetical (documented
-// there as matching the two-column list order, which it does — sliced
-// 8/8 below). The original SVG draws its <ellipse> hit regions in a
-// different, geography-grouped order, which matters because several
-// regions overlap (e.g. Guinea / Guinea-Bissau / Sierra Leone) and SVG
-// paint order decides which element is on top for hover/click. HIT_ORDER
-// reproduces that exact original stacking by re-sequencing the same
-// country objects for the map only, so hover precedence on overlapping
-// countries matches the static mockup instead of changing when
-// content.js's data order changes.
-const HIT_ORDER = [
-  "Mauritania",
-  "Mali",
-  "Niger",
-  "Burkina Faso",
-  "Senegal",
-  "The Gambia",
-  "Guinea-Bissau",
-  "Guinea",
-  "Sierra Leone",
-  "Liberia",
-  "Côte d’Ivoire",
-  "Ghana",
-  "Togo",
-  "Benin",
-  "Nigeria",
-  "Cabo Verde",
-];
 
 const ARROW = (
   <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -44,18 +11,20 @@ const ARROW = (
 );
 
 // API: reach.eyebrow, reach.titleLines[], reach.text, reach.link,
-//      reach.map { viewBox, ariaLabel, contextPath, contextLines[],
-//      islands[], silhouettePath, borders[] }, reach.countries[]
-//      { name, cx, cy, rx, ry } — see getReach()
+//      reach.map { ariaLabel, geographyUrl, projection, projectionConfig },
+//      reach.countries[] { name, id, coordinates } — see getReach()
+//
+// Real country geometries (react-simple-maps + a self-hosted Natural Earth
+// topojson) replace the old hand-drawn silhouette, framed on West Africa.
+// A single piece of state — the active country's name, or null — stays
+// synced three ways: the country's map polygon, its marker dot, and its
+// entry in the two-column list, same idea as the original initReachMap().
 export default function Reach({ data }) {
   const [activeCountry, setActiveCountry] = useState(null);
 
-  const hits = useMemo(
-    () => HIT_ORDER.map((name) => data.countries.find((c) => c.name === name)).filter(Boolean),
-    [data.countries]
-  );
   const col1 = data.countries.slice(0, 8);
   const col2 = data.countries.slice(8, 16);
+  const coveredIds = new Set(data.countries.map((c) => c.id));
 
   function clearActive() {
     setActiveCountry(null);
@@ -79,64 +48,67 @@ export default function Reach({ data }) {
         </Reveal>
 
         <div className="reach__map" data-reach-map onMouseLeave={clearActive}>
-          <svg viewBox={data.map.viewBox} role="img" aria-label={data.map.ariaLabel}>
-            {/* Reste du continent (non couvert), simplifié, décoratif */}
-            <path className="reach__context" d={data.map.contextPath} />
-            <g className="reach__context-lines">
-              {data.map.contextLines.map((d) => (
-                <path d={d} key={d} />
-              ))}
-            </g>
+          <ComposableMap
+            width={480}
+            height={320}
+            projection={data.map.projection}
+            projectionConfig={data.map.projectionConfig}
+            role="img"
+            aria-label={data.map.ariaLabel}
+          >
+            <Geographies geography={data.map.geographyUrl}>
+              {({ geographies }) =>
+                geographies.map((geo) => {
+                  const covered = coveredIds.has(geo.id);
+                  const country = covered ? data.countries.find((c) => c.id === geo.id) : null;
+                  const active = country && activeCountry === country.name;
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      className={`reach__geo${covered ? " is-covered" : ""}${active ? " is-active" : ""}`}
+                      tabIndex={-1}
+                      onMouseEnter={() => country && setActiveCountry(country.name)}
+                      onClick={() => country && setActiveCountry(country.name)}
+                      style={{
+                        default: { outline: "none" },
+                        hover: { outline: "none" },
+                        pressed: { outline: "none" },
+                      }}
+                    />
+                  );
+                })
+              }
+            </Geographies>
 
-            {/* Cabo Verde (archipel, au large) */}
-            <g className="reach__islands">
-              {data.map.islands.map((island, i) => (
-                <circle key={i} cx={island.cx} cy={island.cy} r={island.r} />
-              ))}
-            </g>
-
-            {/* Silhouette Afrique de l'Ouest (16 pays) */}
-            <path className="reach__silhouette" d={data.map.silhouettePath} />
-
-            {/* Frontières internes (décoratives) */}
-            <g className="reach__borders">
-              {data.map.borders.map((d) => (
-                <path d={d} key={d} />
-              ))}
-            </g>
-
-            {/* Zones cliquables (une par pays) */}
-            <g className="reach__hits" data-reach-hits>
-              {hits.map((country) => {
-                const active = activeCountry === country.name;
-                return (
-                  <ellipse
-                    className={`reach__hit${active ? " is-active" : ""}`}
-                    data-country={country.name}
-                    key={country.name}
-                    cx={country.cx}
-                    cy={country.cy}
-                    rx={country.rx}
-                    ry={country.ry}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={country.name}
-                    onMouseEnter={() => setActiveCountry(country.name)}
-                    onFocus={() => setActiveCountry(country.name)}
-                    onClick={() => setActiveCountry(country.name)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setActiveCountry(country.name);
-                      }
-                    }}
-                  >
-                    <title>{country.name}</title>
-                  </ellipse>
-                );
-              })}
-            </g>
-          </svg>
+            {data.countries.map((country) => {
+              const active = activeCountry === country.name;
+              return (
+                <Marker
+                  key={country.name}
+                  coordinates={country.coordinates}
+                  data-country={country.name}
+                  className={`reach__marker${active ? " is-active" : ""}`}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={country.name}
+                  onMouseEnter={() => setActiveCountry(country.name)}
+                  onFocus={() => setActiveCountry(country.name)}
+                  onClick={() => setActiveCountry(country.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveCountry(country.name);
+                    }
+                  }}
+                >
+                  <circle className="reach__marker-ring" r={active ? 8 : 6} />
+                  <circle className="reach__marker-dot" r={active ? 4.5 : 3} />
+                  <title>{country.name}</title>
+                </Marker>
+              );
+            })}
+          </ComposableMap>
         </div>
 
         <div className="reach__list" onMouseLeave={clearActive}>

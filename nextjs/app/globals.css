@@ -1204,37 +1204,43 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   flex:1.1 1 380px;
   max-width:480px;
 }
-.reach__map svg{ width:100%; height:auto; display:block; overflow:visible; }
+.reach__map svg{ width:100%; height:auto; display:block; overflow:hidden; }
 
-.reach__context{ fill:#e9edf1; }
-.reach__context-lines{ fill:none; stroke:#fff; stroke-width:1; stroke-linecap:round; opacity:.8; }
-
-.reach__islands circle{ fill:var(--blue); opacity:.85; }
-
-.reach__silhouette{ fill:var(--blue); }
-
-.reach__borders{
-  fill:none;
-  stroke:rgba(255,255,255,.55);
-  stroke-width:1;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+/* Base country fill (uncovered land, decorative context) */
+.reach__geo{
+  fill:#e9edf1;
+  stroke:#fff;
+  stroke-width:.75;
+  outline:none;
 }
-
-.reach__hit{
-  fill:rgba(255,255,255,0);
-  stroke:none;
+/* One of MFWA's 16 countries — same fill as the rest of the map on
+   purpose (the reference design tells covered countries apart with the
+   marker dots only, not a fill difference), but clickable/hoverable. */
+.reach__geo.is-covered{
   cursor:pointer;
   transition:fill var(--dur-fast) var(--ease);
 }
-.reach__hit:hover,
-.reach__hit:focus-visible{
-  fill:rgba(255,255,255,.28);
-  outline:none;
+.reach__geo.is-covered:hover,
+.reach__geo.is-active{
+  fill:#d7e0e8;
 }
-.reach__hit.is-active{
-  fill:rgba(255,255,255,.4);
+
+.reach__marker{ cursor:pointer; outline:none; }
+.reach__marker-ring{
+  fill:var(--blue);
+  opacity:0;
+  transition:opacity var(--dur-fast) var(--ease), r var(--dur-fast) var(--ease);
 }
+.reach__marker-dot{
+  fill:var(--navy);
+  stroke:#fff;
+  stroke-width:1.2;
+  transition:fill var(--dur-fast) var(--ease), r var(--dur-fast) var(--ease);
+}
+.reach__marker:hover .reach__marker-ring,
+.reach__marker.is-active .reach__marker-ring{ opacity:.18; }
+.reach__marker:hover .reach__marker-dot,
+.reach__marker.is-active .reach__marker-dot{ fill:var(--red); }
 
 /* -- Liste des pays ------------------------------------------ */
 .reach__list{
