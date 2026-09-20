@@ -341,7 +341,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   line-height:1.1;
   letter-spacing:-.015em;
   color:var(--navy-ink);
-  max-width:14ch;
 }
 .hero__lede{
   margin:clamp(10px, 2vh, 28px) 0 0;
@@ -995,6 +994,166 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 
 /* =========================================================
+   Impact — articles (catégorie "Impact")
+   ========================================================= */
+.impact-highlights{
+  background:var(--white);
+  padding:clamp(56px, 8vh, 96px) var(--gutter) clamp(64px, 9vh, 104px);
+}
+
+.impact-highlights__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.impact-highlights__all{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--navy);
+}
+.impact-highlights__all svg{ transition:transform var(--dur-fast) var(--ease); }
+.impact-highlights__all:hover svg{ transform:translateX(3px); }
+
+.impact-highlights__title{
+  margin:clamp(10px, 1.8vh, 18px) 0 0;
+  font-family:var(--font-serif);
+  font-weight:600;
+  font-size:clamp(32px, 3.4vw, 48px);
+  line-height:1.16;
+  letter-spacing:-.015em;
+  color:var(--navy-ink);
+}
+
+.impact-highlights__grid{
+  margin-top:40px;
+  display:flex;
+  align-items:stretch;
+  gap:clamp(32px, 4vw, 64px);
+}
+
+/* -- Article vedette --------------------------------------- */
+.impact-story--featured{ flex:1.8 1 640px; }
+.impact-story--featured .impact-story__link{
+  display:flex;
+  gap:clamp(20px, 2.4vw, 32px);
+  align-items:flex-start;
+}
+.impact-story--featured .impact-story__media{
+  flex:0 0 62%;
+  aspect-ratio:16/9;
+}
+.impact-story--featured .impact-story__body{ flex:1 1 auto; min-width:0; }
+.impact-story--featured .impact-story__heading{
+  font-size:clamp(21px, 1.9vw, 26px);
+  line-height:1.28;
+}
+.impact-story__excerpt{
+  margin:12px 0 0;
+  font-size:13.5px;
+  line-height:1.6;
+  color:var(--ink-muted);
+}
+.impact-story__cta{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:16px;
+  font-size:13px;
+  font-weight:700;
+  color:var(--blue);
+}
+.impact-story__cta svg{ transition:transform var(--dur-fast) var(--ease); }
+.impact-story__link:hover .impact-story__cta svg{ transform:translateX(3px); }
+
+/* -- Deux articles empilés ----------------------------------- */
+.impact-highlights__stack{
+  flex:1 1 380px;
+  display:flex;
+  flex-direction:column;
+  border-left:1px solid var(--hairline);
+  padding-left:clamp(28px, 3.2vw, 56px);
+}
+.impact-story--compact + .impact-story--compact{
+  margin-top:24px;
+  padding-top:24px;
+  border-top:1px solid var(--hairline);
+}
+.impact-story--compact .impact-story__link{
+  display:flex;
+  gap:20px;
+  align-items:flex-start;
+}
+.impact-story--compact .impact-story__media{
+  flex:0 0 38%;
+  aspect-ratio:4/3;
+}
+.impact-story--compact .impact-story__body{ flex:1 1 auto; min-width:0; }
+.impact-story--compact .impact-story__heading{
+  font-size:18px;
+  line-height:1.32;
+}
+
+/* -- Éléments partagés ----------------------------------------- */
+.impact-story__media{
+  position:relative;
+  overflow:hidden;
+  border-radius:2px;
+  background:#eef0ea;
+}
+.impact-story__media img{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  transition:transform var(--dur-slow) var(--ease), opacity var(--dur-slow) var(--ease);
+}
+.impact-story__link:hover .impact-story__media img{ transform:scale(1.045); }
+
+.impact-story__tag{
+  margin:0;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-muted);
+}
+.impact-story__tag span{ margin:0 3px; }
+.impact-story__heading{
+  margin:10px 0 0;
+  font-family:var(--font-serif);
+  font-weight:600;
+  color:var(--navy-ink);
+  transition:color var(--dur-fast) var(--ease);
+}
+.impact-story__link:hover .impact-story__heading{ color:var(--blue); }
+.impact-story__meta{
+  margin:10px 0 0;
+  font-size:12px;
+  color:var(--ink-muted);
+}
+.impact-story__meta i{ font-style:normal; margin:0 6px; }
+
+/* -- Responsive ---------------------------------------------- */
+@media (max-width:1100px){
+  .impact-highlights__grid{ flex-direction:column; gap:40px; }
+  .impact-story--featured,
+  .impact-highlights__stack{ flex:1 1 auto; }
+  .impact-highlights__stack{
+    border-left:none;
+    padding-left:0;
+    border-top:1px solid var(--hairline);
+    padding-top:32px;
+  }
+}
+@media (max-width:640px){
+  .impact-story__link{ flex-direction:column; }
+  .impact-story--featured .impact-story__media,
+  .impact-story--compact .impact-story__media{ flex:none; width:100%; }
+}
+
+/* =========================================================
    Notre présence — « 16 countries. One region. »
    ========================================================= */
 .reach{
@@ -1275,10 +1434,16 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   letter-spacing:-.015em;
   color:var(--white);
 }
-
 .cta__aside{
   flex:none;
-  max-width:340px;
+}
+.cta__link{
+  display: flex;
+  list-style: none;
+  gap: 20px;
+}
+.cta__buttons{
+  display: flex;
 }
 .cta__text{
   margin:0 0 20px;
