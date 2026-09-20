@@ -122,7 +122,7 @@ export async function getLatestStories() {
     ],
     stories: [
       {
-        link: "#article-ghana",
+        link: "/articles/every-dollar-invested-millions-returned",
         image: {
           src: "/images/ghana4.jpg",
           alt: "Image d'illustration : rassemblement public au Black Star Square, à Accra.",
@@ -394,5 +394,125 @@ export async function getFooter() {
       { label: "Terms", href: "#terms" },
       { label: "Contact", href: "#contact" },
     ],
+  };
+}
+
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/posts?slug=${slug}&_embed`).then(r => r.json())
+// Note: this is a layout proposal with placeholder ("fake") content — every
+// slug currently resolves to the same demo article so the article-page
+// design (hero, share icons, body, related stories, newsletter) can be
+// reviewed before the WordPress API is wired in. generateStaticParams()
+// only pre-renders this one demo slug for now.
+export async function getArticle(slug) {
+  return {
+    slug,
+    tag: ["Ghana", "Investigative journalism"],
+    title: "Every Dollar Invested, Millions Returned",
+    excerpt:
+      "A year-long MFWA investigation traces how a modest grants programme for community broadcasters produced outsized gains for accountability journalism across the region.",
+    author: {
+      name: "Ama Boateng",
+      role: "Senior Investigative Reporter, MFWA",
+      avatar: { src: "/images/ghana2.jpg", alt: "" },
+    },
+    date: "12 Sep 2026",
+    readTime: "4 min read",
+    heroImage: {
+      src: "/images/ghana4.jpg",
+      alt: "Image d'illustration : rassemblement public au Black Star Square, à Accra.",
+    },
+    share: {
+      url: "https://mfwaonline.org/articles/every-dollar-invested-millions-returned",
+      title: "Every Dollar Invested, Millions Returned",
+    },
+    body: [
+      {
+        type: "paragraph",
+        text: "In 2023, MFWA quietly began funding a handful of community radio stations across three regions with a single condition: every grant had to fund original investigative reporting, not equipment or salaries. Two years on, that small bet has produced an outsized return.",
+      },
+      {
+        type: "paragraph",
+        text: "Across the six stations tracked for this report, journalists supported by the programme filed 214 original investigations. Thirty-one of them led directly to public inquiries, audits or policy reversals — a hit rate that surprised even the programme's own designers.",
+      },
+      {
+        type: "heading",
+        text: "A grant that kept paying back",
+      },
+      {
+        type: "paragraph",
+        text: "«We expected maybe one or two stories a year to really land,» says programme lead Kwame Asante. «What we underestimated was how much a small, reliable grant changes a newsroom's appetite for risk. Editors started assigning reporters to stories that would previously have been shelved for lack of budget.»",
+      },
+      {
+        type: "quote",
+        text: "The money was never the point. It was permission to spend three weeks on one story instead of covering three stories in three days.",
+        attribution: "Community radio editor, Northern Region",
+      },
+      {
+        type: "paragraph",
+        text: "The clearest case is a station in the Northern Region, whose reporting on irregularities in a district water contract triggered an independent audit that recovered funds equivalent to more than 40 times the station's annual grant.",
+      },
+      {
+        type: "heading",
+        text: "What comes next",
+      },
+      {
+        type: "paragraph",
+        text: "MFWA is now expanding the model to four additional stations in 2027, with a lighter reporting requirement and a peer-mentoring component pairing newer investigative reporters with the programme's first cohort.",
+      },
+      {
+        type: "paragraph",
+        text: "The full dataset behind this report, including methodology and station-level outcomes, will be published alongside MFWA's annual impact report later this year.",
+      },
+    ],
+    related: [
+      {
+        link: "#article-digital-rights",
+        image: {
+          src: "/images/ghana3.jpg",
+          alt: "Image d'illustration : vue aérienne de pirogues de pêche alignées sur une plage.",
+        },
+        tag: ["Digital rights", "West Africa"],
+        heading: "The digital rights challenges facing young people in West Africa",
+        date: "10 Sep 2026",
+        readTime: "5 min read",
+      },
+      {
+        link: "#article-young-journalists",
+        image: {
+          src: "/images/ghana2.jpg",
+          alt: "Image d'illustration : danseurs en tenues traditionnelles kente lors d'un festival.",
+        },
+        tag: ["Media", "Sierra Leone"],
+        heading: "Supporting young journalists in Sierra Leone: from training to impact",
+        date: "07 Sep 2026",
+        readTime: "3 min read",
+      },
+      {
+        link: "#article-community-radio",
+        image: {
+          src: "/images/ghana.jpg",
+          alt: "Image d'illustration : une foule dans la rue lors d'un carnaval, avec des plumeaux colorés.",
+        },
+        tag: ["Democracy", "West Africa"],
+        heading: "Why community radio remains vital for democracy in West Africa",
+        date: "04 Sep 2026",
+        readTime: "6 min read",
+      },
+    ],
+  };
+}
+
+// Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/newsletter`).then(r => r.json())
+// The form itself will eventually POST to a subscribe endpoint (Mailchimp,
+// Brevo, or a custom WP route) — see Newsletter.js for the placeholder
+// submit handler.
+export async function getNewsletter() {
+  return {
+    eyebrow: "Stay informed",
+    titleLines: ["Get our stories", "in your inbox"],
+    text: "A monthly digest of investigations, press-freedom alerts and impact stories from across West Africa.",
+    placeholder: "you@email.com",
+    buttonLabel: "Subscribe",
+    privacyNote: "No spam. Unsubscribe anytime.",
   };
 }
