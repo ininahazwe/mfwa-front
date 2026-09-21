@@ -12,13 +12,16 @@ const ARROW = (
 
 // API: reach.eyebrow, reach.titleLines[], reach.text, reach.link,
 //      reach.map { ariaLabel, geographyUrl, projection, projectionConfig },
-//      reach.countries[] { name, id, coordinates } — see getReach()
+//      reach.countries[] { name, id, link, coordinates } — see getReach()
 //
 // Real country geometries (react-simple-maps + a self-hosted Natural Earth
 // topojson) replace the old hand-drawn silhouette, framed on West Africa.
 // A single piece of state — the active country's name, or null — stays
 // synced three ways: the country's map polygon, its marker dot, and its
 // entry in the two-column list, same idea as the original initReachMap().
+// Each of those three now also doubles as a real link (country.link) to
+// that country's archive on mfwa.org — the map polygon and marker are
+// wrapped in an <a>, hover/focus still drives the shared active state.
 export default function Reach({ data }) {
   const [activeCountry, setActiveCountry] = useState(null);
 
@@ -62,9 +65,9 @@ export default function Reach({ data }) {
                   const covered = coveredIds.has(geo.id);
                   const country = covered ? data.countries.find((c) => c.id === geo.id) : null;
                   const active = country && activeCountry === country.name;
-                  return (
+                  const geoNode = (
                     <Geography
-                      key={geo.rsmKey}
+                      key={country ? undefined : geo.rsmKey}
                       geography={geo}
                       className={`reach__geo${covered ? " is-covered" : ""}${active ? " is-active" : ""}`}
                       tabIndex={-1}
@@ -76,6 +79,14 @@ export default function Reach({ data }) {
                         pressed: { outline: "none" },
                       }}
                     />
+                  );
+
+                  if (!country) return geoNode;
+
+                  return (
+                    <a key={geo.rsmKey} href={country.link} aria-label={`${country.name}: read our latest coverage`}>
+                      {geoNode}
+                    </a>
                   );
                 })
               }
@@ -89,22 +100,18 @@ export default function Reach({ data }) {
                   coordinates={country.coordinates}
                   data-country={country.name}
                   className={`reach__marker${active ? " is-active" : ""}`}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={country.name}
                   onMouseEnter={() => setActiveCountry(country.name)}
-                  onFocus={() => setActiveCountry(country.name)}
-                  onClick={() => setActiveCountry(country.name)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveCountry(country.name);
-                    }
-                  }}
                 >
-                  <circle className="reach__marker-ring" r={active ? 8 : 6} />
-                  <circle className="reach__marker-dot" r={active ? 4.5 : 3} />
-                  <title>{country.name}</title>
+                  <a
+                    href={country.link}
+                    aria-label={`${country.name}: read our latest coverage`}
+                    onFocus={() => setActiveCountry(country.name)}
+                    onClick={() => setActiveCountry(country.name)}
+                  >
+                    <circle className="reach__marker-ring" r={active ? 8 : 6} />
+                    <circle className="reach__marker-dot" r={active ? 4.5 : 3} />
+                    <title>{country.name}</title>
+                  </a>
                 </Marker>
               );
             })}
@@ -120,7 +127,9 @@ export default function Reach({ data }) {
                 className={activeCountry === country.name ? "is-active" : undefined}
                 onMouseEnter={() => setActiveCountry(country.name)}
               >
-                {country.name}
+                <a href={country.link} onFocus={() => setActiveCountry(country.name)}>
+                  {country.name}
+                </a>
               </li>
             ))}
           </ul>
@@ -132,7 +141,9 @@ export default function Reach({ data }) {
                 className={activeCountry === country.name ? "is-active" : undefined}
                 onMouseEnter={() => setActiveCountry(country.name)}
               >
-                {country.name}
+                <a href={country.link} onFocus={() => setActiveCountry(country.name)}>
+                  {country.name}
+                </a>
               </li>
             ))}
           </ul>

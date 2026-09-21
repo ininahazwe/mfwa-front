@@ -271,11 +271,13 @@ export async function getImpactHighlights() {
 }
 
 // Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/reach`).then(r => r.json())
-// Note: kept here for the future Reach.js pass (carousel/hover-map behaviour
-// is intentionally not built yet). `countries` carries both the map hit
-// coordinates (ellipse cx/cy/rx/ry, ported verbatim from the SVG) and the
-// name used by the two-column country list, so a future component can
-// derive either view from one array.
+// Note: `countries` carries the map hit coordinates, the name used by the
+// two-column country list, and the `link` each country's map shape /
+// marker / list entry navigates to on click — the real mfwa.org "country"
+// archive for that country (e.g. Benin: https://mfwa.org/benin/). Slugs
+// were confirmed against the live site rather than guessed, since a couple
+// don't follow the obvious pattern (Cabo Verde's term is "Cape Verde" →
+// cape-verde; Côte d’Ivoire → cote-divoire).
 export async function getReach() {
   return {
     eyebrow: "Our reach",
@@ -302,22 +304,22 @@ export async function getReach() {
     // 110m dataset at all, so it renders as a marker only, matching the
     // reference design where it shows as a small offshore dot cluster).
     countries: [
-      { name: "Benin", id: "204", coordinates: [2.3912, 6.3703] },
-      { name: "Burkina Faso", id: "854", coordinates: [-1.5197, 12.3714] },
-      { name: "Cabo Verde", id: "132", coordinates: [-23.5133, 14.9330] },
-      { name: "C\u00f4te d\u2019Ivoire", id: "384", coordinates: [-4.0083, 5.3599] },
-      { name: "The Gambia", id: "270", coordinates: [-16.5790, 13.4549] },
-      { name: "Ghana", id: "288", coordinates: [-0.1870, 5.6037] },
-      { name: "Guinea", id: "324", coordinates: [-13.5784, 9.6412] },
-      { name: "Guinea-Bissau", id: "624", coordinates: [-15.5977, 11.8636] },
-      { name: "Liberia", id: "430", coordinates: [-10.7605, 6.2907] },
-      { name: "Mali", id: "466", coordinates: [-8.0029, 12.6392] },
-      { name: "Mauritania", id: "478", coordinates: [-15.9582, 18.0735] },
-      { name: "Niger", id: "562", coordinates: [2.1128, 13.5127] },
-      { name: "Nigeria", id: "566", coordinates: [7.3986, 9.0765] },
-      { name: "Senegal", id: "686", coordinates: [-17.4677, 14.7167] },
-      { name: "Sierra Leone", id: "694", coordinates: [-13.2317, 8.4657] },
-      { name: "Togo", id: "768", coordinates: [1.2314, 6.1725] },
+      { name: "Benin", id: "204", link: "https://mfwa.org/benin/", coordinates: [2.3912, 6.3703] },
+      { name: "Burkina Faso", id: "854", link: "https://mfwa.org/burkina-faso/", coordinates: [-1.5197, 12.3714] },
+      { name: "Cabo Verde", id: "132", link: "https://mfwa.org/cape-verde/", coordinates: [-23.5133, 14.9330] },
+      { name: "C\u00f4te d\u2019Ivoire", id: "384", link: "https://mfwa.org/cote-divoire/", coordinates: [-4.0083, 5.3599] },
+      { name: "The Gambia", id: "270", link: "https://mfwa.org/gambia/", coordinates: [-16.5790, 13.4549] },
+      { name: "Ghana", id: "288", link: "https://mfwa.org/ghana/", coordinates: [-0.1870, 5.6037] },
+      { name: "Guinea", id: "324", link: "https://mfwa.org/guinea/", coordinates: [-13.5784, 9.6412] },
+      { name: "Guinea-Bissau", id: "624", link: "https://mfwa.org/guinea-bissau/", coordinates: [-15.5977, 11.8636] },
+      { name: "Liberia", id: "430", link: "https://mfwa.org/liberia/", coordinates: [-10.7605, 6.2907] },
+      { name: "Mali", id: "466", link: "https://mfwa.org/mali/", coordinates: [-8.0029, 12.6392] },
+      { name: "Mauritania", id: "478", link: "https://mfwa.org/mauritania/", coordinates: [-15.9582, 18.0735] },
+      { name: "Niger", id: "562", link: "https://mfwa.org/niger/", coordinates: [2.1128, 13.5127] },
+      { name: "Nigeria", id: "566", link: "https://mfwa.org/nigeria/", coordinates: [7.3986, 9.0765] },
+      { name: "Senegal", id: "686", link: "https://mfwa.org/senegal/", coordinates: [-17.4677, 14.7167] },
+      { name: "Sierra Leone", id: "694", link: "https://mfwa.org/sierra-leone/", coordinates: [-13.2317, 8.4657] },
+      { name: "Togo", id: "768", link: "https://mfwa.org/togo/", coordinates: [1.2314, 6.1725] },
     ],
   };
 }
