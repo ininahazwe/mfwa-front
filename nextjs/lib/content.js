@@ -405,13 +405,14 @@ export async function getFooter() {
 // only pre-renders this one demo slug for now.
 // Note: `author` is kept in the data shape (WordPress will provide one)
 // but is intentionally not surfaced by ArticleHeader.js in this layout.
+// No `excerpt` here on purpose — that belongs to the story-card shape
+// used by pages that list/link to the article (Latest, RelatedArticles),
+// not to the article page itself.
 export async function getArticle(slug) {
   return {
     slug,
     tag: ["Ghana", "Investigative journalism"],
     title: "Every Dollar Invested, Millions Returned",
-    excerpt:
-      "A year-long MFWA investigation traces how a modest grants programme for community broadcasters produced outsized gains for accountability journalism across the region.",
     author: {
       name: "Ama Boateng",
       role: "Senior Investigative Reporter, MFWA",
