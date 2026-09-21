@@ -9,6 +9,8 @@
 // function needs to change — the shape returned should stay the same so
 // the components that consume it do not need to change.
 
+import { getWpCategoryBySlug, getWpCategoryPosts } from "./wp";
+
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/menu?slug=primary`).then(r => r.json())
 export async function getHeader() {
   return {
@@ -522,72 +524,26 @@ export async function getNewsletter() {
 
 // -- Category / archive page ---------------------------------------------
 
-const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const CATEGORY_PAGE_SIZE = 10;
 
-function formatCategoryDate(date) {
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  return `${day} ${MONTH_ABBR[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-}
-
-function labelFromCategorySlug(slug) {
-  return slug
-    .split("-")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-// A small pool of story shapes, cycled to fill out a demo archive. Reuses
-// the same `.story` card shape as Latest.js/RelatedArticles.js.
-const CATEGORY_STORY_TEMPLATES = [
-  { tag: ["Ghana", "Investigative journalism"], heading: "Every Dollar Invested, Millions Returned", image: { src: "/images/ghana4.jpg", alt: "Illustrative image: a public gathering at Black Star Square, Accra." }, readTime: "4 min read" },
-  { tag: ["Digital rights", "West Africa"], heading: "The digital rights challenges facing young people in West Africa", image: { src: "/images/ghana3.jpg", alt: "Illustrative image: an aerial view of fishing boats lined up on a beach." }, readTime: "5 min read" },
-  { tag: ["Media", "Sierra Leone"], heading: "Supporting young journalists in Sierra Leone: from training to impact", image: { src: "/images/ghana2.jpg", alt: "Illustrative image: dancers in traditional kente outfits at a festival." }, readTime: "3 min read" },
-  { tag: ["Democracy", "West Africa"], heading: "Why community radio remains vital for democracy in West Africa", image: { src: "/images/ghana.jpg", alt: "Illustrative image: a street crowd at a carnival, with colourful feather headdresses." }, readTime: "6 min read" },
-  { tag: ["Ghana", "Impact"], heading: "How advocacy training helped protect 40 journalists across Ghana", image: { src: "/images/ghana5.jpg", alt: "Illustrative image: Ghana's Independence Arch, inscribed “Freedom and Justice”." }, readTime: "4 min read" },
-  { tag: ["West Africa", "Impact"], heading: "Digital safety workshops cut online attacks on young reporters in half", image: { src: "/images/ghana1.jpg", alt: "Illustrative image: a busy street scene at a West African market." }, readTime: "3 min read" },
-  { tag: ["Freedom of Expression", "Nigeria"], heading: "Press freedom violations rise sharply across three border states", image: { src: "/images/1.jpg", alt: "" }, readTime: "5 min read" },
-  { tag: ["Democracy", "Liberia"], heading: "Election monitors credit independent media with reducing misinformation", image: { src: "/images/2.jpg", alt: "" }, readTime: "4 min read" },
-  { tag: ["Digital Rights", "Togo"], heading: "A new bill threatens encrypted messaging access nationwide", image: { src: "/images/3.jpg", alt: "" }, readTime: "6 min read" },
-  { tag: ["Investigative journalism", "Mali"], heading: "Tracing a decade of unaccounted mining revenue", image: { src: "/images/4.jpg", alt: "" }, readTime: "7 min read" },
-  { tag: ["Media", "Guinea"], heading: "Community stations rebuild trust after years of censorship", image: { src: "/images/thumb1.jpg", alt: "" }, readTime: "3 min read" },
-  { tag: ["West Africa", "Policy"], heading: "Regional bloc drafts new protections for journalist safety", image: { src: "/images/thumb2.jpg", alt: "" }, readTime: "5 min read" },
-  { tag: ["Ghana", "Media"], heading: "Local radio stations expand fact-checking partnerships ahead of elections", image: { src: "/images/thumb3.jpg", alt: "" }, readTime: "4 min read" },
-  { tag: ["Impact", "Senegal"], heading: "Legal aid fund covers court costs for eleven detained reporters", image: { src: "/images/thumb4.jpg", alt: "" }, readTime: "6 min read" },
-];
-
-// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/posts?category=${slug}&per_page=10&page=N&_embed`).then(r => r.json())
-// Note: this is a layout proposal with placeholder content — the whole
-// 55-item pool is generated up front (cycling CATEGORY_STORY_TEMPLATES) and
-// handed to CategoryGrid.js, which reveals it PAGE_SIZE at a time. That
-// component is shaped so a real implementation can swap the in-memory
-// slice for a paginated fetch (`?page=N`) without changing its behaviour.
-// The category label/description are derived generically from the slug so
-// any /category/<slug> works; generateStaticParams() only pre-renders a
-// couple of demo slugs for now.
+// Returns null when the slug doesn't match a real WordPress category, so
+// the page can call notFound() instead of rendering an empty archive.
 export async function getCategoryPage(slug) {
-  const label = labelFromCategorySlug(slug);
-  const total = 55;
-  const baseDate = Date.UTC(2026, 8, 12); // 12 Sep 2026
-  const dayMs = 24 * 60 * 60 * 1000;
+  const category = await getWpCategoryBySlug(slug);
+  if (!category) return null;
 
-  const articles = Array.from({ length: total }, (_, i) => {
-    const template = CATEGORY_STORY_TEMPLATES[i % CATEGORY_STORY_TEMPLATES.length];
-    return {
-      link: `#story-${i + 1}`,
-      image: template.image,
-      tag: template.tag,
-      heading: template.heading,
-      date: formatCategoryDate(new Date(baseDate - i * 2 * dayMs)),
-      readTime: template.readTime,
-    };
+  const { items, totalPages, total } = await getWpCategoryPosts(category.id, {
+    page: 1,
+    perPage: CATEGORY_PAGE_SIZE,
   });
 
   return {
-    slug,
-    label,
+    slug: category.slug,
+    label: category.name,
     eyebrow: "Category",
-    description: `Reporting, updates and impact stories tagged ${label}.`,
-    articles,
+    description: category.description || `Reporting, updates and impact stories tagged ${category.name}.`,
+    articles: items,
+    totalPages,
+    total,
   };
 }

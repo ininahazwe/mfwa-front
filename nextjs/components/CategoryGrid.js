@@ -6,46 +6,53 @@ import FadeImg from "./FadeImg";
 
 const PAGE_SIZE = 10;
 const AUTO_LOAD_LIMIT = 3; // number of scroll-triggered batches before the button takes over
-const SIMULATED_DELAY = 500; // ms — stands in for a future paginated fetch
 
-// API: category.articles[] { link, image, tag, heading, date, readTime } —
-// see getCategoryPage() in lib/content.js. The whole pool is already in
-// memory (static-data phase), so "loading more" here just reveals the
-// next PAGE_SIZE items; loadMore()'s shape (a function that resolves after
-// a short delay) is what a real `fetch(...&page=N)` call would slot into
-// later without changing the component's behaviour.
-//
-// Behaviour: the first AUTO_LOAD_LIMIT batches load automatically as a
-// sentinel scrolls into view (infinite-scroll style); once that budget is
-// used up, a manual "Load more" button takes over for the rest of the list.
-export default function CategoryGrid({ articles }) {
-  const total = articles.length;
-  const [visibleCount, setVisibleCount] = useState(Math.min(PAGE_SIZE, total));
+export default function CategoryGrid({ slug, initialItems, initialTotalPages, initialTotal }) {
+  const [items, setItems] = useState(initialItems);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
+  const [total, setTotal] = useState(initialTotal);
   const [autoLoadCount, setAutoLoadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const sentinelRef = useRef(null);
-  const loadingRef = useRef(false); // mirrors `loading` inside the observer's closure
+  const loadingRef = useRef(false);
 
-  const hasMore = visibleCount < total;
+  const hasMore = page < totalPages;
   const autoExhausted = autoLoadCount >= AUTO_LOAD_LIMIT;
 
   function loadMore(isAuto) {
-    if (loadingRef.current || visibleCount >= total) return;
+    if (loadingRef.current || !hasMore) return;
     loadingRef.current = true;
     setLoading(true);
-    setTimeout(() => {
-      setVisibleCount((count) => Math.min(count + PAGE_SIZE, total));
-      if (isAuto) setAutoLoadCount((count) => count + 1);
-      loadingRef.current = false;
-      setLoading(false);
-    }, SIMULATED_DELAY);
+    setError(null);
+
+    const nextPage = page + 1;
+    fetch(`/api/category/${slug}/posts?page=${nextPage}&perPage=${PAGE_SIZE}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("request-failed");
+        return res.json();
+      })
+      .then((data) => {
+        setItems((prev) => [...prev, ...data.items]);
+        setPage(data.page);
+        setTotalPages(data.totalPages);
+        setTotal(data.total);
+        if (isAuto) setAutoLoadCount((count) => count + 1);
+      })
+      .catch(() => {
+        setError("We couldn't load more stories. Please try again.");
+      })
+      .finally(() => {
+        loadingRef.current = false;
+        setLoading(false);
+      });
   }
 
   useEffect(() => {
-    if (autoExhausted || !hasMore) return undefined;
+    if (autoExhausted || !hasMore || error) return undefined;
     const el = sentinelRef.current;
     if (!el || !("IntersectionObserver" in window)) return undefined;
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -56,36 +63,33 @@ export default function CategoryGrid({ articles }) {
     );
     observer.observe(el);
     return () => observer.disconnect();
-    // Re-attach whenever the sentinel's visibility-relevant inputs change;
-    // loadMore() itself is stable enough not to need listing here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoExhausted, hasMore, visibleCount]);
+  }, [autoExhausted, hasMore, error, page]);
 
   return (
     <>
-      <p className="category__count">
-        Showing {visibleCount} of {total} stories
-      </p>
-
+      <p className="category__count">Showing {items.length} of {total} stories</p>
       <Reveal as="div" className="category__grid" stagger>
-        {articles.slice(0, visibleCount).map((story) => (
-          <article className="story" key={story.link}>
+        {items.map((story, i) => (
+          <article className="story" key={`${story.link}-${i}`}>
             <a className="story__link" href={story.link}>
-              <figure className="story__media">
-                <FadeImg src={story.image.src} alt={story.image.alt} removeOnError />
+              <figure className={`story__media${story.image.isFallback ? " story__media--fallback" : ""}`}>
+                <FadeImg src={story.image.src} alt={story.image.alt} removeOnError={!story.image.isFallback} />
               </figure>
               <div className="story__body">
-                <p className="story__tag">
-                  {story.tag[0]} <span>·</span> {story.tag[1]}
-                </p>
+                {story.tag.length > 0 && (
+                  <p className="story__tag">
+                    {story.tag[0]}
+                    {story.tag[1] && <><span>·</span> {story.tag[1]}</>}
+                  </p>
+                )}
                 <h3 className="story__heading">{story.heading}</h3>
                 <p className="story__meta">
                   <span>
-                    {story.date} <i>·</i> {story.readTime}
+                    {story.date}
+                    {story.readTime && <><i>·</i> {story.readTime}</>}
                   </span>
-                  <svg className="story__arrow" width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
-                  </svg>
+                  <svg className="story__arrow" width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" /></svg>
                 </p>
               </div>
             </a>
@@ -93,15 +97,22 @@ export default function CategoryGrid({ articles }) {
         ))}
       </Reveal>
 
-      {hasMore && !autoExhausted && <div ref={sentinelRef} className="category__sentinel" aria-hidden="true" />}
-
-      {loading && !autoExhausted && (
-        <p className="category__loading" role="status">
-          Loading more stories…
-        </p>
+      {hasMore && !autoExhausted && !error && (
+        <div ref={sentinelRef} className="category__sentinel" aria-hidden="true" />
       )}
 
-      {hasMore && autoExhausted && (
+      {loading && !error && <p className="category__loading" role="status">Loading more stories…</p>}
+
+      {error && (
+        <div className="category__error" role="alert">
+          <p>{error}</p>
+          <button type="button" className="btn btn--loadmore category__retry" onClick={() => loadMore(false)}>
+            Try again
+          </button>
+        </div>
+      )}
+
+      {hasMore && autoExhausted && !error && (
         <div className="category__loadmore">
           <button type="button" className="btn btn--loadmore" onClick={() => loadMore(false)} disabled={loading}>
             {loading ? "Loading…" : "Load more"}
@@ -109,7 +120,7 @@ export default function CategoryGrid({ articles }) {
         </div>
       )}
 
-      {!hasMore && <p className="category__end">You’ve reached the end of this category.</p>}
+      {!hasMore && !error && <p className="category__end">You&apos;ve reached the end of this category.</p>}
     </>
   );
 }
