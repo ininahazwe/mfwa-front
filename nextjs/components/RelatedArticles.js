@@ -12,7 +12,7 @@ const ARROW = (
 // like" cards stay visually consistent with the homepage's story grid.
 export default function RelatedArticles({ related }) {
   return (
-    <section className="related" aria-label="Vous aimerez aussi">
+    <section className="related" aria-label="You may also like">
       <p className="eyebrow">You may also like</p>
       <Reveal as="div" className="related__grid" stagger>
         {related.map((story) => (

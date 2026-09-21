@@ -403,6 +403,8 @@ export async function getFooter() {
 // design (hero, share icons, body, related stories, newsletter) can be
 // reviewed before the WordPress API is wired in. generateStaticParams()
 // only pre-renders this one demo slug for now.
+// Note: `author` is kept in the data shape (WordPress will provide one)
+// but is intentionally not surfaced by ArticleHeader.js in this layout.
 export async function getArticle(slug) {
   return {
     slug,

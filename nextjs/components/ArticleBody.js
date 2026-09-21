@@ -29,7 +29,7 @@ export default function ArticleBody({ body, share }) {
       })}
 
       <div className="article__body-share">
-        <ShareIcons share={share} label="Partager cet article" />
+        <ShareIcons share={share} label="Share this article" />
       </div>
     </div>
   );

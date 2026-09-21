@@ -39,12 +39,12 @@ export default function Newsletter({ data }) {
 
         {status === "success" ? (
           <p className="newsletter__success" role="status">
-            Merci ! Vérifiez votre boîte mail pour confirmer votre inscription.
+            Thanks! Check your inbox to confirm your subscription.
           </p>
         ) : (
           <form className="newsletter__form" onSubmit={handleSubmit} noValidate>
             <label className="newsletter__label" htmlFor="newsletter-email">
-              Adresse e-mail
+              Email address
             </label>
             <div className="newsletter__field">
               <input

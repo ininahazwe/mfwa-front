@@ -40,7 +40,7 @@ const LINK_ICON = (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07l-1.5 1.5" /><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07l1.5-1.5" /></svg>
 );
 
-export default function ShareIcons({ share, label = "Partager" }) {
+export default function ShareIcons({ share, label = "Share" }) {
   const [copied, setCopied] = useState(false);
 
   async function copyLink() {
@@ -64,7 +64,7 @@ export default function ShareIcons({ share, label = "Partager" }) {
             href={network.href(share.url, share.title)}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Partager sur ${network.name}`}
+            aria-label={`Share on ${network.name}`}
           >
             {network.icon}
           </a>
@@ -73,11 +73,11 @@ export default function ShareIcons({ share, label = "Partager" }) {
           type="button"
           className="share-icons__btn share-icons__btn--copy"
           onClick={copyLink}
-          aria-label="Copier le lien de l'article"
+          aria-label="Copy article link"
         >
           {LINK_ICON}
         </button>
-        {copied && <span className="share-icons__copied" role="status">Lien copié</span>}
+        {copied && <span className="share-icons__copied" role="status">Link copied</span>}
       </div>
     </div>
   );

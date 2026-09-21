@@ -2,8 +2,9 @@ import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
 import ShareIcons from "./ShareIcons";
 
-// API: article { tag, title, excerpt, author, date, readTime, heroImage,
-//      share } — see getArticle() in lib/content.js.
+// API: article { tag, title, excerpt, date, readTime, heroImage, share } —
+//      see getArticle() in lib/content.js. article.author also exists in
+//      the data layer but is intentionally not surfaced in this layout.
 export default function ArticleHeader({ article }) {
   return (
     <>
@@ -14,23 +15,9 @@ export default function ArticleHeader({ article }) {
         <h1 className="article__title">{article.title}</h1>
         <p className="article__excerpt">{article.excerpt}</p>
 
-        <div className="article__meta">
-          <div className="article__author">
-            <FadeImg
-              className="article__author-avatar"
-              src={article.author.avatar.src}
-              alt={article.author.avatar.alt}
-              removeOnError
-            />
-            <span className="article__author-info">
-              <span className="article__author-name">{article.author.name}</span>
-              <span className="article__author-role">{article.author.role}</span>
-            </span>
-          </div>
-          <p className="article__meta-date">
-            {article.date} <i>·</i> {article.readTime}
-          </p>
-        </div>
+        <p className="article__meta">
+          {article.date} <i>·</i> {article.readTime}
+        </p>
 
         <ShareIcons share={article.share} />
       </Reveal>
