@@ -120,7 +120,7 @@ export async function getLatestStories() {
       { label: "Digital Rights", slug: "digital-rights" },
       { label: "Investigative Journalism", slug: "investigative-journalism" },
       { label: "Democracy", slug: "democracy" },
-      { label: "West Africa", slug: "west-africa" },
+      { label: "Opportunities", slug: "opportunities" },
     ],
     stories: [
       {

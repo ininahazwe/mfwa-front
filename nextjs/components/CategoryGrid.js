@@ -68,7 +68,7 @@ export default function CategoryGrid({ slug, initialItems, initialTotalPages, in
 
   return (
     <>
-      <p className="category__count">Showing {items.length} of {total} stories</p>
+      {/*<p className="category__count">Showing {items.length} of {total} stories</p>*/}
       <Reveal as="div" className="category__grid" stagger>
         {items.map((story, i) => (
           <article className="story" key={`${story.link}-${i}`}>
