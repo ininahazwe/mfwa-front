@@ -21,7 +21,7 @@ export async function getHeader() {
       { label: "Our Work", href: "#our-work" },
       { label: "Stories", href: "#stories" },
       { label: "Impact", href: "#impact" },
-      { label: "About", href: "#about" },
+      { label: "About", href: "/about-us" },
     ],
     searchAriaLabel: "Rechercher",
     donate: { label: "Donate", href: "#donate" },
@@ -382,7 +382,7 @@ export async function getFooter() {
       { label: "Our Work", href: "#our-work" },
       { label: "Stories", href: "#stories" },
       { label: "Impact", href: "#impact" },
-      { label: "About", href: "#about" },
+      { label: "About", href: "/about-us" },
     ],
     social: [
       { network: "LinkedIn", url: "#" },
@@ -547,5 +547,175 @@ export async function getCategoryPage(slug) {
     articles: items,
     totalPages,
     total,
+  };
+}
+
+// -- About Us --------------------------------------------------------------
+//
+// Content audit (Sept 2026): on the live site, the intro paragraph, Mission,
+// Vision and the 3 Strategic Objectives are duplicated verbatim across
+// /about-us/, /about-us/vision-mission/ and /about-us/objectives/ — the
+// latter is an entire page whose content is a strict subset of the other
+// two. Rather than port that redundancy, this page says each of those
+// things exactly once: Mission / Vision / Core Values / Strategic
+// Objectives / Strategic Goal live together as tabs in one section
+// (`pillars`), so vision-mission/ and objectives/ have nothing left to say
+// that isn't here. Copy below (mission, vision, values, objectives, goal,
+// staff/board counts, network descriptions) is quoted or closely
+// paraphrased from the live pages, confirmed by reading each one directly
+// rather than guessed:
+//   /about-us/, /about-us/our-staff/, /about-us/our-board/,
+//   /about-us/our-partners/our-networks/, /about-us/get-involved/
+// Pages that stay genuinely unique on the live site (Our Staff's full
+// directory, Our Board, the Our Partners branch, Get Involved's Intern/
+// Volunteer detail) are represented here as teaser cards linking out to
+// mfwa.org, the same pattern already used for Reach.js's country links and
+// LanguageSwitcher's FR fallback — they'll become real local routes once
+// those sections are ported.
+// Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/about`).then(r => r.json())
+export async function getAboutUs() {
+  return {
+    hero: {
+      eyebrow: "About MFWA",
+      titleLines: ["Defending the truth,", "and the people who tell it."],
+      lede: "The MFWA is a regional independent non-governmental organisation with a network of national partner organisations in all 16 countries of West Africa — the biggest and most influential media development and freedom of expression organisation in the region.",
+      credentials: [
+        "UN ECOSOC Consultative Status",
+        "AU Observer Status (ACHPR)",
+        "NGOSource Equivalency Determination",
+        "AFEX Secretariat",
+      ],
+      stats: [
+        { count: 16, suffix: "", label: "Countries covered" },
+        { count: 16, suffix: "", label: "National partners" },
+        { count: 36, suffix: "", label: "Team members" },
+        { count: 6, suffix: "", label: "Regional & global networks" },
+      ],
+    },
+
+    // `tabs[].kind` tells AboutPillars.js how to lay out that panel's body
+    // (a short statement vs. a bulleted/numbered list) without needing a
+    // separate component per pillar.
+    pillars: {
+      eyebrow: "What drives us",
+      title: "Mission, vision & values",
+      text: "Five things we keep coming back to — read once, not spread across three pages.",
+      tabs: [
+        {
+          id: "mission",
+          label: "Mission",
+          kind: "statement",
+          heading: "Our Mission",
+          body: "To empower, promote and defend media and civic voices for good governance and democratic development in West Africa.",
+        },
+        {
+          id: "vision",
+          label: "Vision",
+          kind: "statement",
+          heading: "Our Vision",
+          body: "A peaceful West Africa in which media freedom is fully exercised and all persons are able to express themselves and participate in governance processes without fear, threat or intimidation.",
+        },
+        {
+          id: "values",
+          label: "Core Values",
+          kind: "list",
+          heading: "Core Values (2025–2029)",
+          intro: "Our work over the next five years is guided by:",
+          items: [
+            "Equality, liberty and social justice, irrespective of belief, race, ethnicity or sex",
+            "Independence, non-partisanship and non-sectarianism",
+            "Excellence and professionalism",
+            "Resilience",
+            "Digital inclusion",
+            "Accountability, transparency and good stewardship",
+            "Teamwork, collaboration, cooperation, partnership and solidarity",
+          ],
+        },
+        {
+          id: "objectives",
+          label: "Strategic Objectives",
+          kind: "list",
+          ordered: true,
+          heading: "Strategic Objectives",
+          items: [
+            "A freer and safer environment for independent journalism and expression, offline and online",
+            "Strengthened media capacity that enables participatory, responsive, transparent and accountable governance",
+            "Increased efficiency, influence and impact of MFWA and its partner organisations",
+          ],
+        },
+        {
+          id: "goal",
+          label: "Strategic Goal",
+          kind: "statement",
+          heading: "Overall Strategic Goal (2025–2029)",
+          body: "To contribute to ensuring that media and civic voices are respected and defended in West Africa, and that trust in democratic institutions and the media is restored through professional journalism and empowered civic voices that hold power to account.",
+        },
+      ],
+    },
+
+    people: {
+      eyebrow: "Who we are",
+      title: "Journalists, lawyers and campaigners across the region",
+      cards: [
+        {
+          count: 36,
+          suffix: "",
+          label: "team members",
+          heading: "Our Staff",
+          text: "A headquarters team in Accra, Ghana of full-time staff, fellows and interns, plus correspondents, researchers and a network of lawyers across nearly every country in West Africa.",
+          href: "https://mfwa.org/about-us/our-staff/",
+          linkLabel: "Meet the team",
+        },
+        {
+          count: 6,
+          suffix: "",
+          label: "board members",
+          heading: "Our Board",
+          text: "Chaired by Sophie Ly Sow, with the Executive Director and four independent board members providing governance and strategic oversight.",
+          href: "https://mfwa.org/about-us/our-board/",
+          linkLabel: "See the board",
+        },
+      ],
+    },
+
+    networks: {
+      eyebrow: "Our networks",
+      title: "Part of a wider movement",
+      text: "MFWA is the Secretariat of the Africa Freedom of Expression Exchange (AFEX) and works through national, regional and international networks to build synergies, mutual learning and broad collaborative advocacy.",
+      items: [
+        { name: "IFEX", desc: "A global network of organisations defending and promoting freedom of expression as a fundamental human right." },
+        { name: "AFEX", desc: "The continental network of Africa's most prominent free-expression organisations — nine members across West, East, Central, North and Southern Africa." },
+        { name: "APAI", desc: "The African Platform on Access to Information, advancing the right of access to information regionally and internationally." },
+        { name: "WACSOF", desc: "The West African Civil Society Forum, an umbrella network of CSOs from the fifteen ECOWAS member states." },
+        { name: "RTI Ghana", desc: "The Right to Information Coalition in Ghana, which campaigned for and now monitors Ghana's Freedom of Information law." },
+        { name: "AFIC", desc: "The African Freedom of Information Centre, around 30 civil society organisations promoting access to information across Africa." },
+      ],
+      partnersHref: "https://mfwa.org/about-us/our-partners/",
+      partnersLinkLabel: "See all our partners",
+    },
+
+    getInvolved: {
+      eyebrow: "Get involved",
+      title: "Three ways to stand with us",
+      text: "Contribute to our work by making a donation, or by joining our team as a volunteer or an intern.",
+      actions: [
+        {
+          label: "Donate",
+          desc: "Support investigations, legal aid for journalists and press-freedom advocacy across West Africa.",
+          href: "https://mfwa.org/about-us/get-involved/",
+        },
+        {
+          label: "Intern",
+          desc: "Join the Accra team and work alongside our programme, research and investigative staff.",
+          href: "https://mfwa.org/about-us/get-involved/vacancy/",
+        },
+        {
+          label: "Volunteer",
+          desc: "Lend your time and skills to campaigns for media freedom and civic participation.",
+          href: "https://mfwa.org/about-us/get-involved/volunteer/",
+        },
+      ],
+      contact: { label: "info@mfwa.org", href: "mailto:info@mfwa.org" },
+    },
   };
 }
