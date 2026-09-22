@@ -29,23 +29,25 @@ export default async function CategoryPage({ params }) {
 
   return (
     <>
-      <a className="skip-link" href="#main">Aller au contenu principal</a>
-      <Header data={header} />
-      <main id="main">
-        <section className="category" id="category">
-          <header className="category__head">
-            <p className="eyebrow">{category.eyebrow}</p>
-            <h1 className="category__title">{category.label}</h1>
-            <p className="category__description">{category.description}</p>
-          </header>
-          <CategoryGrid
-            slug={category.slug}
-            initialItems={category.articles}
-            initialTotalPages={category.totalPages}
-            initialTotal={category.total}
-          />
-        </section>
-      </main>
+      <div className="page-shell">
+        <a className="skip-link" href="#main">Aller au contenu principal</a>
+        <Header data={header} />
+        <main id="main">
+          <section className="category" id="category">
+            <header className="category__head">
+              <p className="eyebrow">{category.eyebrow}</p>
+              <h1 className="category__title">{category.label}</h1>
+              <p className="category__description">{category.description}</p>
+            </header>
+            <CategoryGrid
+              slug={category.slug}
+              initialItems={category.articles}
+              initialTotalPages={category.totalPages}
+              initialTotal={category.total}
+            />
+          </section>
+        </main>
+      </div>
       <Footer data={footer} />
     </>
   );

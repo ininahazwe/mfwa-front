@@ -86,6 +86,44 @@ export function useImageFade() {
 }
 
 /**
+ * Powers the "reveal" footer effect (.site-footer is position:fixed,
+ * .page-shell scrolls over it — see globals.css): measures the footer's
+ * own rendered height and publishes it as the --footer-h custom property
+ * on the root element, so the spacer that gives scrolling enough room to
+ * fully uncover the footer always matches its real height instead of a
+ * guessed, breakpoint-fragile number. Re-measures via ResizeObserver
+ * since that height changes at every responsive breakpoint (and falls
+ * back to a resize listener on the rare browser without it — the CSS
+ * default for --footer-h, set on :root, covers the case where neither
+ * runs at all).
+ */
+export function useFooterReveal() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+
+    function setHeight() {
+      document.documentElement.style.setProperty("--footer-h", `${el.offsetHeight}px`);
+    }
+
+    setHeight();
+
+    if (!("ResizeObserver" in window)) {
+      window.addEventListener("resize", setHeight);
+      return () => window.removeEventListener("resize", setHeight);
+    }
+
+    const observer = new ResizeObserver(setHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return ref;
+}
+
+/**
  * Ports initStatCounters(): counts a .impact__num[data-count] element up
  * from 0 to `target` (formatted with `suffix`, thousands-separated the same
  * way as the original via toLocaleString("en-US")) once it scrolls into

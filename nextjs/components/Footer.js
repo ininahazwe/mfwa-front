@@ -1,6 +1,9 @@
+"use client";
+
 // API: footer.nav[], footer.social[] { network, url }, footer.legal[]
 import FadeImg from "./FadeImg";
 import Link from "next/link";
+import { useFooterReveal } from "../lib/hooks";
 
 const SOCIAL_ICONS = {
   "LinkedIn": (
@@ -21,8 +24,9 @@ const SOCIAL_ICONS = {
 };
 
 export default function Footer({ data }) {
+  const ref = useFooterReveal();
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" ref={ref}>
       <div className="footer-links">
         <div className="footer-brand">
           <Link className="footer-logo-crop" href="/" aria-label={data.homeAriaLabel}>

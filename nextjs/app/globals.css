@@ -18,6 +18,12 @@
   --gutter: clamp(20px, 6.2vw, 90px);
   --header-h: 82px;
   --hero-h: 60vh;
+  /* Footer "reveal" effect fallback (see .page-shell / .site-footer below
+     and useFooterReveal() in lib/hooks.js): generous enough to fully
+     uncover the footer even at its tallest (stacked, mobile) layout, for
+     the rare case JS never runs to correct it to the real measured
+     height. */
+  --footer-h: 620px;
 
   --font-serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
   --font-sans: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -238,6 +244,41 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   justify-content:flex-end;
   gap:26px;
 }
+
+/* EN/FR: this app has no French content of its own yet, so FR is a real
+   link out to the equivalent page on the live mfwa.org site (see
+   LanguageSwitcher.js) — EN is the current, non-interactive state.
+   Underline-on-hover echoes .nav__link for a consistent, understated feel. */
+.lang-switch{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.05em;
+  color:var(--ink-muted);
+}
+.lang-switch__lang{
+  position:relative;
+  color:inherit;
+  padding:4px 0;
+}
+.lang-switch__lang.is-current{
+  color:var(--navy);
+  cursor:default;
+}
+.lang-switch a.lang-switch__lang::after{
+  content:"";
+  position:absolute;
+  left:0; right:0; bottom:0;
+  height:1.5px;
+  background:var(--red);
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform var(--dur-fast) var(--ease);
+}
+.lang-switch a.lang-switch__lang:hover::after{ transform:scaleX(1); }
+.lang-switch__divider{ color:var(--hairline); }
 .icon-btn{
   width:34px; height:34px;
   display:grid; place-items:center;
@@ -270,9 +311,17 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .hero{
   display:grid;
   grid-template-columns:2fr 3fr;
-  height:var(--hero-h);
-  max-height:var(--hero-h);
-  overflow:hidden;
+  /* `min-height`, not `height`+`max-height`+`overflow:hidden`: 60vh is a
+     target, not a hard cap. The old hard cap clipped/crushed the intro
+     column's text and buttons the moment the viewport got short-but-wide
+     (e.g. devtools docked at the bottom) — every other section on this
+     site sizes itself from its content (padding + clamp()), never from a
+     hard vh ceiling, which is why only the hero showed this. `min-height`
+     keeps the 60vh look on a normal viewport but lets the row grow past
+     it rather than squeeze content into too little space. The <900px
+     media query below already resets this to `min-height:0` + `height:
+     auto` for mobile, so it continues to work unchanged. */
+  min-height:var(--hero-h);
 }
 
 /* -- Bloc fusionné : photo + actualité -------------------- */
@@ -1500,6 +1549,38 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 @media (max-width:900px){
   .cta__inner{ flex-direction:column; align-items:flex-start; gap:28px; }
   .cta__aside{ max-width:none; }
+}
+
+/* =========================================================
+   Effet "reveal" du footer
+   ========================================================= */
+/* .page-shell wraps every page's skip-link + header + main (everything
+   except <Footer>, which each page still renders as its own sibling
+   right after it — see app/page.js, app/category/[slug]/page.js,
+   app/articles/[slug]/page.js). Giving it an opaque background and a
+   higher z-index than the footer means the footer stays hidden behind it
+   for the whole normal scroll, and only shows through once .page-shell's
+   own bottom edge has scrolled past the viewport's bottom — the classic
+   "fixed, revealed on scroll" footer parallax. margin-bottom (from
+   --footer-h, kept in sync with the footer's real height by
+   useFooterReveal()) is what gives scrolling enough extra room to fully
+   uncover it.
+   Skipped under prefers-reduced-motion: the footer just sits in normal
+   flow instead, since the reveal is itself a scroll-linked motion
+   effect some people will want off. */
+.page-shell{
+  position:relative;
+  z-index:1;
+  background:var(--white);
+  min-height:100vh;
+}
+@media (prefers-reduced-motion: no-preference){
+  .page-shell{ margin-bottom:var(--footer-h); }
+  .site-footer{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:0;
+  }
 }
 
 /* =========================================================

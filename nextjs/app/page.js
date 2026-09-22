@@ -52,22 +52,24 @@ export default async function Home() {
 
   return (
     <>
-      <a className="skip-link" href="#main">
-        Aller au contenu principal
-      </a>
+      <div className="page-shell">
+        <a className="skip-link" href="#main">
+          Aller au contenu principal
+        </a>
 
-      <Header data={header} />
+        <Header data={header} />
 
-      <main id="main">
-        <Hero data={hero} />
-        <Latest data={latest} />
-        <Expertise data={expertise} />
-        <ImpactStats data={impactStats} />
-        <ImpactHighlights data={impactHighlights} />
-        <Reach data={reach} />
-        <Work data={work} />
-        <Cta data={cta} />
-      </main>
+        <main id="main">
+          <Hero data={hero} />
+          <Latest data={latest} />
+          <Expertise data={expertise} />
+          <ImpactStats data={impactStats} />
+          <ImpactHighlights data={impactHighlights} />
+          <Reach data={reach} />
+          <Work data={work} />
+          <Cta data={cta} />
+        </main>
+      </div>
 
       <Footer data={footer} />
     </>

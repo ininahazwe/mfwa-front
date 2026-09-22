@@ -32,21 +32,23 @@ export default async function ArticlePage({ params }) {
 
   return (
     <>
-      <a className="skip-link" href="#main">
-        Aller au contenu principal
-      </a>
+      <div className="page-shell">
+        <a className="skip-link" href="#main">
+          Aller au contenu principal
+        </a>
 
-      <Header data={header} />
+        <Header data={header} />
 
-      <main id="main">
-        <article className="article">
-          <ArticleHeader article={article} />
-          <ArticleBody body={article.body} share={article.share} />
-          <RelatedArticles related={article.related} />
-        </article>
+        <main id="main">
+          <article className="article">
+            <ArticleHeader article={article} />
+            <ArticleBody body={article.body} share={article.share} />
+            <RelatedArticles related={article.related} />
+          </article>
 
-        <Newsletter data={newsletter} />
-      </main>
+          <Newsletter data={newsletter} />
+        </main>
+      </div>
 
       <Footer data={footer} />
     </>

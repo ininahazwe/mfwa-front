@@ -1,5 +1,6 @@
 import FadeImg from "./FadeImg";
 import Link from "next/link";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function Header({ data }) {
   return (
@@ -23,6 +24,7 @@ export default function Header({ data }) {
         </nav>
 
         <div className="header__actions">
+          <LanguageSwitcher />
           <button className="icon-btn" type="button" aria-label={data.searchAriaLabel}>
             <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
               <circle cx="8.6" cy="8.6" r="6.2" />
