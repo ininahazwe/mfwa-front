@@ -10,6 +10,8 @@
 // the components that consume it do not need to change.
 
 import { getWpCategoryBySlug, getWpCategoryPosts } from "./wp";
+import { STAFF, STAFF_TEAMS } from "./staff";
+import { BOARD, BOARD_ROLES } from "./board";
 
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/menu?slug=primary`).then(r => r.json())
 export async function getHeader() {
@@ -663,7 +665,7 @@ export async function getAboutUs() {
           label: "Team members",
           count: 36,
           text: "Full-time staff, fellows and interns at our Accra headquarters, plus correspondents, researchers and a network of lawyers across West Africa who provide legal assistance.",
-          href: "https://mfwa.org/about-us/our-staff/",
+          href: "/about-us/our-staff",
           linkLabel: "Meet the team",
         },
         {
@@ -671,7 +673,7 @@ export async function getAboutUs() {
           label: "Board members",
           count: 6,
           text: "Chaired by Sophie Ly Sow, the board brings together the Executive Director and four members who provide governance and strategic oversight.",
-          href: "https://mfwa.org/about-us/our-board/",
+          href: "/about-us/our-board",
           linkLabel: "See the board",
         },
       ],
@@ -703,19 +705,19 @@ export async function getAboutUs() {
           num: "01",
           label: "Donate",
           desc: "Support investigations, legal aid for journalists and press-freedom advocacy across West Africa.",
-          href: "https://mfwa.org/about-us/get-involved/",
+          href: "https://mfwa.org/donate",
         },
         {
           num: "02",
           label: "Intern",
           desc: "Join the Accra team and work alongside our programme, research and investigative staff.",
-          href: "https://mfwa.org/about-us/get-involved/vacancy/",
+          href: "/about-us/get-involved/intern",
         },
         {
           num: "03",
           label: "Volunteer",
           desc: "Lend your time and skills to campaigns for media freedom and civic participation.",
-          href: "https://mfwa.org/about-us/get-involved/volunteer/",
+          href: "/about-us/get-involved/volunteer",
         },
       ],
     },
@@ -744,6 +746,258 @@ export async function getAboutUs() {
         {
           q: "How can I support the MFWA?",
           a: "You can make a donation or join our team as a staff member, a volunteer or an intern. For partnership or collaboration, write to info@mfwa.org.",
+        },
+      ],
+    },
+  };
+}
+
+// -- About Us › Our Staff ------------------------------------------------
+//
+// Directory data lives in lib/staff.js (see the note there on why it isn't
+// fetched from WordPress yet). Team counts for the hero tiles are derived
+// from it so they can never drift from the grid.
+// Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/team`).then(r => r.json())
+export async function getStaffPage() {
+  const teams = STAFF_TEAMS.map((team) => ({
+    ...team,
+    count: team.id === "all" ? STAFF.length : STAFF.filter((p) => p.team === team.id).length,
+  }));
+  return {
+    hero: {
+      crumbs: [{ label: "About us", href: "/about-us" }, { label: "Our staff" }],
+      eyebrow: "Our staff",
+      titleLines: ["The people", "behind the work."],
+      lede: "Our Accra headquarters brings together full-time staff, fellows and interns — supported by correspondents and researchers in nearly every country of West Africa, and a network of lawyers who provide legal assistance.",
+      primary: { label: "Meet the team", href: "#team" },
+      secondary: { label: "Work with us", href: "#get-involved" },
+    },
+    teams,
+    directory: {
+      eyebrow: "The team",
+      title: "Meet our staff",
+      text: "Select a portrait to read the full profile, then browse from one profile to the next.",
+      people: STAFF,
+    },
+  };
+}
+
+// -- About Us › Our Board ------------------------------------------------
+//
+// Board data lives in lib/board.js. Unlike the staff directory, the board
+// is small enough (6 people) that it doesn't need a team filter — the
+// hero tiles below are read-only counts by governance role.
+// Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/board`).then(r => r.json())
+export async function getBoardPage() {
+  const countByRole = (key) => BOARD.filter((p) => p.roleKey === key).length;
+  return {
+    hero: {
+      crumbs: [{ label: "About us", href: "/about-us" }, { label: "Our board" }],
+      eyebrow: "Our board",
+      titleLines: ["Governance,", "at a glance."],
+      lede: "MFWA is governed by a six-member board chaired by Sophie Ly Sow, bringing together the Executive Director and four independent members who provide strategic oversight.",
+      primary: { label: "Meet the board", href: "#board" },
+      secondary: { label: "Meet the team", href: "/about-us/our-staff" },
+    },
+    tiles: [
+      { id: "all", label: "Board", count: BOARD.length, variant: "press", tone: "dark" },
+      { id: "chair", label: BOARD_ROLES.chair, count: countByRole("chair"), variant: "quote", tone: "pale" },
+      { id: "director", label: BOARD_ROLES.director, count: countByRole("director"), variant: "mic", tone: "white" },
+      { id: "member", label: "Board Members", count: countByRole("member"), variant: "orbit", tone: "pale" },
+    ],
+    directory: {
+      eyebrow: "The board",
+      title: "Meet our board",
+      text: "Select a portrait to read the full profile, then browse from one profile to the next.",
+      people: BOARD,
+    },
+  };
+}
+
+// -- About Us › Get Involved ---------------------------------------------
+//
+// Content audit (Sept 2026): the live hub page (/about-us/get-involved/)
+// is three quick-link tabs — Donate, Intern, Volunteer. Donate goes to
+// https://mfwa.org/donate, an actual payment form, which stays an
+// external link rather than being rebuilt here. Intern and Volunteer are
+// full pages (/about-us/get-involved/vacancy/ and /volunteer/) ported in
+// full below; the hub only teases them.
+// Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/get-involved`).then(r => r.json())
+export async function getGetInvolvedPage() {
+  return {
+    hero: {
+      crumbs: [{ label: "About us", href: "/about-us" }, { label: "Get involved" }],
+      eyebrow: "Get involved",
+      titleLines: ["Put your energy", "where it counts."],
+      lede: "You can contribute to our work by making a donation, or joining our team as a volunteer or an intern. For partnership or collaboration, write to info@mfwa.org.",
+      primary: { label: "Donate", href: "https://mfwa.org/donate" },
+      secondary: { label: "Explore the ways", href: "#ways" },
+    },
+    tiles: [
+      { id: "donate", label: "Donate", variant: "halfspin", tone: "dark", href: "https://mfwa.org/donate" },
+      { id: "intern", label: "Intern", variant: "tower", tone: "pale", href: "/about-us/get-involved/intern" },
+      { id: "volunteer", label: "Volunteer", variant: "megaphone", tone: "white", href: "/about-us/get-involved/volunteer" },
+    ],
+    ways: {
+      eyebrow: "Two ways to join the team",
+      title: "Intern or volunteer",
+      panels: [
+        {
+          id: "intern",
+          tone: "navy",
+          motif: "tower",
+          eyebrow: "Internship",
+          title: "Join as an intern",
+          text: "Six to 24-week placements with hands-on training in advocacy and project management — open to students and graduates across West Africa and beyond.",
+          chips: ["6–24 week placements", "Open to graduates & final-year students", "Working knowledge of MS Office"],
+          link: { label: "Learn more about interning", href: "/about-us/get-involved/intern" },
+        },
+        {
+          id: "volunteer",
+          tone: "red",
+          motif: "megaphone",
+          eyebrow: "Volunteer",
+          title: "Volunteer with us",
+          text: "Contribute your time and skills from wherever you're based — or join us in Accra or with any of our national partners.",
+          items: ["Fundraising & programme ideas", "Reports & website content", "Events, campaigns & outreach"],
+          link: { label: "Learn more about volunteering", href: "/about-us/get-involved/volunteer" },
+        },
+      ],
+    },
+  };
+}
+
+// -- About Us › Get Involved › Intern -------------------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=vacancy`).then(r => r.json())
+export async function getInternPage() {
+  return {
+    hero: {
+      crumbs: [
+        { label: "About us", href: "/about-us" },
+        { label: "Get involved", href: "/about-us/get-involved" },
+        { label: "Intern" },
+      ],
+      eyebrow: "Internship",
+      titleLines: ["Learn by doing,", "on the front line."],
+      lede: "Six to 24-week placements for students and graduates who want hands-on experience in advocacy and media development across West Africa.",
+      primary: { label: "Apply by email", href: "mailto:recruitments@mfwa.org" },
+      secondary: { label: "Volunteer instead", href: "/about-us/get-involved/volunteer" },
+    },
+    overview: { eyebrow: "Overview", title: "What the internship involves" },
+    intro: [
+      "If you have a passion or interest in contributing to making West Africa a better place where human rights, freedom of expression, access to information and assembly are respected, while transparent, accountable and participatory governance is practiced, then an internship at the Media Foundation for West Africa is for you.",
+      "The MFWA internship offers you a rare opportunity to work in a diverse, multicultural and multinational environment with a dynamic team of people who are results-driven in pursuing freedom of expression and media development across West Africa. In addition to helping you understand the mandate of the organisation, the internship also gives you hands-on training in advocacy and project management, which can contribute to preparing you for your career.",
+      "The duration of internships at the MFWA usually ranges between six and 24 weeks.",
+    ],
+    split: {
+      id: "eligibility",
+      eyebrow: "Before you apply",
+      title: "Who we're looking for",
+      panels: [
+        {
+          id: "who",
+          tone: "navy",
+          motif: "tower",
+          eyebrow: "Eligibility",
+          title: "Who can apply",
+          text: "Open to anyone with an interest in promoting freedom of expression (online and offline) and media development, who has completed a first or second degree from a recognised university in a relevant field, or is enrolled in a graduate programme. Francophones, Anglophones with a good command of French, and non-Africans are all encouraged to apply.",
+        },
+        {
+          id: "requirements",
+          tone: "red",
+          motif: "quote",
+          eyebrow: "What we look for",
+          title: "Requirements",
+          chips: [
+            "Open-minded and amenable",
+            "Innovative, ready to take initiative",
+            "Strong interpersonal & communication skills",
+            "A team player who also works independently",
+            "Working knowledge of Microsoft Office",
+          ],
+        },
+      ],
+    },
+    involve: {
+      eyebrow: "How to apply",
+      title: "Ready to apply?",
+      text: "We are unable to respond to every applicant. If you are selected, MFWA will contact you directly — no update within six months means the application was not successful this time.",
+      contact: { label: "Prefer to volunteer instead?", href: "/about-us/get-involved/volunteer" },
+      actions: [
+        {
+          num: "01",
+          label: "Apply now",
+          desc: "Submit your CV with a one-page motivation letter addressed to the Executive Director.",
+          href: "mailto:recruitments@mfwa.org",
+        },
+      ],
+    },
+  };
+}
+
+// -- About Us › Get Involved › Volunteer ----------------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=volunteer`).then(r => r.json())
+export async function getVolunteerPage() {
+  return {
+    hero: {
+      crumbs: [
+        { label: "About us", href: "/about-us" },
+        { label: "Get involved", href: "/about-us/get-involved" },
+        { label: "Volunteer" },
+      ],
+      eyebrow: "Volunteer",
+      titleLines: ["Give your time,", "wherever you are."],
+      lede: "Contribute your skills to press freedom and media development in West Africa — remotely, from our Accra office, or with any of our national partners.",
+      primary: { label: "Write to us", href: "mailto:info@mfwa.org" },
+      secondary: { label: "Intern instead", href: "/about-us/get-involved/intern" },
+    },
+    overview: { eyebrow: "Overview", title: "How volunteering works" },
+    intro: [
+      "If you are passionate about the progress of society, creating conditions that allow people to freely express themselves, or empowering the media to demand accountability from people in power, we are happy to welcome you to our team to contribute to the change we are making. You also learn new skills, get to understand the West African development context, and network with new people in the process.",
+      "With the help of technology and the internet, you can contribute to improving governance and human rights in West Africa from wherever you are based. You may also choose to join us at our head office in Accra, Ghana, or with any of our national partners.",
+    ],
+    split: {
+      id: "ways",
+      eyebrow: "Get involved",
+      title: "Why volunteer, and how",
+      panels: [
+        {
+          id: "why",
+          tone: "navy",
+          motif: "megaphone",
+          eyebrow: "Why volunteer",
+          title: "What you'll gain",
+          text: "You learn new skills, get to understand the West African development context, and network with new people in the process — all while contributing to the change we are making.",
+          chips: ["New skills", "Regional insight", "New connections"],
+        },
+        {
+          id: "ways-to-contribute",
+          tone: "red",
+          motif: "orbit",
+          eyebrow: "Ways to contribute",
+          title: "Pick a way to help",
+          items: [
+            "Sharing your innovative programme ideas with us",
+            "Supporting us in fundraising",
+            "Writing reports",
+            "Developing content for our website",
+            "Supporting the organisation of events",
+            "Supporting our online campaigns and outreach",
+          ],
+        },
+      ],
+    },
+    involve: {
+      eyebrow: "Join us",
+      title: "Ready to join us?",
+      text: "Write to us with your CV and tell us how you'd like to contribute — we read every message.",
+      contact: { label: "Prefer an internship instead?", href: "/about-us/get-involved/intern" },
+      actions: [
+        {
+          num: "01",
+          label: "Get in touch",
+          desc: "Send your CV and a short note on how you'd like to help.",
+          href: "mailto:info@mfwa.org",
         },
       ],
     },
