@@ -1,4 +1,5 @@
-// API: work_areas[] (custom post type WordPress) — icon (slug), number, title, description
+// API: work_areas[] (custom post type WordPress) — icon (slug), number, title,
+// description, href (links through to the matching /programmes page)
 import Reveal from "./Reveal";
 
 const ICONS = {
@@ -56,14 +57,14 @@ export default function Work({ data }) {
 
       <Reveal as="div" className="work__grid" stagger>
         {data.items.map((item) => (
-          <article className="work__item" key={item.num}>
+          <a className="work__item" href={item.href} key={item.num}>
             <div className="work__top">
               <span className="work__num">{item.num}</span>
               {ICONS[item.icon]}
             </div>
             <h3 className="work__heading">{item.heading}</h3>
             <p className="work__desc">{item.desc}</p>
-          </article>
+          </a>
         ))}
       </Reveal>
     </section>

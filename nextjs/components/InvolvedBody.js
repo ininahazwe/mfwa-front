@@ -9,7 +9,7 @@
 // the specifics (reusing InvolvedWays, same as the hub's own teaser), and
 // the same dark closing band the other About Us pages use to invite the
 // next action (reusing AboutGetInvolved with a single action).
-import Reveal from "./Reveal";
+import SectionHead from "./SectionHead";
 import InvolvedWays from "./InvolvedWays";
 import AboutGetInvolved from "./AboutGetInvolved";
 
@@ -18,15 +18,7 @@ export default function InvolvedBody({ data }) {
     <>
       <section className="ab-section" id="overview">
         <div className="ab-wrap">
-          <Reveal as="header" className="ab-head ab-head--center">
-            <p className="eyebrow">{data.overview.eyebrow}</p>
-            <h2 className="ab-h2">{data.overview.title}</h2>
-            {data.intro.map((para) => (
-              <p className="ab-head__text" key={para.slice(0, 40)}>
-                {para}
-              </p>
-            ))}
-          </Reveal>
+          <SectionHead eyebrow={data.overview.eyebrow} title={data.overview.title} text={data.intro} />
         </div>
       </section>
 

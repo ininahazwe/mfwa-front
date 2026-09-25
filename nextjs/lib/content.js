@@ -179,31 +179,35 @@ export async function getWork() {
     eyebrow: "Our work",
     title: "What we do",
     text: "MFWA works to promote press freedom, strengthen independent media, and protect journalists through advocacy, capacity building and research.",
-    link: { label: "Discover our work", href: "#programmes" },
+    link: { label: "Discover our work", href: "/programmes" },
     items: [
       {
         num: "01",
         icon: "shield",
         heading: "Freedom of Expression",
         desc: "Protecting journalists and media rights.",
+        href: "/programmes/freedom-of-expression",
       },
       {
         num: "02",
         icon: "network",
         heading: "Digital Rights",
         desc: "Safer digital spaces for everyone.",
+        href: "/programmes/digital-rights",
       },
       {
         num: "03",
         icon: "document",
         heading: "Media & Democracy",
         desc: "Stronger media for informed societies.",
+        href: "/programmes/media-democracy-governance",
       },
       {
         num: "04",
         icon: "connections",
         heading: "Peace & Social Cohesion",
         desc: "Media for more inclusive and resilient communities.",
+        href: "/programmes/media-peace-social-cohesion",
       },
     ],
   };
@@ -683,15 +687,15 @@ export async function getAboutUs() {
       eyebrow: "Our networks",
       title: "Part of a wider movement",
       text: "We belong to national, regional and international networks that build synergies, mutual learning and broad collaborative advocacy.",
-      all: { label: "All our partners", href: "https://mfwa.org/about-us/our-partners/" },
-      href: "https://mfwa.org/about-us/our-partners/our-networks/",
+      all: { label: "All our partners", href: "/about-us/our-partners" },
+      href: "/about-us/our-partners/our-networks",
       items: [
-        { name: "IFEX", scope: "Global", desc: "Local and international organisations defending free expression as a fundamental human right." },
-        { name: "AFEX", scope: "Continental", desc: "Africa’s most prominent free-expression organisations — MFWA serves as its Secretariat." },
-        { name: "APAI", scope: "Continental", desc: "The African Platform on Access to Information, advancing the right to information." },
-        { name: "WACSOF", scope: "Regional", desc: "The West African Civil Society Forum, uniting CSOs from the fifteen ECOWAS states." },
-        { name: "RTI Ghana", scope: "National", desc: "The coalition behind Ghana’s Right to Information law and its implementation." },
-        { name: "AFIC", scope: "Continental", desc: "The African Freedom of Information Centre, around 30 CSOs promoting access to information." },
+        { id: "ifex", name: "IFEX", scope: "Global", desc: "Local and international organisations defending free expression as a fundamental human right.", href: "/about-us/our-partners/our-networks#ifex" },
+        { id: "afex", name: "AFEX", scope: "Continental", desc: "Africa’s most prominent free-expression organisations — MFWA serves as its Secretariat.", href: "/about-us/our-partners/our-networks#afex" },
+        { id: "apai", name: "APAI", scope: "Continental", desc: "The African Platform on Access to Information, advancing the right to information.", href: "/about-us/our-partners/our-networks#apai" },
+        { id: "wacsof", name: "WACSOF", scope: "Regional", desc: "The West African Civil Society Forum, uniting CSOs from the fifteen ECOWAS states.", href: "/about-us/our-partners/our-networks#wacsof" },
+        { id: "rti-ghana", name: "RTI Ghana", scope: "National", desc: "The coalition behind Ghana’s Right to Information law and its implementation.", href: "/about-us/our-partners/our-networks#rti-ghana" },
+        { id: "afic", name: "AFIC", scope: "Continental", desc: "The African Freedom of Information Centre, around 30 CSOs promoting access to information.", href: "/about-us/our-partners/our-networks#afic" },
       ],
     },
 
@@ -998,6 +1002,516 @@ export async function getVolunteerPage() {
           label: "Get in touch",
           desc: "Send your CV and a short note on how you'd like to help.",
           href: "mailto:info@mfwa.org",
+        },
+      ],
+    },
+  };
+}
+
+// -- About Us › Our Partners (hub) ----------------------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=our-partners`).then(r => r.json())
+export async function getOurPartnersPage() {
+  return {
+    hero: {
+      crumbs: [{ label: "About us", href: "/about-us" }, { label: "Our partners" }],
+      eyebrow: "Our partners",
+      titleLines: ["Stronger together,", "across West Africa."],
+      lede: "We forge partnerships with credible national, regional and international organisations committed to open societies, freedom of expression, access to information and independent journalism.",
+      primary: { label: "Meet our networks", href: "/about-us/our-partners/our-networks" },
+      secondary: { label: "National partners", href: "/about-us/our-partners/national-partners" },
+    },
+    nav: {
+      eyebrow: "Explore",
+      title: "Three ways we work with others",
+      text: "Learn more about our National Partners, our Funding Partners, and the wider Networks we belong to.",
+      items: [
+        {
+          id: "funding",
+          name: "Funding Partners",
+          scope: "11 funders",
+          desc: "The foundations, agencies and companies whose support makes our work across West Africa possible.",
+          href: "/about-us/our-partners/funding-partners",
+        },
+        {
+          id: "national",
+          name: "National Partners",
+          scope: "17 organisations",
+          desc: "The leading press-freedom and media-development organisations we work with in each country of the region.",
+          href: "/about-us/our-partners/national-partners",
+        },
+        {
+          id: "networks",
+          name: "Our Networks",
+          scope: "6 networks",
+          desc: "The national, regional and international networks that build synergies and broad collaborative advocacy.",
+          href: "/about-us/our-partners/our-networks",
+        },
+      ],
+    },
+    involve: {
+      eyebrow: "Work with us",
+      title: "Become a partner",
+      text: "Whether you fund, advocate or organise, we welcome new partnerships in pursuit of free expression and media development across West Africa.",
+      contact: { label: "Read about our networks", href: "/about-us/our-partners/our-networks" },
+      actions: [
+        {
+          num: "01",
+          label: "Get in touch",
+          desc: "Write to us about a potential partnership, collaboration or funding opportunity.",
+          href: "mailto:info@mfwa.org",
+        },
+      ],
+    },
+  };
+}
+
+// -- About Us › Our Partners › Funding Partners ----------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=funding-partners`).then(r => r.json())
+export async function getFundingPartnersPage() {
+  return {
+    hero: {
+      crumbs: [
+        { label: "About us", href: "/about-us" },
+        { label: "Our partners", href: "/about-us/our-partners" },
+        { label: "Funding partners" },
+      ],
+      eyebrow: "Funding partners",
+      titleLines: ["The support behind", "the work we do."],
+      lede: "The work of the MFWA is supported by dedicated and committed funding partners — our impact across West Africa would not be possible without them.",
+      primary: { label: "National partners", href: "/about-us/our-partners/national-partners" },
+      secondary: { label: "Our networks", href: "/about-us/our-partners/our-networks" },
+    },
+    overview: { eyebrow: "Support", title: "Who supports our work" },
+    intro: ["You may learn more about our funding partners by visiting their respective websites below."],
+    logos: [
+      { name: "Open Society Foundations", href: "https://www.opensocietyfoundations.org/", logo: "https://mfwa.org/wp-content/uploads/2020/04/Osiwa-1.jpg" },
+      { name: "Open Society Initiative for West Africa (OSIWA)", href: "https://www.opensocietyfoundations.org/about/offices-foundations/open-society-initiative-west-africa", logo: "https://mfwa.org/wp-content/uploads/2020/04/Osiwa.jpg" },
+      { name: "STAR-Ghana", href: "https://star-ghana.org/", logo: "https://mfwa.org/wp-content/uploads/2020/04/Star-Ghana.jpg" },
+      { name: "UNESCO", href: "https://www.unesco.org/en", logo: "https://mfwa.org/wp-content/uploads/2020/04/UNESCO.jpg" },
+      { name: "IFEX", href: "https://ifex.org/", logo: "https://mfwa.org/wp-content/uploads/2020/04/Ifex.jpg" },
+      { name: "Oxfam IBIS", href: "https://oxfam.dk/en/our-work", logo: "https://mfwa.org/wp-content/uploads/2020/04/Oxfam-Ibis-1024x288.png" },
+      { name: "Access Now", href: "https://www.accessnow.org/", logo: "https://mfwa.org/wp-content/uploads/2020/04/Accessnow.jpg" },
+      { name: "Global Partners Digital", href: "https://www.gp-digital.org/", logo: "https://mfwa.org/wp-content/uploads/2020/04/Global-partners.jpg" },
+      { name: "European Union", href: "https://european-union.europa.eu/index_en", logo: "https://mfwa.org/wp-content/uploads/2022/05/EU.jpg" },
+      { name: "Web Foundation", href: "https://webfoundation.org/", logo: "https://mfwa.org/wp-content/uploads/2022/05/web-foundation-570x299-1.png" },
+      { name: "MTN Ghana", href: "https://mtn.com.gh/", logo: "https://mfwa.org/wp-content/uploads/2020/04/Mtn.jpg" },
+    ],
+  };
+}
+
+// -- About Us › Our Partners › National Partners ---------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=national-partners`).then(r => r.json())
+export async function getNationalPartnersPage() {
+  return {
+    hero: {
+      crumbs: [
+        { label: "About us", href: "/about-us" },
+        { label: "Our partners", href: "/about-us/our-partners" },
+        { label: "National partners" },
+      ],
+      eyebrow: "National partners",
+      titleLines: ["The most influential", "voices, in every country."],
+      lede: "We work closely with the leading freedom-of-expression and press-advocacy organisations in each country of West Africa, sharing information and building capacity together.",
+      primary: { label: "Funding partners", href: "/about-us/our-partners/funding-partners" },
+      secondary: { label: "Our networks", href: "/about-us/our-partners/our-networks" },
+    },
+    overview: { eyebrow: "Working together", title: "Our partners, country by country" },
+    intro: [
+      "Our national partners are the most important and influential freedom of expression and press advocacy organisations in their respective countries. We work collaboratively through information sharing, mutual capacity building in organisational development and targeted advocacy objectives.",
+    ],
+    partners: [
+      { id: "agepi", country: "Guinea", name: "AGEPI", text: "Guinea's independent newspaper publishers' association and the country's first press union, founded in 1991.", href: "http://www.mfwa.org/our-partners-list/lassociation-guineenne-des-editeurs-de-la-presse-independante-agepi/" },
+      { id: "rpm", country: "Mauritania", name: "RPM", text: "An association of 32 media organisations that safeguards freedom of expression and journalist safety in Mauritania.", href: "https://web.facebook.com/profile.php?id=100069741345763" },
+      { id: "olped", country: "Côte d’Ivoire", name: "OLPED", text: "Côte d'Ivoire's media self-regulatory body, promoting press freedom and journalism ethics since 1995.", href: "https://web.facebook.com/Olpedcotedivoire" },
+      { id: "gpu", country: "The Gambia", name: "GPU", text: "Founded in 1979, the country's union of journalists pursuing media freedom and professionalism.", href: "http://www.gpu.gm/" },
+      { id: "ipc", country: "Nigeria", name: "IPC", text: "A Lagos-based media resource centre building journalists' capacity to hold governance to account.", href: "http://www.ipcng.org" },
+      { id: "odem", country: "Benin", name: "ODEM", text: "Benin's media self-regulatory body, promoting professionalism and ethics since 1999.", href: "https://www.mfwa.org/our-partners-list/benin-lobservatoire-de-la-deontologie-et-de-lethique-dans-les-medias-odem/" },
+      { id: "synpics", country: "Senegal", name: "SYNPICS", text: "Senegal's journalists' union, defending journalist safety and media professionalism.", href: "https://www.mfwa.org/our-partners-list/synpics/" },
+      { id: "mrcg", country: "Sierra Leone", name: "MRCG-SL", text: "A Freetown-based coalition working to strengthen independent, pluralistic media in Sierra Leone.", href: "https://mrcgonline.org/" },
+      { id: "sinjotecs", country: "Guinea Bissau", name: "SINJOTECS", text: "Guinea-Bissau's press union, advocating for press freedom and the safety of journalists.", href: "https://web.facebook.com/sinjotecsguinebissau20218" },
+      { id: "ujit", country: "Togo", name: "UJIT", text: "A media organisation formed in 1992, upholding excellence, ethics and cohesion in Togolese journalism.", href: "https://www.mfwa.org/our-partners-list/union-des-journalistes-independants-du-togo-ujit/" },
+      { id: "cnp-nz", country: "Burkina Faso", name: "CNP-NZ", text: "Burkina Faso's leading press-freedom organisation, and organiser of the annual FILEP festival.", href: "https://cnpress-zongo.org/" },
+      { id: "cemesp", country: "Liberia", name: "CEMESP", text: "A Liberian media-development organisation behind the country's Freedom of Information law.", href: "https://www.mfwa.org/our-partners-list/liberia-centre-for-media-studies-and-peace-building-cemesp/" },
+      { id: "mp-mali", country: "Mali", name: "Maison de la Presse", text: "The umbrella association for more than fifty media organisations across Mali.", href: "https://www.mfwa.org/our-partners-list/mali-maison-de-la-presse-du-mali-mp/" },
+      { id: "onimed", country: "Niger", name: "ONIMED", text: "Niger's self-regulating press body, upholding journalism ethics and training journalists.", href: "https://www.mfwa.org/our-partners-list/observatoire-nigerien-independant-des-medias-onimed/" },
+      { id: "ajoc", country: "Cape Verde", name: "AJOC", text: "Cape Verde's independent association of journalists and media professionals, founded in 1990.", href: "https://mfwa.org/our-partners-list/a-associacao-sindical-dos-jornalistas-de-cabo-verde/" },
+      { id: "africtivistes", country: "Pan-African", name: "AfricTivistes", text: "A pan-African network of bloggers and cyber-activists using digital tools to strengthen democracy across 45 countries.", href: "https://africtivistes.com/fr/about/history/" },
+      { id: "tuwindi", country: "Mali", name: "Tuwindi Foundation", text: "A Mali-based civic-tech organisation running election-monitoring and fact-checking platforms.", href: "https://tuwindi.org/about" },
+    ],
+  };
+}
+
+// -- About Us › Our Partners › Our Networks --------------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=our-networks`).then(r => r.json())
+export async function getNetworksPage() {
+  return {
+    hero: {
+      crumbs: [
+        { label: "About us", href: "/about-us" },
+        { label: "Our partners", href: "/about-us/our-partners" },
+        { label: "Our networks" },
+      ],
+      eyebrow: "Our networks",
+      titleLines: ["Part of a", "wider movement."],
+      lede: "The MFWA belongs to national, regional and international networks that build synergies, mutual learning and broad collaborative advocacy.",
+      primary: { label: "Funding partners", href: "/about-us/our-partners/funding-partners" },
+      secondary: { label: "National partners", href: "/about-us/our-partners/national-partners" },
+    },
+    networks: {
+      eyebrow: "Our networks",
+      title: "Networks we belong to",
+      text: "The MFWA works with different organisations and belongs to several networks — spanning national, regional and international levels.",
+      all: { label: "All our partners", href: "/about-us/our-partners" },
+      items: [
+        { id: "ifex", name: "IFEX", scope: "Global", desc: "Local and international organisations defending free expression as a fundamental human right.", href: "https://ifex.org/" },
+        { id: "afex", name: "AFEX", scope: "Continental", desc: "Africa’s most prominent free-expression organisations — MFWA serves as its Secretariat.", href: "https://www.africafex.org/" },
+        { id: "apai", name: "APAI", scope: "Continental", desc: "The African Platform on Access to Information, advancing the right to information.", href: "https://www.africanplatform.org/" },
+        { id: "wacsof", name: "WACSOF", scope: "Regional", desc: "The West African Civil Society Forum, uniting CSOs from the fifteen ECOWAS states.", href: "https://wacsof-foscao.org/en/" },
+        { id: "rti-ghana", name: "RTI Ghana", scope: "National", desc: "The coalition behind Ghana’s Right to Information law and its implementation.", href: "https://www.rti.org/focus-area/international-development" },
+        { id: "afic", name: "AFIC", scope: "Continental", desc: "The African Freedom of Information Centre, around 30 CSOs promoting access to information.", href: "https://www.africafoicentre.org/" },
+      ],
+    },
+  };
+}
+
+// -- Programmes ("What We Do") ----------------------------------------------
+//
+// Content audit (Sept 2026): read directly from the live site's five
+// programme pages plus the /programmes/ hub and the header mega-menu (for
+// the real slugs — several don't follow the "/programmes/<slug>" pattern
+// WordPress's own Quick Links box implies). Each programme page's "Quick
+// Links" box advertises "Our Activities & Projects" / "Meet The Team" /
+// "Success Stories" sub-pages; every one of those 404s on the live site
+// itself, so none are replicated here — the one exception checked (Media
+// for Democracy & Good Governance's "Next Gen. Investigative Journalism"
+// quick link) also 404s, so that focus-area line stays plain text, not a
+// link. Two real in-house initiatives ARE live and are kept as external
+// links: The Fourth Estate and Fact-check Ghana, both under Media for
+// Democracy & Good Governance. A few focus-area bullets on the Freedom of
+// Expression page are themselves the exact text of a live "Issues" category
+// link (verified against the header mega-menu's Issues submenu) — those
+// become internal /category/<slug> links; the rest stay plain text.
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=programmes`).then(r => r.json())
+//
+// Shared hero-tile data for the six Programmes pages: the same "ab-tiles"
+// grid used by the About Us / Get Involved / Board / Staff heroes (a motif
+// tile grid filling the column beside the copy, instead of the empty
+// space a wide, tile-less hero leaves on those pages). The hub's hero
+// shows all five; each detail page's hero shows the other four as
+// cross-navigation. Each programme keeps the same motif everywhere it
+// appears (hub tile, cross-nav tile, and — self only — its own focus
+// section's aside motif), so the icon reads as that programme's identity.
+const PROGRAMME_TILES = [
+  { id: "foe", label: "Freedom of Expression", href: "/programmes/freedom-of-expression", variant: "mic", tone: "dark" },
+  { id: "digital", label: "Digital Rights", href: "/programmes/digital-rights", variant: "orbit", tone: "pale" },
+  { id: "governance", label: "Media & Governance", href: "/programmes/media-democracy-governance", variant: "newspaper", tone: "white" },
+  { id: "peace", label: "Peace & Cohesion", href: "/programmes/media-peace-social-cohesion", variant: "quote", tone: "pale" },
+  { id: "institutional", label: "Institutional Dev.", href: "/programmes/institutional-development", variant: "search", tone: "white" },
+];
+
+export async function getProgrammesPage() {
+  return {
+    hero: {
+      crumbs: [{ label: "Programmes" }],
+      eyebrow: "What we do",
+      titleLines: ["Five ways we", "defend free expression."],
+      lede: "Over 27 years working across West Africa, our 2025–2029 Strategic Plan focuses on four thematic areas — Freedom of Expression, Tech & Digital Rights, Media for Democracy & Good Governance, and Media for Peace & Social Cohesion — with Institutional Development as a cross-cutting pillar and women's empowerment as a cross-cutting theme.",
+      primary: { label: "Our overall strategy", href: "https://mfwa.org/wp-content/uploads/2025/10/Strategic-Plan-doc_MFWA_2025-to-2029_clean-1.pdf" },
+      secondary: { label: "About MFWA", href: "/about-us" },
+      tiles: PROGRAMME_TILES,
+    },
+    nav: {
+      eyebrow: "Explore",
+      title: "Our five programmes",
+      text: "Each programme is pursued through impact-oriented advocacy, strategic partnerships, research and documentation, and stronger institutional systems.",
+      items: [
+        {
+          id: "foe",
+          name: "Freedom of Expression",
+          scope: "Thematic area",
+          desc: "Protecting the right to free expression and access to information across West Africa.",
+          href: "/programmes/freedom-of-expression",
+        },
+        {
+          id: "digital",
+          name: "Tech & Digital Rights",
+          scope: "Thematic area",
+          desc: "A freer and safer online environment for expression and participation by all, especially women.",
+          href: "/programmes/digital-rights",
+        },
+        {
+          id: "governance",
+          name: "Media for Democracy & Good Governance",
+          scope: "Thematic area",
+          desc: "Strengthening the media's capacity to contribute to participatory, accountable governance.",
+          href: "/programmes/media-democracy-governance",
+        },
+        {
+          id: "peace",
+          name: "Media for Peace & Social Cohesion",
+          scope: "Thematic area",
+          desc: "Engaging the media to address extremism, polarisation, mis/disinformation and conflict prevention.",
+          href: "/programmes/media-peace-social-cohesion",
+        },
+        {
+          id: "institutional",
+          name: "Institutional Development",
+          scope: "Cross-cutting pillar",
+          desc: "Building an efficient, resilient organisation capable of delivering fully on its mandate.",
+          href: "/programmes/institutional-development",
+        },
+      ],
+    },
+    involve: {
+      eyebrow: "Support this work",
+      title: "Help power our programmes",
+      text: "Every programme above is made possible by donors, partners and volunteers who share our commitment to free expression in West Africa.",
+      contact: { label: "About MFWA", href: "/about-us" },
+      actions: [
+        {
+          num: "01",
+          label: "Donate",
+          desc: "Support investigations, legal aid for journalists and press-freedom advocacy across West Africa.",
+          href: "https://mfwa.org/donate",
+        },
+      ],
+    },
+  };
+}
+
+// -- Programmes › Freedom of Expression -------------------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=freedom-of-expression-advocacy`).then(r => r.json())
+export async function getFreedomOfExpressionPage() {
+  return {
+    hero: {
+      crumbs: [{ label: "Programmes", href: "/programmes" }, { label: "Freedom of Expression" }],
+      eyebrow: "Freedom of Expression",
+      titleLines: ["Defending a", "fundamental right."],
+      lede: "Freedom of Expression is a fundamental human right — yet violations continue to be a major challenge to participatory and accountable governance in West Africa.",
+      primary: { label: "Donate", href: "https://mfwa.org/donate" },
+      secondary: { label: "All programmes", href: "/programmes" },
+      tiles: PROGRAMME_TILES.filter((t) => t.id !== "foe"),
+    },
+    overview: { eyebrow: "Overview", title: "Why this programme matters" },
+    intro: [
+      "In many countries in the region, critical media and dissenting voices are not tolerated and are often abused. The MFWA and its national partners across West Africa work toward ensuring noticeable improvement in respecting and protecting the right to freedom of expression by state and non-state actors, and that the public's right to access information is guaranteed by regional and national laws and respected in practice.",
+    ],
+    focus: {
+      eyebrow: "Areas of work",
+      title: "Where we focus our efforts",
+      motif: "mic",
+      contact: { label: "All programmes", href: "/programmes" },
+      items: [
+        "Law and policy reform advocacy relating to digital migration, Internet freedom, and de-criminalisation of defamation laws",
+        "FoE Rights Monitoring, Campaigns and Protection",
+        { label: "Freedom of Assembly", href: "/category/freedom-of-assembly" },
+        { label: "Freedom of Expression Violations", href: "/category/free-expression-violations" },
+        { label: "Freedom of Expression and the Law", href: "/category/free-expression-and-the-law" },
+        { label: "Access to information advocacy", href: "/category/access-to-information" },
+        "Safety of journalists advocacy",
+        { label: "Access to Justice and anti-impunity campaigns", href: "/category/impunity" },
+      ],
+    },
+    involve: {
+      eyebrow: "Get involved",
+      title: "Support this programme",
+      text: "Your support helps protect journalists, defend dissenting voices and guarantee the public's right to access information across West Africa.",
+      contact: { label: "Explore all our programmes", href: "/programmes" },
+      actions: [
+        {
+          num: "01",
+          label: "Donate",
+          desc: "Fund advocacy, monitoring and legal support for freedom of expression across the region.",
+          href: "https://mfwa.org/donate",
+        },
+      ],
+    },
+  };
+}
+
+// -- Programmes › Tech & Digital Rights --------------------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=digital-rights`).then(r => r.json())
+export async function getDigitalRightsPage() {
+  return {
+    hero: {
+      crumbs: [{ label: "Programmes", href: "/programmes" }, { label: "Tech & Digital Rights" }],
+      eyebrow: "Tech & Digital Rights",
+      titleLines: ["A freer, safer", "online space for all."],
+      lede: "As internet access spreads across West Africa, governments are increasingly exploiting existing laws — and introducing new ones — to limit expression online, while gender inequality keeps many women offline.",
+      primary: { label: "Donate", href: "https://mfwa.org/donate" },
+      secondary: { label: "All programmes", href: "/programmes" },
+      tiles: PROGRAMME_TILES.filter((t) => t.id !== "digital"),
+    },
+    overview: { eyebrow: "Overview", title: "Why this programme matters" },
+    intro: [
+      "In a number of countries in the region, fewer than 10 percent of women have regular internet access. To respond to this and other emerging challenges, the MFWA has decoupled digital rights from its Freedom of Expression programme to make it a full programme with a focus on digital rights issues alone, working with partners toward a freer and safer online environment for expression and participation by all, especially women.",
+    ],
+    focus: {
+      eyebrow: "Areas of work",
+      title: "Where we focus our efforts",
+      motif: "orbit",
+      contact: { label: "All programmes", href: "/programmes" },
+      items: [
+        "Improving the policy environment through research and stakeholder engagement",
+        "Free expression online",
+        "Cybersecurity",
+        "Gender digital equity and equality, empowering women to assert their online rights",
+      ],
+    },
+    involve: {
+      eyebrow: "Get involved",
+      title: "Support this programme",
+      text: "Your support helps close the digital gender gap and defend a free, safe online space for expression across West Africa.",
+      contact: { label: "Explore all our programmes", href: "/programmes" },
+      actions: [
+        {
+          num: "01",
+          label: "Donate",
+          desc: "Fund digital-rights research, cybersecurity training and online-safety advocacy.",
+          href: "https://mfwa.org/donate",
+        },
+      ],
+    },
+  };
+}
+
+// -- Programmes › Media for Democracy & Good Governance ---------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=media-good-governance-and-development`).then(r => r.json())
+export async function getMediaGovernancePage() {
+  return {
+    hero: {
+      crumbs: [{ label: "Programmes", href: "/programmes" }, { label: "Media for Democracy & Good Governance" }],
+      eyebrow: "Media for Democracy & Good Governance",
+      titleLines: ["Media that holds", "power to account."],
+      lede: "Gains in the region's democratic consolidation have been dissipating amid coups, weak public-service delivery and corruption — a vibrant, professional and critical media can help rebuild them.",
+      primary: { label: "Donate", href: "https://mfwa.org/donate" },
+      secondary: { label: "All programmes", href: "/programmes" },
+      tiles: PROGRAMME_TILES.filter((t) => t.id !== "governance"),
+    },
+    overview: { eyebrow: "Overview", title: "Why this programme matters" },
+    intro: [
+      "Our strategic objective for this programme is to strengthen the capacity of the media to contribute effectively to participatory, responsive, transparent and accountable governance — expanding civic participation, holding duty bearers accountable, and countering extremist narratives.",
+    ],
+    focus: {
+      eyebrow: "Areas of work",
+      title: "Where we focus our efforts",
+      motif: "newspaper",
+      contact: { label: "All programmes", href: "/programmes" },
+      items: [
+        "Access to information and civic participation in governance",
+        "Media sustainability and professionalism",
+        "Investigative reporting",
+        "Next Generation Investigative Journalism Fellowship",
+        "Mis/disinformation",
+        "Citizens–authorities engagement",
+      ],
+      initiatives: [
+        { name: "The Fourth Estate", href: "https://thefourthestategh.com/" },
+        { name: "Fact-check Ghana", href: "https://www.fact-checkghana.com/" },
+      ],
+    },
+    involve: {
+      eyebrow: "Get involved",
+      title: "Support this programme",
+      text: "Your support helps strengthen investigative journalism and counter mis/disinformation across West Africa.",
+      contact: { label: "Explore all our programmes", href: "/programmes" },
+      actions: [
+        {
+          num: "01",
+          label: "Donate",
+          desc: "Fund investigative reporting, fact-checking and media-accountability initiatives.",
+          href: "https://mfwa.org/donate",
+        },
+      ],
+    },
+  };
+}
+
+// -- Programmes › Media for Peace & Social Cohesion --------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=media-for-peace-social-cohesion`).then(r => r.json())
+export async function getMediaPeacePage() {
+  return {
+    hero: {
+      crumbs: [{ label: "Programmes", href: "/programmes" }, { label: "Media for Peace & Social Cohesion" }],
+      eyebrow: "Media for Peace & Social Cohesion",
+      titleLines: ["Media that builds", "peace, not division."],
+      lede: "Political instability, violent extremism and the rapid spread of mis/disinformation are increasingly transnational — and the media can either mitigate or exacerbate the tensions they cause.",
+      primary: { label: "Donate", href: "https://mfwa.org/donate" },
+      secondary: { label: "All programmes", href: "/programmes" },
+      tiles: PROGRAMME_TILES.filter((t) => t.id !== "peace"),
+    },
+    overview: { eyebrow: "Overview", title: "Why this programme matters" },
+    intro: [
+      "Our strategic objective for this programme, over 2025–2029, is to engage with the media to address extremism, polarisation and mis/disinformation, and to promote conflict prevention across the region.",
+    ],
+    focus: {
+      eyebrow: "Areas of work",
+      title: "Where we focus our efforts",
+      motif: "quote",
+      contact: { label: "All programmes", href: "/programmes" },
+      items: [
+        "Strengthening collaboration with ECOWAS to promote its conflict-prevention framework through the media",
+        "Improving the media's capacity to contribute to regional peace and stability through conflict-sensitive journalism",
+        "Countering mis/disinformation and polarising narratives, and mobilising stakeholders to address polarisation",
+      ],
+    },
+    involve: {
+      eyebrow: "Get involved",
+      title: "Support this programme",
+      text: "Your support helps train journalists in conflict-sensitive reporting and counter disinformation across West Africa.",
+      contact: { label: "Explore all our programmes", href: "/programmes" },
+      actions: [
+        {
+          num: "01",
+          label: "Donate",
+          desc: "Fund conflict-sensitive journalism training and anti-disinformation initiatives.",
+          href: "https://mfwa.org/donate",
+        },
+      ],
+    },
+  };
+}
+
+// -- Programmes › Institutional Development ----------------------------------
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/pages?slug=institutional-development`).then(r => r.json())
+export async function getInstitutionalDevelopmentPage() {
+  return {
+    hero: {
+      crumbs: [{ label: "Programmes", href: "/programmes" }, { label: "Institutional Development" }],
+      eyebrow: "Institutional Development",
+      titleLines: ["An organisation built", "to last."],
+      lede: "Alongside delivering impactful projects, we are committed to building an efficient, nimble and resilient institution that is highly professional in the delivery of its mandate.",
+      primary: { label: "Donate", href: "https://mfwa.org/donate" },
+      secondary: { label: "All programmes", href: "/programmes" },
+      tiles: PROGRAMME_TILES.filter((t) => t.id !== "institutional"),
+    },
+    overview: { eyebrow: "Overview", title: "Why this programme matters" },
+    intro: [
+      "This cross-cutting pillar is solely focused on ensuring the organisation runs as efficiently as possible, so that every other programme can deliver on its mandate.",
+    ],
+    focus: {
+      eyebrow: "Areas of work",
+      title: "Where we focus our efforts",
+      motif: "search",
+      contact: { label: "All programmes", href: "/programmes" },
+      items: [
+        "Continuously monitoring, evaluating and strengthening institutional policies and practices in line with global best practices",
+        "Ensuring compliance with institutional policies and systems, and with those of our funders, for value for money in all we do",
+        "Strengthening the capacity of our staff and national partner organisations across the region for optimal delivery",
+        "Communicating results, impact and learnings with our partners and funders to inspire and shape future thinking",
+      ],
+    },
+    involve: {
+      eyebrow: "Get involved",
+      title: "Support this programme",
+      text: "Your support helps build the resilient institution behind every one of our programmes across West Africa.",
+      contact: { label: "Explore all our programmes", href: "/programmes" },
+      actions: [
+        {
+          num: "01",
+          label: "Donate",
+          desc: "Fund the institutional systems that keep our programmes running efficiently.",
+          href: "https://mfwa.org/donate",
         },
       ],
     },
