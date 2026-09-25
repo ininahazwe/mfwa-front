@@ -1227,6 +1227,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:flex;
   align-items:center;
   gap:clamp(28px, 5vw, 64px);
+  justify-content: center;
 }
 
 .reach__intro{
@@ -1973,6 +1974,11 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .category__head{
   max-width:700px;
 }
+/* Back-to-hub link on country archive pages only (/where-we-work/<slug>) —
+   .category has no other back-navigation, so this sits above the eyebrow. */
+.category__back{
+  margin:0 0 20px;
+}
 .category__title{
   margin:14px 0 0;
   font-family:var(--font-serif);
@@ -2598,6 +2604,20 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .ab-row__text{ margin-top:14px; max-width:52ch; font-size:14px; line-height:1.6; color:var(--ink-muted); }
 .ab-row .ab-link{ margin-top:16px; }
 .ab-row:hover .ab-circle{ border-color:var(--navy-ink); }
+
+/* Where We Work hub — country list + interactive map
+   (components/WhereWeWorkList.js), reusing .reach__list/.reach__col/
+   .reach__map/.reach__geo/.reach__marker from the homepage's Reach
+   section wholesale (see those rules above): same two elements, just in
+   a [list, map] row instead of Reach's [intro, map, list] row, under
+   this page's own centered SectionHead. .reach__inner already provides
+   the flex row + the 1100px/640px responsive wrap/stack behaviour, so
+   .ww-countries-row only adds the top margin below the header. */
+.ww-countries-row{
+  margin:clamp(36px, 5vh, 56px) 0 0;
+}
+.ww-list .reach__col a{ font-size:16px; color:var(--navy-ink); }
+.ww-list .reach__col a:hover{ color:var(--blue); }
 
 /* Networks */
 .ab-networks__grid{

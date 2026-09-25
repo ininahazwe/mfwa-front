@@ -123,3 +123,31 @@ export async function getWpCategoryPosts(categoryId, { page = 1, perPage = 10 } 
   );
   return { items: data.map(mapPost), totalPages, total };
 }
+
+// The "Where We Work" country pages are archives on the site's own custom
+// "country" taxonomy (rest_base "country", confirmed against
+// /wp-json/wp/v2/taxonomies), not the "category" one — same shape as
+// getWpCategoryBySlug/Posts above, just a different taxonomy and the
+// matching /posts?country=<id> filter param.
+export async function getWpCountryBySlug(slug) {
+  const { data } = await fetchJson(
+    `/country?slug=${encodeURIComponent(slug)}&_fields=id,name,slug,description,count`
+  );
+  const country = data[0];
+  if (!country) return null;
+  return {
+    id: country.id,
+    name: decodeEntities(country.name),
+    slug: country.slug,
+    description: decodeEntities(country.description || ""),
+    count: country.count,
+  };
+}
+
+export async function getWpCountryPosts(countryId, { page = 1, perPage = 10 } = {}) {
+  const { data, totalPages, total } = await fetchJson(
+    `/posts?country=${countryId}&page=${page}&per_page=${perPage}&orderby=date&order=desc` +
+      `&_embed=wp:featuredmedia,wp:term&_fields=id,date,link,title,_links,_embedded`
+  );
+  return { items: data.map(mapPost), totalPages, total };
+}

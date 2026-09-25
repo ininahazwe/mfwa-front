@@ -7,7 +7,19 @@ import FadeImg from "./FadeImg";
 const PAGE_SIZE = 10;
 const AUTO_LOAD_LIMIT = 3; // number of scroll-triggered batches before the button takes over
 
-export default function CategoryGrid({ slug, initialItems, initialTotalPages, initialTotal }) {
+// apiBase lets this same grid drive the "Where We Work" country archives
+// (app/api/country/[slug]/posts) as well as category archives — the two
+// are identical in shape (see getCountryPage in lib/content.js), so this
+// generalizes the one existing difference (the API path) instead of
+// duplicating ~120 lines of load-more/IntersectionObserver logic.
+export default function CategoryGrid({
+  slug,
+  initialItems,
+  initialTotalPages,
+  initialTotal,
+  apiBase = "/api/category",
+  endMessage = "You've reached the end of this category.",
+}) {
   const [items, setItems] = useState(initialItems);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -28,7 +40,7 @@ export default function CategoryGrid({ slug, initialItems, initialTotalPages, in
     setError(null);
 
     const nextPage = page + 1;
-    fetch(`/api/category/${slug}/posts?page=${nextPage}&perPage=${PAGE_SIZE}`)
+    fetch(`${apiBase}/${slug}/posts?page=${nextPage}&perPage=${PAGE_SIZE}`)
       .then((res) => {
         if (!res.ok) throw new Error("request-failed");
         return res.json();
@@ -120,7 +132,7 @@ export default function CategoryGrid({ slug, initialItems, initialTotalPages, in
         </div>
       )}
 
-      {!hasMore && !error && <p className="category__end">You&apos;ve reached the end of this category.</p>}
+      {!hasMore && !error && <p className="category__end">{endMessage}</p>}
     </>
   );
 }

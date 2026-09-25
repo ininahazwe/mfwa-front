@@ -9,7 +9,7 @@
 // function needs to change — the shape returned should stay the same so
 // the components that consume it do not need to change.
 
-import { getWpCategoryBySlug, getWpCategoryPosts } from "./wp";
+import { getWpCategoryBySlug, getWpCategoryPosts, getWpCountryBySlug, getWpCountryPosts } from "./wp";
 import { STAFF, STAFF_TEAMS } from "./staff";
 import { BOARD, BOARD_ROLES } from "./board";
 
@@ -19,14 +19,26 @@ export async function getHeader() {
     logo: { src: "/images/mfwa-logo-01.png", alt: "" },
     homeAriaLabel: "Media Foundation for West Africa — accueil",
     brandNameLines: ["Media Foundation", "for West Africa"],
+    // "Our Work" now points at its own hub (/programmes) instead of the
+    // homepage teaser section, and "Where We Work" is new (that page
+    // family didn't exist when this nav was first written). "Stories" and
+    // "Impact" don't have dedicated pages yet, so they stay as anchors to
+    // their homepage sections (components/Latest.js#stories,
+    // ImpactStats.js#impact) — but as "/#slug" rather than a bare "#slug",
+    // so they still work when the header renders on any other page instead
+    // of silently doing nothing (a bare "#stories" only scrolls if you're
+    // already on "/"). Donate has a real destination too, matching the
+    // external link already used elsewhere on the site (e.g. getCta,
+    // PROGRAMME_TILES' "Donate" tile).
     nav: [
-      { label: "Our Work", href: "#our-work" },
-      { label: "Stories", href: "#stories" },
-      { label: "Impact", href: "#impact" },
+      { label: "Our Work", href: "/programmes" },
+      { label: "Where We Work", href: "/where-we-work" },
+      { label: "Stories", href: "/#stories" },
+      { label: "Impact", href: "/#impact" },
       { label: "About", href: "/about-us" },
     ],
     searchAriaLabel: "Rechercher",
-    donate: { label: "Donate", href: "#donate" },
+    donate: { label: "Donate", href: "https://mfwa.org/donate" },
   };
 }
 
@@ -279,17 +291,19 @@ export async function getImpactHighlights() {
 // Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/reach`).then(r => r.json())
 // Note: `countries` carries the map hit coordinates, the name used by the
 // two-column country list, and the `link` each country's map shape /
-// marker / list entry navigates to on click — the real mfwa.org "country"
-// archive for that country (e.g. Benin: https://mfwa.org/benin/). Slugs
-// were confirmed against the live site rather than guessed, since a couple
-// don't follow the obvious pattern (Cabo Verde's term is "Cape Verde" →
-// cape-verde; Côte d’Ivoire → cote-divoire).
+// marker / list entry navigates to on click — now the matching
+// /where-we-work/<slug> page (see getCountryPage), ported from the real
+// mfwa.org "country" archive for that country (e.g. Benin:
+// https://mfwa.org/benin/). Slugs were confirmed against the live site's
+// own "country" taxonomy rather than guessed, since a couple don't follow
+// the obvious pattern (Cabo Verde's term is "Cape Verde" → cape-verde;
+// Côte d’Ivoire → cote-divoire; The Gambia → gambia, not the-gambia).
 export async function getReach() {
   return {
     eyebrow: "Our reach",
     titleLines: ["16 countries.", "One region."],
     text: "We work across West Africa, supporting independent media and protecting press freedom in some of the region\u2019s most challenging environments.",
-    link: { label: "Explore our countries", href: "#countries" },
+    link: { label: "Explore our countries", href: "/where-we-work" },
     map: {
       ariaLabel: "Carte des 16 pays d'Afrique de l'Ouest o\u00f9 intervient la MFWA",
       // Base country geometries (Natural Earth 1:110m via world-atlas),
@@ -310,22 +324,22 @@ export async function getReach() {
     // 110m dataset at all, so it renders as a marker only, matching the
     // reference design where it shows as a small offshore dot cluster).
     countries: [
-      { name: "Benin", id: "204", link: "https://mfwa.org/benin/", coordinates: [2.3912, 6.3703] },
-      { name: "Burkina Faso", id: "854", link: "https://mfwa.org/burkina-faso/", coordinates: [-1.5197, 12.3714] },
-      { name: "Cabo Verde", id: "132", link: "https://mfwa.org/cape-verde/", coordinates: [-23.5133, 14.9330] },
-      { name: "C\u00f4te d\u2019Ivoire", id: "384", link: "https://mfwa.org/cote-divoire/", coordinates: [-4.0083, 5.3599] },
-      { name: "The Gambia", id: "270", link: "https://mfwa.org/gambia/", coordinates: [-16.5790, 13.4549] },
-      { name: "Ghana", id: "288", link: "https://mfwa.org/ghana/", coordinates: [-0.1870, 5.6037] },
-      { name: "Guinea", id: "324", link: "https://mfwa.org/guinea/", coordinates: [-13.5784, 9.6412] },
-      { name: "Guinea-Bissau", id: "624", link: "https://mfwa.org/guinea-bissau/", coordinates: [-15.5977, 11.8636] },
-      { name: "Liberia", id: "430", link: "https://mfwa.org/liberia/", coordinates: [-10.7605, 6.2907] },
-      { name: "Mali", id: "466", link: "https://mfwa.org/mali/", coordinates: [-8.0029, 12.6392] },
-      { name: "Mauritania", id: "478", link: "https://mfwa.org/mauritania/", coordinates: [-15.9582, 18.0735] },
-      { name: "Niger", id: "562", link: "https://mfwa.org/niger/", coordinates: [2.1128, 13.5127] },
-      { name: "Nigeria", id: "566", link: "https://mfwa.org/nigeria/", coordinates: [7.3986, 9.0765] },
-      { name: "Senegal", id: "686", link: "https://mfwa.org/senegal/", coordinates: [-17.4677, 14.7167] },
-      { name: "Sierra Leone", id: "694", link: "https://mfwa.org/sierra-leone/", coordinates: [-13.2317, 8.4657] },
-      { name: "Togo", id: "768", link: "https://mfwa.org/togo/", coordinates: [1.2314, 6.1725] },
+      { name: "Benin", id: "204", link: "/where-we-work/benin", coordinates: [2.3912, 6.3703] },
+      { name: "Burkina Faso", id: "854", link: "/where-we-work/burkina-faso", coordinates: [-1.5197, 12.3714] },
+      { name: "Cabo Verde", id: "132", link: "/where-we-work/cape-verde", coordinates: [-23.5133, 14.9330] },
+      { name: "C\u00f4te d\u2019Ivoire", id: "384", link: "/where-we-work/cote-divoire", coordinates: [-4.0083, 5.3599] },
+      { name: "The Gambia", id: "270", link: "/where-we-work/gambia", coordinates: [-16.5790, 13.4549] },
+      { name: "Ghana", id: "288", link: "/where-we-work/ghana", coordinates: [-0.1870, 5.6037] },
+      { name: "Guinea", id: "324", link: "/where-we-work/guinea", coordinates: [-13.5784, 9.6412] },
+      { name: "Guinea-Bissau", id: "624", link: "/where-we-work/guinea-bissau", coordinates: [-15.5977, 11.8636] },
+      { name: "Liberia", id: "430", link: "/where-we-work/liberia", coordinates: [-10.7605, 6.2907] },
+      { name: "Mali", id: "466", link: "/where-we-work/mali", coordinates: [-8.0029, 12.6392] },
+      { name: "Mauritania", id: "478", link: "/where-we-work/mauritania", coordinates: [-15.9582, 18.0735] },
+      { name: "Niger", id: "562", link: "/where-we-work/niger", coordinates: [2.1128, 13.5127] },
+      { name: "Nigeria", id: "566", link: "/where-we-work/nigeria", coordinates: [7.3986, 9.0765] },
+      { name: "Senegal", id: "686", link: "/where-we-work/senegal", coordinates: [-17.4677, 14.7167] },
+      { name: "Sierra Leone", id: "694", link: "/where-we-work/sierra-leone", coordinates: [-13.2317, 8.4657] },
+      { name: "Togo", id: "768", link: "/where-we-work/togo", coordinates: [1.2314, 6.1725] },
     ],
   };
 }
@@ -384,10 +398,12 @@ export async function getFooter() {
     logo: { src: "/images/mfwa-logo-01.png", alt: "MFWA" },
     homeAriaLabel: "Media Foundation for West Africa — accueil",
     brandNameLines: ["Media Foundation", "for West Africa"],
+    // Mirrors getHeader()'s nav — see the note there.
     nav: [
-      { label: "Our Work", href: "#our-work" },
-      { label: "Stories", href: "#stories" },
-      { label: "Impact", href: "#impact" },
+      { label: "Our Work", href: "/programmes" },
+      { label: "Where We Work", href: "/where-we-work" },
+      { label: "Stories", href: "/#stories" },
+      { label: "Impact", href: "/#impact" },
       { label: "About", href: "/about-us" },
     ],
     social: [
@@ -553,6 +569,82 @@ export async function getCategoryPage(slug) {
     articles: items,
     totalPages,
     total,
+  };
+}
+
+// -- Where We Work / country archive page -----------------------------------
+//
+// Each of the 16 country pages on the live site (e.g. mfwa.org/benin/) is
+// an archive of articles tagged with that country on its own custom
+// "country" taxonomy — not bespoke prose, so this reuses exactly the same
+// shape as getCategoryPage() above, just against a different taxonomy
+// (see the note on getWpCountryBySlug in lib/wp.js). Consolidated here
+// under /where-we-work/<slug> instead of the live site's flat root slugs,
+// matching how /programmes/<slug> consolidated the "What We Do" pages.
+export async function getCountryPage(slug) {
+  const country = await getWpCountryBySlug(slug);
+  if (!country) return null;
+
+  const { items, totalPages, total } = await getWpCountryPosts(country.id, {
+    page: 1,
+    perPage: CATEGORY_PAGE_SIZE,
+  });
+
+  return {
+    slug: country.slug,
+    label: country.name,
+    eyebrow: "Where we work",
+    description: country.description || `Reporting, updates and impact stories from ${country.name}.`,
+    articles: items,
+    totalPages,
+    total,
+  };
+}
+
+// The "Where We Work" hub: a short intro, plus the same interactive map +
+// two-column country list as the homepage's Reach section — reused via
+// getReach() itself (single source of truth for the 16-country dataset:
+// id/coordinates for the map, name, and the /where-we-work/<slug> link)
+// instead of hand-duplicating that list a third time. Slugs match the
+// live site's "country" taxonomy exactly (verified against
+// /wp-json/wp/v2/country) — note "cote-divoire", "cape-verde" and
+// "gambia" (not "the-gambia") don't follow the obvious pattern from their
+// display names; see getReach()'s own note.
+export async function getWhereWeWorkPage() {
+  const reach = await getReach();
+
+  return {
+    hero: {
+      crumbs: [{ label: "Where we work" }],
+      eyebrow: "Where we work",
+      titleLines: ["16 countries.", "One region."],
+      lede: "The MFWA works to promote freedom of expression, press freedom, access to information, internet freedom and media development throughout the 16 countries of West Africa — the 15 member states of ECOWAS, and Mauritania.",
+      primary: { label: "About MFWA", href: "/about-us" },
+      secondary: { label: "Our programmes", href: "/programmes" },
+      // This hub's own children (the 16 countries) already fill the full
+      // list section below, so — unlike PROGRAMME_TILES, which cross-links
+      // a page to its four sibling programmes — these tiles cross-link out
+      // to the other major site destinations instead, the same "ab-tiles"
+      // treatment used on /programmes to keep this hero from leaving the
+      // wide empty margin a tile-less "ab-hero__copy--wide" hero otherwise
+      // does.
+      tiles: [
+        { id: "donate", label: "Donate", href: "https://mfwa.org/donate", variant: "halfspin", tone: "dark" },
+        { id: "programmes", label: "Our Programmes", href: "/programmes", variant: "broadcast", tone: "pale" },
+        { id: "about", label: "About MFWA", href: "/about-us", variant: "press", tone: "white" },
+        { id: "involved", label: "Get Involved", href: "/about-us/get-involved", variant: "megaphone", tone: "pale" },
+      ],
+    },
+    intro: [
+      "In every country, we work through our national partner organisations, our in-country freedom of expression rights monitors, and members of our Network of Human Rights Lawyers, who offer pro-bono legal services in defence of victims of free expression rights violations.",
+    ],
+    map: reach.map,
+    countries: reach.countries.map((c) => ({
+      name: c.name,
+      id: c.id,
+      href: c.link,
+      coordinates: c.coordinates,
+    })),
   };
 }
 
