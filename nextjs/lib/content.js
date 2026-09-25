@@ -9,7 +9,16 @@
 // function needs to change — the shape returned should stay the same so
 // the components that consume it do not need to change.
 
-import { getWpCategoryBySlug, getWpCategoryPosts, getWpCountryBySlug, getWpCountryPosts } from "./wp";
+import {
+  getWpCategoryBySlug,
+  getWpCategoryPosts,
+  getWpCountryBySlug,
+  getWpCountryPosts,
+  getWpImpactStories,
+  getWpCategories,
+  getWpCountriesBySlug,
+  getWpFilteredPosts,
+} from "./wp";
 import { STAFF, STAFF_TEAMS } from "./staff";
 import { BOARD, BOARD_ROLES } from "./board";
 
@@ -19,22 +28,24 @@ export async function getHeader() {
     logo: { src: "/images/mfwa-logo-01.png", alt: "" },
     homeAriaLabel: "Media Foundation for West Africa — accueil",
     brandNameLines: ["Media Foundation", "for West Africa"],
-    // "Our Work" now points at its own hub (/programmes) instead of the
-    // homepage teaser section, and "Where We Work" is new (that page
-    // family didn't exist when this nav was first written). "Stories" and
-    // "Impact" don't have dedicated pages yet, so they stay as anchors to
-    // their homepage sections (components/Latest.js#stories,
-    // ImpactStats.js#impact) — but as "/#slug" rather than a bare "#slug",
-    // so they still work when the header renders on any other page instead
-    // of silently doing nothing (a bare "#stories" only scrolls if you're
-    // already on "/"). Donate has a real destination too, matching the
-    // external link already used elsewhere on the site (e.g. getCta,
-    // PROGRAMME_TILES' "Donate" tile).
+    // "Our Work" points at its own hub (/programmes), "Where We Work" and
+    // "Our Impact" (the live site's own label for this item) are real
+    // pages too now — none of the three existed yet when this nav was
+    // first written. "Stories" still has no dedicated page, so it stays as
+    // an anchor to its homepage section (components/Latest.js#stories) —
+    // but as "/#slug" rather than a bare "#slug", so it still works when
+    // the header renders on any other page instead of silently doing
+    // nothing (a bare "#stories" only scrolls if you're already on "/").
+    // Donate has a real destination too, matching the external link
+    // already used elsewhere on the site (e.g. getCta, PROGRAMME_TILES'
+    // "Donate" tile). "Where We Work" now also covers the live site's
+    // "Issues" menu (its 13 categories are chips on that same page — see
+    // getWhereWeWorkPage()) — deliberately no separate "Issues" entry.
     nav: [
       { label: "Our Work", href: "/programmes" },
       { label: "Where We Work", href: "/where-we-work" },
       { label: "Stories", href: "/#stories" },
-      { label: "Impact", href: "/#impact" },
+      { label: "Our Impact", href: "/impact-stories" },
       { label: "About", href: "/about-us" },
     ],
     searchAriaLabel: "Rechercher",
@@ -231,7 +242,7 @@ export async function getImpactStats() {
     media: { src: "/images/ghana5.jpg", alt: "" },
     titleLines: ["From story", "to change."],
     text: "Through investigative reporting, research and advocacy, MFWA has helped expose injustice, strengthen media and drive real change across West Africa.",
-    cta: { label: "See our impact", href: "#impact-report" },
+    cta: { label: "See our impact", href: "/impact-stories" },
     stats: [
       { count: 16, suffix: "", label: "countries" },
       { count: 100, suffix: "+", label: "partners" },
@@ -246,7 +257,7 @@ export async function getImpactHighlights() {
   return {
     eyebrow: "Impact",
     title: "Stories of impact",
-    viewAll: { label: "View all stories", href: "#impact-archive" },
+    viewAll: { label: "View all stories", href: "/impact-stories" },
     featured: {
       link: "#article-advocacy-training",
       image: {
@@ -319,27 +330,31 @@ export async function getReach() {
     // (8 per column when rendered). `id` is the ISO 3166-1 numeric code,
     // used to match this list against the topojson features \u2014 far more
     // reliable than matching on country name spelling, which varies by
-    // dataset. `coordinates` is [longitude, latitude] of the capital, used
-    // to place each country's marker dot (Cabo Verde has no landmass in the
-    // 110m dataset at all, so it renders as a marker only, matching the
-    // reference design where it shows as a small offshore dot cluster).
+    // dataset (it is NOT the WordPress "country" taxonomy term id \u2014 see
+    // getWhereWeWorkPage()'s note on that distinction). `coordinates` is
+    // [longitude, latitude] of the capital, used to place each country's
+    // marker dot (Cabo Verde has no landmass in the 110m dataset at all,
+    // so it renders as a marker only, matching the reference design where
+    // it shows as a small offshore dot cluster). `link` now points at the
+    // merged Where We Work \u00d7 Issues explorer (see getWhereWeWorkPage())
+    // rather than a dedicated per-country page.
     countries: [
-      { name: "Benin", id: "204", link: "/where-we-work/benin", coordinates: [2.3912, 6.3703] },
-      { name: "Burkina Faso", id: "854", link: "/where-we-work/burkina-faso", coordinates: [-1.5197, 12.3714] },
-      { name: "Cabo Verde", id: "132", link: "/where-we-work/cape-verde", coordinates: [-23.5133, 14.9330] },
-      { name: "C\u00f4te d\u2019Ivoire", id: "384", link: "/where-we-work/cote-divoire", coordinates: [-4.0083, 5.3599] },
-      { name: "The Gambia", id: "270", link: "/where-we-work/gambia", coordinates: [-16.5790, 13.4549] },
-      { name: "Ghana", id: "288", link: "/where-we-work/ghana", coordinates: [-0.1870, 5.6037] },
-      { name: "Guinea", id: "324", link: "/where-we-work/guinea", coordinates: [-13.5784, 9.6412] },
-      { name: "Guinea-Bissau", id: "624", link: "/where-we-work/guinea-bissau", coordinates: [-15.5977, 11.8636] },
-      { name: "Liberia", id: "430", link: "/where-we-work/liberia", coordinates: [-10.7605, 6.2907] },
-      { name: "Mali", id: "466", link: "/where-we-work/mali", coordinates: [-8.0029, 12.6392] },
-      { name: "Mauritania", id: "478", link: "/where-we-work/mauritania", coordinates: [-15.9582, 18.0735] },
-      { name: "Niger", id: "562", link: "/where-we-work/niger", coordinates: [2.1128, 13.5127] },
-      { name: "Nigeria", id: "566", link: "/where-we-work/nigeria", coordinates: [7.3986, 9.0765] },
-      { name: "Senegal", id: "686", link: "/where-we-work/senegal", coordinates: [-17.4677, 14.7167] },
-      { name: "Sierra Leone", id: "694", link: "/where-we-work/sierra-leone", coordinates: [-13.2317, 8.4657] },
-      { name: "Togo", id: "768", link: "/where-we-work/togo", coordinates: [1.2314, 6.1725] },
+      { name: "Benin", id: "204", slug: "benin", link: "/where-we-work?country=benin", coordinates: [2.3912, 6.3703] },
+      { name: "Burkina Faso", id: "854", slug: "burkina-faso", link: "/where-we-work?country=burkina-faso", coordinates: [-1.5197, 12.3714] },
+      { name: "Cabo Verde", id: "132", slug: "cape-verde", link: "/where-we-work?country=cape-verde", coordinates: [-23.5133, 14.9330] },
+      { name: "C\u00f4te d\u2019Ivoire", id: "384", slug: "cote-divoire", link: "/where-we-work?country=cote-divoire", coordinates: [-4.0083, 5.3599] },
+      { name: "The Gambia", id: "270", slug: "gambia", link: "/where-we-work?country=gambia", coordinates: [-16.5790, 13.4549] },
+      { name: "Ghana", id: "288", slug: "ghana", link: "/where-we-work?country=ghana", coordinates: [-0.1870, 5.6037] },
+      { name: "Guinea", id: "324", slug: "guinea", link: "/where-we-work?country=guinea", coordinates: [-13.5784, 9.6412] },
+      { name: "Guinea-Bissau", id: "624", slug: "guinea-bissau", link: "/where-we-work?country=guinea-bissau", coordinates: [-15.5977, 11.8636] },
+      { name: "Liberia", id: "430", slug: "liberia", link: "/where-we-work?country=liberia", coordinates: [-10.7605, 6.2907] },
+      { name: "Mali", id: "466", slug: "mali", link: "/where-we-work?country=mali", coordinates: [-8.0029, 12.6392] },
+      { name: "Mauritania", id: "478", slug: "mauritania", link: "/where-we-work?country=mauritania", coordinates: [-15.9582, 18.0735] },
+      { name: "Niger", id: "562", slug: "niger", link: "/where-we-work?country=niger", coordinates: [2.1128, 13.5127] },
+      { name: "Nigeria", id: "566", slug: "nigeria", link: "/where-we-work?country=nigeria", coordinates: [7.3986, 9.0765] },
+      { name: "Senegal", id: "686", slug: "senegal", link: "/where-we-work?country=senegal", coordinates: [-17.4677, 14.7167] },
+      { name: "Sierra Leone", id: "694", slug: "sierra-leone", link: "/where-we-work?country=sierra-leone", coordinates: [-13.2317, 8.4657] },
+      { name: "Togo", id: "768", slug: "togo", link: "/where-we-work?country=togo", coordinates: [1.2314, 6.1725] },
     ],
   };
 }
@@ -403,7 +418,7 @@ export async function getFooter() {
       { label: "Our Work", href: "/programmes" },
       { label: "Where We Work", href: "/where-we-work" },
       { label: "Stories", href: "/#stories" },
-      { label: "Impact", href: "/#impact" },
+      { label: "Our Impact", href: "/impact-stories" },
       { label: "About", href: "/about-us" },
     ],
     social: [
@@ -547,6 +562,12 @@ export async function getNewsletter() {
 }
 
 // -- Category / archive page ---------------------------------------------
+//
+// Superseded by the merged Where We Work × Issues explorer below —
+// /category/<slug> now redirects to /where-we-work?category=<slug> (see
+// next.config.mjs) instead of rendering this as its own page. Left in
+// place (still correct, just unused) rather than deleted, in case a
+// single-category archive without the map is ever wanted again.
 
 const CATEGORY_PAGE_SIZE = 10;
 
@@ -574,13 +595,9 @@ export async function getCategoryPage(slug) {
 
 // -- Where We Work / country archive page -----------------------------------
 //
-// Each of the 16 country pages on the live site (e.g. mfwa.org/benin/) is
-// an archive of articles tagged with that country on its own custom
-// "country" taxonomy — not bespoke prose, so this reuses exactly the same
-// shape as getCategoryPage() above, just against a different taxonomy
-// (see the note on getWpCountryBySlug in lib/wp.js). Consolidated here
-// under /where-we-work/<slug> instead of the live site's flat root slugs,
-// matching how /programmes/<slug> consolidated the "What We Do" pages.
+// Superseded the same way as getCategoryPage() just above —
+// /where-we-work/<slug> now redirects to /where-we-work?country=<slug>.
+// Kept for the same reason (still correct, just unused).
 export async function getCountryPage(slug) {
   const country = await getWpCountryBySlug(slug);
   if (!country) return null;
@@ -601,17 +618,149 @@ export async function getCountryPage(slug) {
   };
 }
 
-// The "Where We Work" hub: a short intro, plus the same interactive map +
-// two-column country list as the homepage's Reach section — reused via
-// getReach() itself (single source of truth for the 16-country dataset:
-// id/coordinates for the map, name, and the /where-we-work/<slug> link)
-// instead of hand-duplicating that list a third time. Slugs match the
-// live site's "country" taxonomy exactly (verified against
-// /wp-json/wp/v2/country) — note "cote-divoire", "cape-verde" and
-// "gambia" (not "the-gambia") don't follow the obvious pattern from their
-// display names; see getReach()'s own note.
-export async function getWhereWeWorkPage() {
-  const reach = await getReach();
+// -- Where We Work × Issues explorer -----------------------------------
+//
+// Originally two separate destinations: this "Where We Work" hub (map +
+// country list), and a not-yet-built "Issues" menu meant to wire up the
+// 13 /category/<slug> archives. Merged into one explorer at Yv's call
+// (2026-09-25): every article on the live site already carries both a
+// country AND a category term (see mapPost()'s two-part "Category ·
+// Country" tag in lib/wp.js), so browsing by only one axis at a time just
+// loses the other. This page now combines the interactive map (country
+// filter) with a row of chips for the 13 Issues categories, both
+// filtering the same article grid — /where-we-work/<slug> and
+// /category/<slug> redirect here as ?country=/?category= (see
+// next.config.mjs) rather than staying separate static archives.
+//
+// Country data (map/list) still comes from getReach() — single source of
+// truth for the 16-country dataset. Category data comes fresh from
+// getWpCategories(). Slugs match the live site's taxonomies exactly
+// (country verified against /wp-json/wp/v2/country; the 13 category
+// slugs match the live "Issues" submenu, read from mfwa.org's own nav) —
+// note "cote-divoire", "cape-verde" and "gambia" (not "the-gambia") don't
+// follow the obvious pattern from their display names; see getReach()'s
+// own note.
+//
+// Map restyle (2026-09-25, at Yv's call): adopts the look of
+// pressattack.africa/tracker — a choropleth shaded by intensity, a hover
+// panel with "recent stories", a small stat strip — without adopting its
+// data model. That tracker is backed by a real per-incident database
+// (state-level location, a severity bucket, gender/assailant fields per
+// record); MFWA's WordPress content has none of that, only articles
+// tagged by country + category at country-level granularity. So
+// "severity" here is really "how much has been published on this
+// country" (optionally scoped to the active Issue filter, so the map
+// answers "where is THIS topic reported most" when a category chip is
+// selected), bucketed relative to the busiest country CURRENTLY in view
+// rather than fixed absolute thresholds — those would need retuning
+// forever as the archive grows, where a relative scale doesn't.
+function severityOf(count, maxCount) {
+  if (!count) return "none";
+  const ratio = maxCount > 0 ? count / maxCount : 0;
+  if (ratio <= 0.25) return "low";
+  if (ratio <= 0.5) return "moderate";
+  if (ratio <= 0.75) return "high";
+  return "critical";
+}
+
+const EXPLORE_PAGE_SIZE = 12;
+// Small on purpose: this only feeds the map's hover panel ("recent
+// stories" for that country), not a results grid — see countryStats
+// below.
+const MAP_RECENT_PER_COUNTRY = 2;
+
+const ISSUE_CATEGORY_SLUGS = [
+  "access-to-information",
+  "digital-rights",
+  "free-expression-and-the-law",
+  "free-expression-violations",
+  "freedom-of-assembly",
+  "freedom-of-expression",
+  "general-news",
+  "impunity",
+  "investigative-journalism",
+  "media-development",
+  "regional-development",
+  "transparency-and-accountability",
+  "safety-of-journalists",
+];
+
+export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
+  const [reach, categories] = await Promise.all([
+    getReach(),
+    getWpCategories(ISSUE_CATEGORY_SLUGS),
+  ]);
+
+  const activeCountry = countrySlug
+    ? reach.countries.find((c) => c.slug === countrySlug) ?? null
+    : null;
+  const activeCategory = categorySlug
+    ? categories.find((c) => c.slug === categorySlug) ?? null
+    : null;
+
+  // getReach()'s country `id` is the ISO 3166-1 numeric code used to
+  // match the map's topojson (see its own note) — a different id space
+  // from the WordPress "country" taxonomy term id actually needed to
+  // filter /posts. All 16 are resolved here in one batched request
+  // (getWpCountriesBySlug) rather than one lookup per country, since the
+  // map restyle below (severity/recent stories) needs every country's WP
+  // id anyway, not just the active one.
+  const wpCountries = await getWpCountriesBySlug(reach.countries.map((c) => c.slug));
+  const wpCountryBySlug = new Map(wpCountries.map((c) => [c.slug, c]));
+  const activeWpCountry = activeCountry ? wpCountryBySlug.get(activeCountry.slug) ?? null : null;
+
+  // One /posts request per country (small perPage — this only needs a
+  // count and a couple of recent headlines, not a full page), scoped to
+  // the active category so the choropleth reflects the current Issue
+  // filter when one is set. Cached via wp.js's REVALIDATE_SECONDS like
+  // every other WP call here, so this doesn't mean 16 live requests on
+  // every render — see the note above severityOf().
+  const countryStats = await Promise.all(
+    reach.countries.map(async (c) => {
+      const wpCountry = wpCountryBySlug.get(c.slug);
+      if (!wpCountry) return { slug: c.slug, count: 0, recent: [] };
+      const { items: recent, total: count } = await getWpFilteredPosts({
+        countryId: wpCountry.id,
+        categoryId: activeCategory?.id,
+        page: 1,
+        perPage: MAP_RECENT_PER_COUNTRY,
+      });
+      return { slug: c.slug, count, recent };
+    })
+  );
+  const statsBySlug = new Map(countryStats.map((s) => [s.slug, s]));
+  const maxCount = Math.max(0, ...countryStats.map((s) => s.count));
+  const countriesReporting = countryStats.filter((s) => s.count > 0).length;
+  const busiestSlug = maxCount > 0 ? countryStats.find((s) => s.count === maxCount)?.slug ?? null : null;
+  const busiestCountry = busiestSlug
+    ? reach.countries.find((c) => c.slug === busiestSlug)?.name ?? null
+    : null;
+
+  const { items, totalPages, total } = await getWpFilteredPosts({
+    countryId: activeWpCountry?.id,
+    categoryId: activeCategory?.id,
+    page: 1,
+    perPage: EXPLORE_PAGE_SIZE,
+  });
+
+  // Every filter link carries the OTHER axis's current selection along
+  // with it (so switching country never drops the category filter, and
+  // vice versa), and re-clicking an already-active filter clears it.
+  function countryHref(slug) {
+    const params = new URLSearchParams();
+    if (slug !== activeCountry?.slug) params.set("country", slug);
+    if (activeCategory) params.set("category", activeCategory.slug);
+    const qs = params.toString();
+    return `/where-we-work${qs ? `?${qs}` : ""}`;
+  }
+
+  function categoryHref(slug) {
+    const params = new URLSearchParams();
+    if (activeCountry) params.set("country", activeCountry.slug);
+    if (slug !== activeCategory?.slug) params.set("category", slug);
+    const qs = params.toString();
+    return `/where-we-work${qs ? `?${qs}` : ""}`;
+  }
 
   return {
     hero: {
@@ -621,13 +770,13 @@ export async function getWhereWeWorkPage() {
       lede: "The MFWA works to promote freedom of expression, press freedom, access to information, internet freedom and media development throughout the 16 countries of West Africa — the 15 member states of ECOWAS, and Mauritania.",
       primary: { label: "About MFWA", href: "/about-us" },
       secondary: { label: "Our programmes", href: "/programmes" },
-      // This hub's own children (the 16 countries) already fill the full
-      // list section below, so — unlike PROGRAMME_TILES, which cross-links
-      // a page to its four sibling programmes — these tiles cross-link out
-      // to the other major site destinations instead, the same "ab-tiles"
-      // treatment used on /programmes to keep this hero from leaving the
-      // wide empty margin a tile-less "ab-hero__copy--wide" hero otherwise
-      // does.
+      // This hub's own children (the 16 countries + 13 issues) already
+      // fill the full explorer section below, so — unlike
+      // PROGRAMME_TILES, which cross-links a page to its four sibling
+      // programmes — these tiles cross-link out to the other major site
+      // destinations instead, the same "ab-tiles" treatment used on
+      // /programmes to keep this hero from leaving the wide empty margin
+      // a tile-less "ab-hero__copy--wide" hero otherwise does.
       tiles: [
         { id: "donate", label: "Donate", href: "https://mfwa.org/donate", variant: "halfspin", tone: "dark" },
         { id: "programmes", label: "Our Programmes", href: "/programmes", variant: "broadcast", tone: "pale" },
@@ -639,15 +788,74 @@ export async function getWhereWeWorkPage() {
       "In every country, we work through our national partner organisations, our in-country freedom of expression rights monitors, and members of our Network of Human Rights Lawyers, who offer pro-bono legal services in defence of victims of free expression rights violations.",
     ],
     map: reach.map,
-    countries: reach.countries.map((c) => ({
+    countries: reach.countries.map((c) => {
+      const stats = statsBySlug.get(c.slug);
+      const count = stats?.count ?? 0;
+      return {
+        name: c.name,
+        id: c.id,
+        slug: c.slug,
+        href: countryHref(c.slug),
+        coordinates: c.coordinates,
+        // Map restyle fields (see the note above severityOf()): `count`
+        // and `recent` are scoped to the active category filter, so they
+        // change along with the chips, not just with the country map.
+        count,
+        severity: severityOf(count, maxCount),
+        recent: stats?.recent ?? [],
+      };
+    }),
+    categories: categories.map((c) => ({
       name: c.name,
-      id: c.id,
-      href: c.link,
-      coordinates: c.coordinates,
+      slug: c.slug,
+      href: categoryHref(c.slug),
     })),
+    activeCountrySlug: activeCountry?.slug ?? null,
+    activeCategorySlug: activeCategory?.slug ?? null,
+    allIssuesHref: activeCountry ? `/where-we-work?country=${activeCountry.slug}` : "/where-we-work",
+    articles: items,
+    totalPages,
+    total,
+    // Small stat strip above the map, echoing the tracker's look with
+    // numbers this data model actually has (no verified-deaths-style
+    // figures to show, since there's no incident database — see the note
+    // above severityOf()).
+    stats: {
+      total,
+      totalCountries: reach.countries.length,
+      countriesReporting,
+      busiestCountry,
+    },
   };
 }
 
+// -- Our Impact / Impact Stories --------------------------------------------
+//
+// A single archive page (not a hub with sub-pages, so this is a plain
+// static route rather than a [slug] family): mirrors the live site's own
+// /impact-stories/ page (hero title + tagline, straight into a paginated
+// story grid, 12 per page — see getWpImpactStories in lib/wp.js for the
+// data-model caveat) and its newsletter sign-up block, reusing the
+// existing Newsletter component/getNewsletter() as-is rather than
+// inventing page-specific copy.
+const IMPACT_STORIES_PAGE_SIZE = 12;
+
+export async function getImpactStoriesPage() {
+  const { items, totalPages, total } = await getWpImpactStories({
+    page: 1,
+    perPage: IMPACT_STORIES_PAGE_SIZE,
+  });
+
+  return {
+    eyebrow: "Our impact",
+    label: "Impact Stories",
+    description:
+      "Documented outcomes from our investigative journalism, advocacy and capacity-building work across West Africa — policy reversals, recovered public funds, safer newsrooms and recognised journalism.",
+    articles: items,
+    totalPages,
+    total,
+  };
+}
 
 // -- About Us --------------------------------------------------------------
 //

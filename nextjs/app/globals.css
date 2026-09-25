@@ -2615,9 +2615,178 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    .ww-countries-row only adds the top margin below the header. */
 .ww-countries-row{
   margin:clamp(36px, 5vh, 56px) 0 0;
+  /* Override .reach__inner's align-items:center (shared with the
+     homepage Reach section, so not changed there): the map column's
+     height now varies with the hover/detail panel's content (0/1/2
+     recent stories per country — see .ww-map-detail below), and
+     vertical centering would otherwise reflow the country list itself
+     every time that panel's content changes height, shifting list items
+     out from under the pointer mid-hover/mid-click. */
+  align-items:flex-start;
 }
 .ww-list .reach__col a{ font-size:16px; color:var(--navy-ink); }
 .ww-list .reach__col a:hover{ color:var(--blue); }
+
+/* Persistent "this is the applied filter" state, distinct from the
+   transient hover/focus preview (.is-active, shared with the homepage's
+   Reach section above — see components/WhereWeWorkList.js). Given the
+   same treatment as .is-active rather than a third color, since both
+   mean "this is the one in focus" to the visitor. */
+.reach__col li.is-selected{ color:var(--blue); font-weight:600; }
+.reach__geo.is-selected{ fill:#d7e0e8; }
+.reach__marker.is-selected .reach__marker-ring{ opacity:.18; }
+.reach__marker.is-selected .reach__marker-dot{ fill:var(--red); }
+
+/* Issues category chips — filters the same grid as the map/list above,
+   see getWhereWeWorkPage()'s note on the Where We Work × Issues merge. */
+.ww-issues{
+  margin:clamp(28px, 4vh, 40px) 0 0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.ww-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:9px 16px;
+  border-radius:999px;
+  border:1px solid rgba(15,46,85,.16);
+  background:#fff;
+  font-size:13px;
+  font-weight:600;
+  color:var(--ink-muted);
+  text-decoration:none;
+  transition:border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
+}
+.ww-chip:hover{ border-color:var(--blue); color:var(--blue); }
+.ww-chip.is-selected{ border-color:var(--navy); background:var(--navy); color:#fff; }
+.ww-chip.is-selected:hover{ color:#fff; }
+
+.ww-filter-summary{
+  margin:16px 0 0;
+  font-size:13.5px;
+  color:var(--ink-muted);
+}
+.ww-filter-summary a{ color:var(--blue); font-weight:600; text-decoration:none; }
+.ww-filter-summary a:hover{ text-decoration:underline; }
+
+.ww-results{ margin-top:clamp(28px, 4vh, 40px); }
+
+/* Map restyle (2026-09-25) inspired by pressattack.africa/tracker, at
+   Yv's request. MFWA's WordPress content has no per-incident data (no
+   severity/gender/assailant fields, country-level only), so this keeps
+   the existing article model and borrows only the tracker's LOOK: a
+   choropleth shaded by how much has been published (bucketed relative to
+   the busiest country in the current filter — see getWhereWeWorkPage()'s
+   severityOf()), a legend, a hover/detail panel with "recent stories",
+   and a stat strip. Severity fill/stroke itself is set with inline
+   styles in WhereWeWorkList.js (not classes here), specifically so it
+   can't leak into the homepage Reach section above, which shares the
+   .reach__geo/.reach__marker-dot markup and keeps its original flat
+   fill/hover rules untouched. */
+.ww-stats{
+  list-style:none;
+  margin:clamp(20px, 3vh, 28px) 0 0;
+  padding:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:clamp(20px, 4vw, 40px);
+}
+.ww-stat{ flex:1 1 160px; }
+.ww-stat__num{
+  display:block;
+  font-family:var(--font-serif);
+  font-weight:600;
+  font-size:clamp(20px, 2.2vw, 28px);
+  color:var(--navy-ink);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.ww-stat__label{ display:block; margin-top:4px; font-size:12.5px; color:var(--ink-muted); }
+
+.ww-sev-dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  margin-right:8px;
+  vertical-align:middle;
+  flex:none;
+}
+
+.ww-map-panel{
+  /* Yv moved this out from under the map to sit beside it as a third
+     .reach__inner column (list | map | panel) — it needs its own
+     flex-basis now, and critically `min-width:0` to override flexbox's
+     default min-width:auto, which is what was forcing this column (and
+     the whole row) to stretch/overflow to fit the recent-story text at
+     its unwrapped intrinsic width instead of wrapping within its share
+     of the row. */
+  flex:1 1 220px;
+  min-width:0;
+  max-width:260px;
+  padding-left:20px;
+  border-left:1px solid var(--hairline);
+}
+@media (max-width:1100px){
+  .ww-countries-row .ww-map-panel{
+    flex:1 1 100%;
+    max-width:none;
+    padding-left:0;
+    border-left:none;
+    border-top:1px solid var(--hairline);
+    padding-top:14px;
+    margin-top:8px;
+  }
+}
+.ww-legend{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  font-size:11.5px;
+  color:var(--ink-muted);
+}
+.ww-legend li{ display:flex; align-items:center; }
+.ww-legend__swatch{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:3px;
+  margin-right:6px;
+}
+/* Fixed (not min-) height, sized for the fullest case (name + meta +
+   2 recent-story rows, each up to 2 lines now that this column is
+   narrower than the old full-width-under-the-map layout — see
+   .ww-map-detail__recent a's wrapping below): keeps this panel's own box
+   from changing size as its content changes with the hovered country,
+   on top of the align-items fix above — belt and suspenders against the
+   same reflow. */
+.ww-map-detail{ margin-top:14px; height:160px; overflow:hidden; }
+.ww-map-detail__name{ margin:0; font-weight:700; color:var(--navy-ink); font-size:15px; }
+.ww-map-detail__meta{
+  margin:4px 0 0;
+  display:flex;
+  align-items:center;
+  font-size:12.5px;
+  color:var(--ink-muted);
+}
+.ww-map-detail__recent{ list-style:none; margin:10px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.ww-map-detail__recent li{ display:flex; gap:10px; font-size:12.5px; }
+/* flex:1 1 auto + min-width:0 (not the shared row's overflow problem,
+   but the same underlying flexbox default) lets a long story title wrap
+   inside its share of this narrow column instead of forcing the <li>
+   wider than the panel; the date keeps its natural width via flex:none
+   on the span below rather than justify-content:space-between, which
+   can't coexist with a wrapping first child. */
+.ww-map-detail__recent a{ flex:1 1 auto; min-width:0; overflow-wrap:break-word; color:var(--blue); text-decoration:none; }
+.ww-map-detail__recent a:hover{ text-decoration:underline; }
+.ww-map-detail__recent span{ flex:none; color:var(--ink-muted); }
+.ww-map-detail__empty,
+.ww-map-detail__hint{ margin:4px 0 0; font-size:12.5px; color:var(--ink-muted); }
 
 /* Networks */
 .ab-networks__grid{

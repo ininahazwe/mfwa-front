@@ -151,3 +151,115 @@ export async function getWpCountryPosts(countryId, { page = 1, perPage = 10 } = 
   );
   return { items: data.map(mapPost), totalPages, total };
 }
+
+// Batch-resolves several "country" taxonomy slugs to their WordPress term
+// ids/names in one request — mirrors getWpCategories() below (same
+// re-sort-by-input-order rationale: the `slug` param doesn't guarantee
+// the API echoes results back in that order). Used by the Where We Work
+// map restyle (getWhereWeWorkPage()) to look up all 16 countries' WP ids
+// in one request instead of 16, before fetching each one's article
+// count/recent stories to drive the choropleth.
+export async function getWpCountriesBySlug(slugs) {
+  const { data } = await fetchJson(
+    `/country?slug=${slugs.map(encodeURIComponent).join(",")}&per_page=100` +
+      `&_fields=id,name,slug,count`
+  );
+  const bySlug = new Map(data.map((c) => [c.slug, c]));
+  return slugs
+    .map((slug) => bySlug.get(slug))
+    .filter(Boolean)
+    .map((c) => ({ id: c.id, slug: c.slug, name: decodeEntities(c.name), count: c.count }));
+}
+
+// -- Where We Work × Issues explorer -----------------------------------
+//
+// The merged explorer (see getWhereWeWorkPage() in lib/content.js) filters
+// posts by country AND/OR category at once, so it needs its own query
+// builder rather than reusing getWpCategoryPosts/getWpCountryPosts above
+// (each hard-codes a single taxonomy param). WordPress's /posts endpoint
+// already accepts both `country` and `categories` together — no change
+// needed on the WP side, just combining the two params here.
+export async function getWpFilteredPosts({ countryId, categoryId, page = 1, perPage = 12 } = {}) {
+  const params = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+    orderby: "date",
+    order: "desc",
+    _embed: "wp:featuredmedia,wp:term",
+    _fields: "id,date,link,title,_links,_embedded",
+  });
+  if (countryId) params.set("country", String(countryId));
+  if (categoryId) params.set("categories", String(categoryId));
+
+  const { data, totalPages, total } = await fetchJson(`/posts?${params.toString()}`);
+  return { items: data.map(mapPost), totalPages, total };
+}
+
+// Resolves the 13 "Issues" category slugs (the live site's own menu,
+// merged into the explorer above rather than kept as a separate hub —
+// see getWhereWeWorkPage()'s note) to their WordPress term ids/names in
+// one request. WP's `slug` param on /categories accepts a comma-separated
+// list, but doesn't guarantee it echoes results back in that order, so
+// this re-sorts to match the order `slugs` was given in (the live site's
+// own Issues submenu order) rather than trusting the API's order.
+export async function getWpCategories(slugs) {
+  const { data } = await fetchJson(
+    `/categories?slug=${slugs.map(encodeURIComponent).join(",")}&per_page=100` +
+      `&_fields=id,name,slug,count`
+  );
+  const bySlug = new Map(data.map((c) => [c.slug, c]));
+  return slugs
+    .map((slug) => bySlug.get(slug))
+    .filter(Boolean)
+    .map((c) => ({ id: c.id, slug: c.slug, name: decodeEntities(c.name), count: c.count }));
+}
+
+// -- Impact Stories -----------------------------------------------------
+//
+// "Impact Stories" is its own WordPress content, not a taxonomy filter on
+// the regular "post" type: on the live site every story's URL is
+// /impact-stories/<slug>/ (no /category/ segment), which is the rewrite
+// shape of a custom post type with its own archive, not a category link.
+// UNCONFIRMED: this session's network access to mfwa.org was blocked
+// (the sandbox's egress proxy refuses the domain, and WebFetch's
+// provenance rule blocked reaching /wp-json/wp/v2/types or /taxonomies
+// directly), so the rest_base "impact-stories" below is inferred from
+// that URL, not verified against the REST API the way "country" was.
+// Verify against a live /wp-json/wp/v2/types response before this goes
+// live, and fix the path below if the real rest_base differs.
+//
+// Each card on the live archive shows a single tag (a country name, e.g.
+// "Ghana"), not the two-part "Category · Country" pattern regular posts
+// use — so this maps terms by taxonomy name instead of mapPost()'s fixed
+// positional indices (which are specific to the "post" type's taxonomy
+// order and aren't safe to assume hold for a different post type).
+function mapImpactStory(post) {
+  const title = decodeEntities(post.title?.rendered ?? "");
+  const allTerms = (post._embedded?.["wp:term"] ?? []).flat();
+  const countryTerm = allTerms.find((t) => t.taxonomy === "country");
+
+  const media = post._embedded?.["wp:featuredmedia"]?.[0];
+  const mediaSrc =
+    media?.media_details?.sizes?.medium_large?.source_url ||
+    media?.media_details?.sizes?.large?.source_url ||
+    media?.source_url;
+
+  return {
+    link: post.link,
+    image: mediaSrc
+      ? { src: mediaSrc, alt: media.alt_text || title }
+      : { ...FALLBACK_IMAGE, alt: title },
+    tag: countryTerm ? [decodeEntities(countryTerm.name)] : [],
+    heading: title,
+    date: formatWpDate(post.date),
+    readTime: undefined,
+  };
+}
+
+export async function getWpImpactStories({ page = 1, perPage = 12 } = {}) {
+  const { data, totalPages, total } = await fetchJson(
+    `/impact-stories?page=${page}&per_page=${perPage}&orderby=date&order=desc` +
+      `&_embed=wp:featuredmedia,wp:term&_fields=id,date,link,title,_links,_embedded`
+  );
+  return { items: data.map(mapImpactStory), totalPages, total };
+}

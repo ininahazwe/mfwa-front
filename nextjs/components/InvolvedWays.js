@@ -1,17 +1,17 @@
-// API: { id?, eyebrow, title, panels[] }
-//   panel: { id, tone, motif, eyebrow, title, text?, chips?|items?, link? }
-// Full-width pastel split, same frame as AboutStrategy's two panels — used
-// both as the Get Involved hub's "two ways to join" teaser (each panel
-// linking out to its own page) and, on the Intern/Volunteer detail pages,
-// as the specifics section (no link needed, since it's already the detail
-// page).
+// API: involved.ways { eyebrow, title, panels[] }
+//   panel: { id, tone, motif, eyebrow, title, text, chips?|items?, link? }
+// `link` is optional — also reused by InvolvedBody.js for a page's
+// `split` panels (e.g. getInternPage()'s eligibility/requirements
+// panels), which don't all have one.
+// Teaser split, same frame as AboutStrategy's two pastel panels — a short
+// pitch for each way to join the team, each linking to its own full page.
 import Reveal from "./Reveal";
 import Motif from "./Motif";
 import { ARROW_RIGHT } from "./AboutIcons";
 
 export default function InvolvedWays({ data }) {
   return (
-    <section className="ab-section ab-strategy" id={data.id || "ways"}>
+    <section className="ab-section ab-strategy" id="ways">
       <div className="ab-wrap">
         <Reveal as="header" className="ab-head ab-head--center">
           <p className="eyebrow">{data.eyebrow}</p>

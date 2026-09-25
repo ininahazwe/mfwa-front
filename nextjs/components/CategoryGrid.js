@@ -4,14 +4,23 @@ import { useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
 
-const PAGE_SIZE = 10;
 const AUTO_LOAD_LIMIT = 3; // number of scroll-triggered batches before the button takes over
 
 // apiBase lets this same grid drive the "Where We Work" country archives
-// (app/api/country/[slug]/posts) as well as category archives — the two
-// are identical in shape (see getCountryPage in lib/content.js), so this
-// generalizes the one existing difference (the API path) instead of
-// duplicating ~120 lines of load-more/IntersectionObserver logic.
+// (app/api/country/[slug]/posts) and the single "Our Impact" archive
+// (app/api/impact-stories/posts, no per-term slug) as well as category
+// archives — all identical in shape (see getCountryPage/
+// getImpactStoriesPage in lib/content.js), so this generalizes the
+// differences (API path, page size) instead of duplicating ~120 lines of
+// load-more/IntersectionObserver logic. `slug` is omitted for an archive
+// that isn't per-term, like Impact Stories.
+//
+// `extraParams` covers the one case `slug`-in-path doesn't: the merged
+// Where We Work × Issues explorer (app/api/where-we-work/posts), which
+// has TWO independent optional filters (country, category) rather than
+// one required slug — those go on the query string instead. Keys with a
+// null/undefined/empty value are dropped rather than being sent as the
+// literal string "undefined".
 export default function CategoryGrid({
   slug,
   initialItems,
@@ -19,6 +28,8 @@ export default function CategoryGrid({
   initialTotal,
   apiBase = "/api/category",
   endMessage = "You've reached the end of this category.",
+  pageSize = 10,
+  extraParams = {},
 }) {
   const [items, setItems] = useState(initialItems);
   const [page, setPage] = useState(1);
@@ -40,7 +51,14 @@ export default function CategoryGrid({
     setError(null);
 
     const nextPage = page + 1;
-    fetch(`${apiBase}/${slug}/posts?page=${nextPage}&perPage=${PAGE_SIZE}`)
+    const qs = new URLSearchParams(
+      Object.fromEntries(
+        Object.entries({ page: nextPage, perPage: pageSize, ...extraParams }).filter(
+          ([, v]) => v !== null && v !== undefined && v !== ""
+        )
+      )
+    ).toString();
+    fetch(`${apiBase}${slug ? `/${slug}` : ""}/posts?${qs}`)
       .then((res) => {
         if (!res.ok) throw new Error("request-failed");
         return res.json();

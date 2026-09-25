@@ -4,6 +4,12 @@ import { getWpCategoryBySlug, getWpCategoryPosts } from "@/lib/wp";
 // Server-side proxy for the category page's "load more" pagination.
 // Kept as a route (rather than calling lib/wp.js straight from the
 // client) so the WordPress API base URL and query shape stay server-side.
+//
+// Currently unused: /category/[slug] redirects to the merged Where We
+// Work × Issues explorer (/api/where-we-work/posts) instead. Left in
+// place rather than deleted (no file-delete access this session) — still
+// correct if a single-category archive without the map is ever wanted
+// again.
 export async function GET(request, { params }) {
   const { slug } = await params;
   const { searchParams } = new URL(request.url);
