@@ -263,3 +263,88 @@ export async function getWpImpactStories({ page = 1, perPage = 12 } = {}) {
   );
   return { items: data.map(mapImpactStory), totalPages, total };
 }
+
+// "Reports" (nav, 2026-09-27) — the live site's Publications > Reports
+// archive (https://mfwa.org/publications/reports/), a custom post type
+// whose permalinks are /report/<slug> (confirmed by visiting several live
+// report pages), separate from both regular posts and "impact-stories".
+// Same card shape as an impact story (title/image/date/link) so it can
+// reuse the same story__* card markup (see components/ReportsGrid.js).
+//
+// Sidebar filters (2026-09-27, at Yv's call — see
+// https://mfwa.org/publications/foedr-reports/ for the reference layout: a
+// left-hand list of report types — Analytical/Annual/Media Monitoring/
+// Monthly/Policy Briefs/Quarterly/Research/Strategy & Framework — next to
+// a 3-column grid). That list's own REST taxonomy key still couldn't be
+// confirmed (same unconfirmed-rest_base caveat as impact-stories — no REST
+// discovery link is exposed on the live pages, and the sidebar's own links
+// are internal plugin anchors like "#blogger_filters_758_content", not
+// real taxonomy-slug URLs). Rather than hardcode a guessed taxonomy key,
+// `filterTerms` below just reads back whatever custom taxonomy terms
+// WordPress actually embeds on each report via `_embed=wp:term` — that
+// works regardless of the taxonomy's name — excluding the couple of
+// taxonomies used site-wide for other purposes ("category", "post_tag")
+// so a report that also happens to carry one of those doesn't produce a
+// bogus filter button. getReportsPage() then derives the sidebar's actual
+// button list from whatever terms are present across the fetched reports,
+// so a type with zero reports never shows a button (Yv's other ask).
+function mapReport(post) {
+  const title = decodeEntities(post.title?.rendered ?? "");
+  const media = post._embedded?.["wp:featuredmedia"]?.[0];
+  const mediaSrc =
+    media?.media_details?.sizes?.medium_large?.source_url ||
+    media?.media_details?.sizes?.large?.source_url ||
+    media?.source_url;
+
+  const allTerms = (post._embedded?.["wp:term"] ?? []).flat();
+  const filterTerms = allTerms
+    .filter((t) => t.taxonomy && !["category", "post_tag"].includes(t.taxonomy))
+    .map((t) => ({ slug: t.slug, name: decodeEntities(t.name) }));
+
+  return {
+    link: post.link,
+    image: mediaSrc
+      ? { src: mediaSrc, alt: media.alt_text || title }
+      : { ...FALLBACK_IMAGE, alt: title },
+    tag: [],
+    heading: title,
+    date: formatWpDate(post.date),
+    readTime: undefined,
+    filterTerms,
+  };
+}
+
+export async function getWpReports({ page = 1, perPage = 12 } = {}) {
+  const { data, totalPages, total } = await fetchJson(
+    `/report?page=${page}&per_page=${perPage}&orderby=date&order=desc` +
+      `&_embed=wp:featuredmedia,wp:term&_fields=id,date,link,title,_links,_embedded`
+  );
+  return { items: data.map(mapReport), totalPages, total };
+}
+
+// The new /reports page fetches every report up front and filters
+// client-side (see ReportsGrid.js) instead of paginating per filter
+// click, so it needs the whole set, not one page at a time. A single
+// `per_page=100` request (WordPress REST's own ceiling) turned out to be
+// the wrong way to get there in practice: with `_embed=wp:featuredmedia`
+// pulling every registered image size for each report's cover photo, 100
+// reports came back as 3.2MB from the real site — and Next.js's fetch
+// data cache silently refuses to cache (and the page then fails to
+// render, per Yv 2026-09-27) any single response over 2MB. Fetching in
+// smaller batches keeps each individual request's cache entry well under
+// that ceiling. `maxPages` is a safety cap, not an expected limit — 40
+// reports/page × 10 pages is 400 reports, comfortably above the current
+// archive size; if it's ever actually hit, reports beyond it just won't
+// appear (better than an unbounded loop against a runaway total).
+export async function getAllWpReports({ perPage = 40, maxPages = 10 } = {}) {
+  let page = 1;
+  let totalPages = 1;
+  const items = [];
+  do {
+    const res = await getWpReports({ page, perPage });
+    items.push(...res.items);
+    totalPages = res.totalPages;
+    page += 1;
+  } while (page <= totalPages && page <= maxPages);
+  return { items, total: items.length };
+}

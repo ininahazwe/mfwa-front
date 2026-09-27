@@ -2052,6 +2052,69 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:0 auto;
 }
 
+/* Reports page: sidebar filters + grid (2026-09-27, at Yv's call, mirrors
+   https://mfwa.org/publications/foedr-reports/ — see components/
+   ReportsGrid.js). Separate from .category__grid (still used, unchanged,
+   by every other archive page — Impact Stories, Where We Work, category/
+   country pages) since only /reports has a sidebar. */
+.reports-layout{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:clamp(28px, 3vw, 48px);
+  align-items:start;
+  padding-top:16px;
+}
+.reports-filters{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  position:sticky;
+  top:32px;
+}
+.reports-filters__btn{
+  text-align:left;
+  padding:11px 16px;
+  border:none;
+  border-radius:var(--radius-sm);
+  background:none;
+  font-size:13.5px;
+  font-weight:600;
+  color:var(--ink-muted);
+  cursor:pointer;
+  transition:background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.reports-filters__btn:hover{ color:var(--navy-ink); background:#f5faff; }
+.reports-filters__btn.is-active{ background:var(--navy); color:#fff; }
+.reports-filters__btn.is-active:hover{ color:#fff; }
+
+.reports-main{ min-width:0; }
+.reports-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:clamp(20px, 2.2vw, 32px);
+}
+.reports-empty{
+  margin:clamp(28px, 4vh, 40px) 0 0;
+  font-size:13.5px;
+  color:var(--ink-muted);
+}
+
+@media (max-width:900px){
+  .reports-layout{ grid-template-columns:1fr; }
+  .reports-filters{
+    position:static;
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .reports-filters__btn{ border:1px solid rgba(15,46,85,.16); border-radius:999px; padding:8px 14px; }
+  .reports-filters__btn.is-active{ border-color:var(--navy); }
+  .reports-grid{ grid-template-columns:repeat(2, 1fr); }
+}
+@media (max-width:600px){
+  .reports-grid{ grid-template-columns:1fr; }
+}
+
 /* -- Responsive ------------------------------------------- */
 @media (max-width:1180px){
   .category__grid{ grid-template-columns:repeat(2, 1fr); gap:36px 32px; }
@@ -3029,6 +3092,25 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   text-transform:uppercase;
   color:var(--m-a);
   opacity:.75;
+}
+
+/* Our Staff hero photo (2026-09-27, replaces that hero's tile grid — see
+   the note in StaffHero.js; .st-tiles/.st-tile above are untouched,
+   still used by BoardHero.js). The wrapping element keeps the plain
+   .ab-tiles class for the same grid slot/positioning AboutHero/BoardHero/
+   InvolvedHero's tile grids use (column 8/-1, row 1, justify-self:end,
+   stacking below the copy at <=900px — see .ab-tiles' own responsive
+   rules) — only the content inside that slot changes here. */
+.st-photo{ overflow:hidden; }
+/* .ab-tiles is a 3-column grid (for the team-count tiles on Board/
+   Involved heroes) — override to a plain block here so the single
+   photo isn't auto-placed into just the first of those 3 tracks. */
+.ab-tiles.st-photo{ display:block; }
+.st-photo__img{
+  display:block;
+  width:100%;
+  aspect-ratio:16 / 9; /* close to the old 3-column tile grid's overall shape */
+  object-fit:cover;
 }
 
 /* Directory */

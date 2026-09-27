@@ -91,5 +91,35 @@ http.createServer((req, res) => {
       { "X-WP-TotalPages": "1", "X-WP-Total": "1" }
     );
   }
+  if (url.pathname === "/wp-json/wp/v2/report") {
+    const page = Number(url.searchParams.get("page") || "1");
+    const perPage = Number(url.searchParams.get("per_page") || "12");
+    const total = 45; // >40 (getAllWpReports' batch size) on purpose, to exercise its multi-page loop
+    // Cycles through 3 mock "report-type" terms (+ a couple with none, to
+    // simulate real reports that don't carry the taxonomy) so the sidebar
+    // filter UI (ReportsGrid.js) has more than one button to test against.
+    const MOCK_TYPES = [
+      { taxonomy: "report-type", slug: "annual-reports", name: "Annual Reports" },
+      { taxonomy: "report-type", slug: "policy-briefs", name: "Policy Briefs/Papers" },
+      { taxonomy: "report-type", slug: "research-reports", name: "Research Reports" },
+    ];
+    return send(
+      res,
+      200,
+      Array.from({ length: Math.min(perPage, Math.max(0, total - (page - 1) * perPage)) }, (_, i) => {
+        const n = (page - 1) * perPage + i + 1;
+        const type = MOCK_TYPES[n % (MOCK_TYPES.length + 1)];
+        return {
+          id: n,
+          date: "2026-07-30T09:00:00",
+          link: `https://mfwa.org/report/mock-report-${n}/`,
+          title: { rendered: `Mock report ${n}` },
+          _links: {},
+          _embedded: { "wp:term": type ? [[type]] : [] },
+        };
+      }),
+      { "X-WP-TotalPages": String(Math.max(1, Math.ceil(total / perPage))), "X-WP-Total": String(total) }
+    );
+  }
   send(res, 404, {});
 }).listen(PORT, () => console.log("mock on", PORT));

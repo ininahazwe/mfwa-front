@@ -1,25 +1,17 @@
 // API: staff.hero { crumbs[], eyebrow, titleLines[], lede, primary, secondary }
-//      staff.teams[] { id, label, count }
-// Same frame as AboutHero (copy left, square tile grid right); here each
-// tile is one team of the directory with its head-count and a journalism
-// motif, the dark tile carrying the total.
+// Same frame as AboutHero (copy left, right-hand grid slot) — the right
+// side used to be a tile grid of team head-counts (still is on BoardHero,
+// which shares the .ab-tiles/.st-tiles/.st-tile CSS below — left
+// untouched there), but at Yv's call (2026-09-27) this one is now a
+// single real staff photo instead: the per-team counts already live in
+// StaffDirectory just below on this same page, so nothing is lost by
+// dropping them from the hero. `teams` is no longer used here (still
+// passed to StaffDirectory by app/about-us/our-staff/page.js).
 import Reveal from "./Reveal";
-import Motif from "./Motif";
+import FadeImg from "./FadeImg";
 import { ARROW_RIGHT } from "./AboutIcons";
 
-const TILE_STYLE = {
-  all: { variant: "press", tone: "dark" },
-  leadership: { variant: "mic", tone: "pale" },
-  programmes: { variant: "tower", tone: "white" },
-  journalism: { variant: "search", tone: "pale" },
-  communications: { variant: "camera", tone: "white" },
-  operations: { variant: "newspaper", tone: "pale" },
-};
-
-export default function StaffHero({ data, teams }) {
-  // Total first, then the teams — reads as "37 people, of whom…"
-  const tiles = [...teams.filter((t) => t.id === "all"), ...teams.filter((t) => t.id !== "all")];
-
+export default function StaffHero({ data }) {
   return (
     <section className="ab-hero">
       <div className="ab-wrap ab-hero__grid">
@@ -64,17 +56,13 @@ export default function StaffHero({ data, teams }) {
           </Reveal>
         </div>
 
-        <Reveal as="ul" className="ab-tiles st-tiles ab-stagger" stagger aria-label="Our staff by team">
-          {tiles.map((team) => {
-            const style = TILE_STYLE[team.id] ?? { variant: "dots", tone: "white" };
-            return (
-              <li className={`ab-tile ab-tile--${style.tone} st-tile`} key={team.id}>
-                <Motif variant={style.variant} className="st-tile__motif" />
-                <span className="st-tile__num">{team.count}</span>
-                <span className="st-tile__label">{team.id === "all" ? "People" : team.label}</span>
-              </li>
-            );
-          })}
+        <Reveal as="div" className="ab-tiles st-photo">
+          <FadeImg
+            className="st-photo__img"
+            src="/images/staff-image.jpg"
+            alt="The MFWA team"
+            removeOnError
+          />
         </Reveal>
       </div>
     </section>

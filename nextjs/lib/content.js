@@ -15,6 +15,8 @@ import {
   getWpCountryBySlug,
   getWpCountryPosts,
   getWpImpactStories,
+  getWpReports,
+  getAllWpReports,
   getWpCategories,
   getWpCountriesBySlug,
   getWpFilteredPosts,
@@ -30,21 +32,20 @@ export async function getHeader() {
     brandNameLines: ["Media Foundation", "for West Africa"],
     // "Our Work" points at its own hub (/programmes), "Where We Work" and
     // "Our Impact" (the live site's own label for this item) are real
-    // pages too now — none of the three existed yet when this nav was
-    // first written. "Stories" still has no dedicated page, so it stays as
-    // an anchor to its homepage section (components/Latest.js#stories) —
-    // but as "/#slug" rather than a bare "#slug", so it still works when
-    // the header renders on any other page instead of silently doing
-    // nothing (a bare "#stories" only scrolls if you're already on "/").
-    // Donate has a real destination too, matching the external link
-    // already used elsewhere on the site (e.g. getCta, PROGRAMME_TILES'
-    // "Donate" tile). "Where We Work" now also covers the live site's
-    // "Issues" menu (its 13 categories are chips on that same page — see
-    // getWhereWeWorkPage()) — deliberately no separate "Issues" entry.
+    // pages too now. Donate has a real destination too, matching the
+    // external link already used elsewhere on the site (e.g. getCta,
+    // PROGRAMME_TILES' "Donate" tile). "Where We Work" now also covers the
+    // live site's "Issues" menu (its 13 categories are chips on that same
+    // page — see getWhereWeWorkPage()) — deliberately no separate "Issues"
+    // entry. "Reports" (2026-09-27, at Yv's call) replaces the previous
+    // "Stories" entry — that one only pointed at the homepage's own
+    // "Latest" section (components/Latest.js#stories, still there,
+    // unchanged); this instead links to a real page for the live site's
+    // Publications > Reports archive — see getReportsPage().
     nav: [
       { label: "Our Work", href: "/programmes" },
       { label: "Where We Work", href: "/where-we-work" },
-      { label: "Stories", href: "/#stories" },
+      { label: "Reports", href: "/reports" },
       { label: "Our Impact", href: "/impact-stories" },
       { label: "About", href: "/about-us" },
     ],
@@ -417,7 +418,7 @@ export async function getFooter() {
     nav: [
       { label: "Our Work", href: "/programmes" },
       { label: "Where We Work", href: "/where-we-work" },
-      { label: "Stories", href: "/#stories" },
+      { label: "Reports", href: "/reports" },
       { label: "Our Impact", href: "/impact-stories" },
       { label: "About", href: "/about-us" },
     ],
@@ -853,6 +854,50 @@ export async function getImpactStoriesPage() {
       "Documented outcomes from our investigative journalism, advocacy and capacity-building work across West Africa — policy reversals, recovered public funds, safer newsrooms and recognised journalism.",
     articles: items,
     totalPages,
+    total,
+  };
+}
+
+// -- Reports (Publications > Reports, 2026-09-27) --------------------------
+//
+// Mirrors getImpactStoriesPage() exactly — same card grid, same
+// pagination size, same Newsletter footer — just pointed at
+// getWpReports() (the site's "report" custom post type) instead. See the
+// note above getWpReports() in lib/wp.js for what's still unconfirmed
+// (the 3-tab category filter on the live archive).
+export async function getReportsPage() {
+  // Fetches every report (in size-capped batches — see the note on
+  // getAllWpReports() in lib/wp.js, added after a single big per_page=100
+  // request overflowed Next's 2MB fetch-cache limit on the real site),
+  // since the sidebar-filtered grid below needs the whole set to compute
+  // which filters actually have content and to filter client-side, not a
+  // page at a time. See components/ReportsGrid.js for the sidebar itself.
+  const { items, total } = await getAllWpReports();
+
+  // Derive the sidebar's filter buttons from what's actually in the
+  // fetched reports (Yv's call, 2026-09-27: "on affiche que les filtres
+  // qui ont du contenu") rather than a hardcoded list mirroring the live
+  // site's 8 report types — a type with zero reports today just doesn't
+  // get a button, and one gets added automatically the day a report using
+  // it is published. Sorted alphabetically, matching the live reference
+  // page's own (non count-based) button order.
+  const filterCounts = new Map();
+  for (const item of items) {
+    for (const term of item.filterTerms) {
+      const existing = filterCounts.get(term.slug);
+      if (existing) existing.count += 1;
+      else filterCounts.set(term.slug, { slug: term.slug, name: term.name, count: 1 });
+    }
+  }
+  const filters = [...filterCounts.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+  return {
+    eyebrow: "Publications",
+    label: "Reports",
+    description:
+      "Annual reports, policy papers and research from MFWA on media freedom, digital rights and democratic governance across West Africa.",
+    articles: items,
+    filters,
     total,
   };
 }

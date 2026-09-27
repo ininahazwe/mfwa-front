@@ -212,9 +212,16 @@ export default function WhereWeWorkList({ data, initialItems, initialTotalPages,
                         r={active || selected ? 4.5 : 3}
                         style={{ fill: SEVERITY_COLOR[country.severity] }}
                       />
-                      <title>
-                        {country.name} — {SEVERITY_LABEL[country.severity]} ({country.count})
-                      </title>
+                      {/* No SVG <title> tooltip here: React 19 treats ANY
+                          <title> element as document-metadata and hoists
+                          it into <head>, regardless of SVG namespace — so
+                          during SSR every one of these renders empty
+                          (only the real page title survives), while the
+                          client's first paint keeps the text, producing a
+                          hydration mismatch on every marker. The name/
+                          severity/count this would have shown are already
+                          fully covered by the <a>'s aria-label above and
+                          by the live .ww-map-detail hover panel below. */}
                     </a>
                   </Marker>
                 );
