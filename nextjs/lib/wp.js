@@ -13,15 +13,16 @@ const WP_API_BASE = process.env.WP_API_BASE || "https://mfwa.org/wp-json/wp/v2";
 const REVALIDATE_SECONDS = 300;
 
 // mfwa.org sits behind a CDN/proxy (Cloudflare) in front of shared
-// WordPress hosting — a heavier query (e.g. reports with
-// _embed=wp:featuredmedia,wp:term across many posts) occasionally makes
-// the origin too slow to accept the CDN's connection in time, surfacing
-// as a 522 "origin connection timed out" (or a sibling 5xx/52x code, or
-// even a raw network error) rather than a real problem with the request
-// itself. Retrying a couple of times with a short backoff clears these
-// transient blips in practice, so a single flaky response doesn't take
-// the whole page down with it. A real 4xx (bad request, not found) is
-// NOT retried — that's a genuine error, retrying would just waste time.
+// WordPress hosting — a heavier query across many posts occasionally
+// makes the origin too slow to accept the CDN's connection in time,
+// surfacing as a 522 "origin connection timed out" (or a sibling 5xx/52x
+// code, or even a raw network error) rather than a real problem with the
+// request itself. Retrying a couple of times with a short backoff clears
+// these transient blips in practice, so a single flaky response doesn't
+// take the whole page down with it. A real 4xx (bad request, not found)
+// is NOT retried — that's a genuine error, retrying would just waste
+// time. The same CDN/cache layer is also, separately, why `_embed` is
+// never used below any more — see the note above mapPost() for why.
 const FETCH_RETRIES = 2;
 const RETRY_DELAY_MS = 600;
 
@@ -99,31 +100,76 @@ function formatWpDate(isoDate) {
 // treatment (there's no smaller image to fall back to further).
 const FALLBACK_IMAGE = { src: "/images/mfwa-logo-01.png", isFallback: true };
 
-// Maps a WP REST post (requested with _embed=wp:featuredmedia,wp:term) into
-// the flat shape CategoryGrid/story cards already expect elsewhere on the
-// site. wp:term's embedded array order mirrors _links.wp:term's taxonomy
-// order for this site: [0] category, [1] post_tag, [2] country — the
-// country term is what fills the second half of the existing two-part
-// .story__tag pattern (e.g. "Digital Rights · Ghana").
-function mapPost(post) {
-  const title = decodeEntities(post.title?.rendered ?? "");
-  const terms = post._embedded?.["wp:term"] ?? [];
-  const categoryTerms = terms[0] ?? [];
-  const countryTerms = terms[2] ?? [];
-  const primaryTag = categoryTerms[0]?.name ?? null;
-  const secondaryTag = countryTerms[0]?.name ?? null;
+// -- Resolving media/taxonomy terms WITHOUT `_embed` --------------------
+//
+// Fix (2026-09-28, at Yv's call): every fetch below used to ask for
+// `_embed=wp:featuredmedia,wp:term` and read the result back from
+// `post._embedded`. That worked perfectly against mock-wp-server.cjs,
+// but confirmed dead against the real site (Yv pasted three separate
+// live URLs, one per rel — /report, /posts, and a plain `_embed=true` —
+// and NONE of them ever produced an `_embedded` key, only `_links`
+// pointing at the un-fetched resources). Most likely explanation: mfwa.org
+// sits behind a CDN/cache layer (see fetchJson()'s note on 522s) that
+// caches these REST responses by path only, ignoring the `_embed` query
+// param entirely and always serving the same un-embedded response. So in
+// production, every function below was silently getting no cover image
+// and no category/country/report-type name for every single post —
+// invisible against the mock, which does support embedding, so nothing
+// here ever failed a test; it only failed against the real API.
+//
+// The fix drops `_embed` completely and instead reads the plain id-array
+// fields WordPress already puts directly on every post object regardless
+// of embedding (confirmed on the real /report response: `"country":[..],
+// "report-type":[762]` etc. are present with no `_embed` at all), then
+// resolves those ids to names with one extra batched request per
+// taxonomy/media — `include=id1,id2,...` is core REST API, works on
+// /media and on any taxonomy's own collection endpoint. This also drops
+// the old positional-index assumption ([0] category, [1] post_tag, [2]
+// country) in mapPost() below in favour of named fields, which is more
+// robust anyway.
+async function getWpMediaByIds(ids) {
+  const uniqueIds = [...new Set(ids)].filter(Boolean);
+  if (uniqueIds.length === 0) return new Map();
+  const { data } = await fetchJson(
+    `/media?include=${uniqueIds.join(",")}&per_page=100&_fields=id,source_url,alt_text,media_details`
+  );
+  return new Map(data.map((m) => [m.id, m]));
+}
 
-  const media = post._embedded?.["wp:featuredmedia"]?.[0];
-  const mediaSrc =
+// `restBase` is the taxonomy's own REST collection path — "categories"
+// (note the plural, unlike the `categories` post field which is also
+// plural — WordPress is consistent here), "country", "report-type", etc.
+async function getWpTermsByIds(restBase, ids) {
+  const uniqueIds = [...new Set(ids)].filter(Boolean);
+  if (uniqueIds.length === 0) return new Map();
+  const { data } = await fetchJson(
+    `/${restBase}?include=${uniqueIds.join(",")}&per_page=100&_fields=id,name,slug`
+  );
+  return new Map(data.map((t) => [t.id, { id: t.id, name: decodeEntities(t.name), slug: t.slug }]));
+}
+
+function mediaToImage(media, alt) {
+  const src =
     media?.media_details?.sizes?.medium_large?.source_url ||
     media?.media_details?.sizes?.large?.source_url ||
     media?.source_url;
+  return src ? { src, alt: media.alt_text || alt } : { ...FALLBACK_IMAGE, alt };
+}
+
+// Maps a WP REST post (requested with plain id fields, no `_embed` — see
+// the note above) into the flat shape CategoryGrid/story cards already
+// expect elsewhere on the site. `categoryMap`/`countryMap` are id→term
+// lookups built by the caller from `getWpTermsByIds()` — every post in a
+// single response shares one such map, resolved once per page of results
+// rather than once per post.
+function mapPost(post, { mediaMap, categoryMap, countryMap } = {}) {
+  const title = decodeEntities(post.title?.rendered ?? "");
+  const primaryTag = categoryMap?.get(post.categories?.[0])?.name ?? null;
+  const secondaryTag = countryMap?.get(post.country?.[0])?.name ?? null;
 
   return {
     link: post.link,
-    image: mediaSrc
-      ? { src: mediaSrc, alt: media.alt_text || title }
-      : { ...FALLBACK_IMAGE, alt: title },
+    image: mediaToImage(mediaMap?.get(post.featured_media), title),
     // Filter out the missing half rather than rendering an empty "·" —
     // WordPress posts aren't guaranteed to carry a country term.
     tag: [primaryTag, secondaryTag].filter(Boolean),
@@ -133,6 +179,22 @@ function mapPost(post) {
     // one; the UI treats this as optional.
     readTime: undefined,
   };
+}
+
+// Fetches a page of /posts plus everything mapPost() needs to resolve
+// each card's image/tags, in one batch (1 posts request + up to 3 lookup
+// requests run in parallel, never one lookup per post).
+async function fetchPostsWithTerms(query) {
+  const { data, totalPages, total } = await fetchJson(
+    `/posts?${query}&_fields=id,date,link,title,featured_media,categories,country`
+  );
+  const [mediaMap, categoryMap, countryMap] = await Promise.all([
+    getWpMediaByIds(data.map((p) => p.featured_media)),
+    getWpTermsByIds("categories", data.flatMap((p) => p.categories ?? [])),
+    getWpTermsByIds("country", data.flatMap((p) => p.country ?? [])),
+  ]);
+  const items = data.map((p) => mapPost(p, { mediaMap, categoryMap, countryMap }));
+  return { items, totalPages, total };
 }
 
 export async function getWpCategoryBySlug(slug) {
@@ -151,11 +213,9 @@ export async function getWpCategoryBySlug(slug) {
 }
 
 export async function getWpCategoryPosts(categoryId, { page = 1, perPage = 10 } = {}) {
-  const { data, totalPages, total } = await fetchJson(
-    `/posts?categories=${categoryId}&page=${page}&per_page=${perPage}&orderby=date&order=desc` +
-      `&_embed=wp:featuredmedia,wp:term&_fields=id,date,link,title,_links,_embedded`
+  return fetchPostsWithTerms(
+    `categories=${categoryId}&page=${page}&per_page=${perPage}&orderby=date&order=desc`
   );
-  return { items: data.map(mapPost), totalPages, total };
 }
 
 // The "Where We Work" country pages are archives on the site's own custom
@@ -179,11 +239,9 @@ export async function getWpCountryBySlug(slug) {
 }
 
 export async function getWpCountryPosts(countryId, { page = 1, perPage = 10 } = {}) {
-  const { data, totalPages, total } = await fetchJson(
-    `/posts?country=${countryId}&page=${page}&per_page=${perPage}&orderby=date&order=desc` +
-      `&_embed=wp:featuredmedia,wp:term&_fields=id,date,link,title,_links,_embedded`
+  return fetchPostsWithTerms(
+    `country=${countryId}&page=${page}&per_page=${perPage}&orderby=date&order=desc`
   );
-  return { items: data.map(mapPost), totalPages, total };
 }
 
 // Batch-resolves several "country" taxonomy slugs to their WordPress term
@@ -219,14 +277,11 @@ export async function getWpFilteredPosts({ countryId, categoryId, page = 1, perP
     per_page: String(perPage),
     orderby: "date",
     order: "desc",
-    _embed: "wp:featuredmedia,wp:term",
-    _fields: "id,date,link,title,_links,_embedded",
   });
   if (countryId) params.set("country", String(countryId));
   if (categoryId) params.set("categories", String(categoryId));
 
-  const { data, totalPages, total } = await fetchJson(`/posts?${params.toString()}`);
-  return { items: data.map(mapPost), totalPages, total };
+  return fetchPostsWithTerms(params.toString());
 }
 
 // Resolves the 13 "Issues" category slugs (the live site's own menu,
@@ -254,36 +309,23 @@ export async function getWpCategories(slugs) {
 // the regular "post" type: on the live site every story's URL is
 // /impact-stories/<slug>/ (no /category/ segment), which is the rewrite
 // shape of a custom post type with its own archive, not a category link.
-// UNCONFIRMED: this session's network access to mfwa.org was blocked
-// (the sandbox's egress proxy refuses the domain, and WebFetch's
-// provenance rule blocked reaching /wp-json/wp/v2/types or /taxonomies
-// directly), so the rest_base "impact-stories" below is inferred from
-// that URL, not verified against the REST API the way "country" was.
-// Verify against a live /wp-json/wp/v2/types response before this goes
-// live, and fix the path below if the real rest_base differs.
-//
-// Each card on the live archive shows a single tag (a country name, e.g.
-// "Ghana"), not the two-part "Category · Country" pattern regular posts
-// use — so this maps terms by taxonomy name instead of mapPost()'s fixed
-// positional indices (which are specific to the "post" type's taxonomy
-// order and aren't safe to assume hold for a different post type).
-function mapImpactStory(post) {
+// UNCONFIRMED: the rest_base "impact-stories" below is inferred from that
+// URL, not verified against the REST API the way "country"/"report-type"
+// were (see getWpReports() below) — verify against a live
+// /wp-json/wp/v2/types response before this goes live, and fix the path
+// below if the real rest_base differs. Separately, whether this post type
+// actually carries the "country" taxonomy (assumed below, single tag per
+// card e.g. "Ghana") is ALSO unconfirmed for the same reason — if it
+// doesn't, `country` just comes back undefined per post and the card
+// simply shows no tag (graceful, not a crash).
+function mapImpactStory(post, { mediaMap, countryMap } = {}) {
   const title = decodeEntities(post.title?.rendered ?? "");
-  const allTerms = (post._embedded?.["wp:term"] ?? []).flat();
-  const countryTerm = allTerms.find((t) => t.taxonomy === "country");
-
-  const media = post._embedded?.["wp:featuredmedia"]?.[0];
-  const mediaSrc =
-    media?.media_details?.sizes?.medium_large?.source_url ||
-    media?.media_details?.sizes?.large?.source_url ||
-    media?.source_url;
+  const countryName = countryMap?.get(post.country?.[0])?.name ?? null;
 
   return {
     link: post.link,
-    image: mediaSrc
-      ? { src: mediaSrc, alt: media.alt_text || title }
-      : { ...FALLBACK_IMAGE, alt: title },
-    tag: countryTerm ? [decodeEntities(countryTerm.name)] : [],
+    image: mediaToImage(mediaMap?.get(post.featured_media), title),
+    tag: countryName ? [countryName] : [],
     heading: title,
     date: formatWpDate(post.date),
     readTime: undefined,
@@ -293,9 +335,14 @@ function mapImpactStory(post) {
 export async function getWpImpactStories({ page = 1, perPage = 12 } = {}) {
   const { data, totalPages, total } = await fetchJson(
     `/impact-stories?page=${page}&per_page=${perPage}&orderby=date&order=desc` +
-      `&_embed=wp:featuredmedia,wp:term&_fields=id,date,link,title,_links,_embedded`
+      `&_fields=id,date,link,title,featured_media,country`
   );
-  return { items: data.map(mapImpactStory), totalPages, total };
+  const [mediaMap, countryMap] = await Promise.all([
+    getWpMediaByIds(data.map((p) => p.featured_media)),
+    getWpTermsByIds("country", data.flatMap((p) => p.country ?? [])),
+  ]);
+  const items = data.map((p) => mapImpactStory(p, { mediaMap, countryMap }));
+  return { items, totalPages, total };
 }
 
 // "Reports" (nav, 2026-09-27) — the live site's Publications > Reports
@@ -309,37 +356,32 @@ export async function getWpImpactStories({ page = 1, perPage = 12 } = {}) {
 // https://mfwa.org/publications/foedr-reports/ for the reference layout: a
 // left-hand list of report types — Analytical/Annual/Media Monitoring/
 // Monthly/Policy Briefs/Quarterly/Research/Strategy & Framework — next to
-// a 3-column grid). That list's own REST taxonomy key still couldn't be
-// confirmed (same unconfirmed-rest_base caveat as impact-stories — no REST
-// discovery link is exposed on the live pages, and the sidebar's own links
-// are internal plugin anchors like "#blogger_filters_758_content", not
-// real taxonomy-slug URLs). Rather than hardcode a guessed taxonomy key,
-// `filterTerms` below just reads back whatever custom taxonomy terms
-// WordPress actually embeds on each report via `_embed=wp:term` — that
-// works regardless of the taxonomy's name — excluding the couple of
-// taxonomies used site-wide for other purposes ("category", "post_tag")
-// so a report that also happens to carry one of those doesn't produce a
-// bogus filter button. getReportsPage() then derives the sidebar's actual
-// button list from whatever terms are present across the fetched reports,
-// so a type with zero reports never shows a button (Yv's other ask).
-function mapReport(post) {
+// a 3-column grid). CONFIRMED 2026-09-28 (Yv pasted a live /report?_embed
+// response, which — see the module note above — never actually embeds,
+// but DOES show the raw taxonomy fields WordPress attaches to every
+// report): the real taxonomy is `report-type` (rest_base "report-type",
+// e.g. slug "policy-briefs-papers" on a report classed
+// "Policy Briefs/Papers" — matches the reference page's own list
+// exactly). Two more taxonomies exist on this post type but are NOT the
+// sidebar's source: `report-category` (the 3 higher-level
+// Annual/Freedom-of-Expression/Media-for-Democracy groupings, not ported
+// — see the project doc's "Non traité" notes) and `publication-type`
+// (empty on every report seen so far). `report-type` is used explicitly
+// below now, replacing the old "read back whatever custom taxonomy
+// WordPress embeds, whatever its name" fallback — that fallback existed
+// only because embedding could never be verified as working in the first
+// place, and it's now confirmed not to work at all (see above), so there
+// was nothing to read back regardless of taxonomy name.
+function mapReport(post, { mediaMap, reportTypeMap } = {}) {
   const title = decodeEntities(post.title?.rendered ?? "");
-  const media = post._embedded?.["wp:featuredmedia"]?.[0];
-  const mediaSrc =
-    media?.media_details?.sizes?.medium_large?.source_url ||
-    media?.media_details?.sizes?.large?.source_url ||
-    media?.source_url;
-
-  const allTerms = (post._embedded?.["wp:term"] ?? []).flat();
-  const filterTerms = allTerms
-    .filter((t) => t.taxonomy && !["category", "post_tag"].includes(t.taxonomy))
-    .map((t) => ({ slug: t.slug, name: decodeEntities(t.name) }));
+  const filterTerms = (post["report-type"] ?? [])
+    .map((id) => reportTypeMap?.get(id))
+    .filter(Boolean)
+    .map((t) => ({ slug: t.slug, name: t.name }));
 
   return {
     link: post.link,
-    image: mediaSrc
-      ? { src: mediaSrc, alt: media.alt_text || title }
-      : { ...FALLBACK_IMAGE, alt: title },
+    image: mediaToImage(mediaMap?.get(post.featured_media), title),
     tag: [],
     heading: title,
     date: formatWpDate(post.date),
@@ -351,31 +393,48 @@ function mapReport(post) {
 export async function getWpReports({ page = 1, perPage = 12 } = {}) {
   const { data, totalPages, total } = await fetchJson(
     `/report?page=${page}&per_page=${perPage}&orderby=date&order=desc` +
-      `&_embed=wp:featuredmedia,wp:term&_fields=id,date,link,title,_links,_embedded`
+      `&_fields=id,date,link,title,featured_media,report-type`
   );
-  return { items: data.map(mapReport), totalPages, total };
+  const [mediaMap, reportTypeMap] = await Promise.all([
+    getWpMediaByIds(data.map((p) => p.featured_media)),
+    getWpTermsByIds("report-type", data.flatMap((p) => p["report-type"] ?? [])),
+  ]);
+  const items = data.map((p) => mapReport(p, { mediaMap, reportTypeMap }));
+  return { items, totalPages, total };
 }
 
 // The new /reports page fetches every report up front and filters
 // client-side (see ReportsGrid.js) instead of paginating per filter
 // click, so it needs the whole set, not one page at a time. A single
 // `per_page=100` request (WordPress REST's own ceiling) turned out to be
-// the wrong way to get there in practice: with `_embed=wp:featuredmedia`
-// pulling every registered image size for each report's cover photo, 100
-// reports came back as 3.2MB from the real site — and Next.js's fetch
-// data cache silently refuses to cache (and the page then fails to
-// render, per Yv 2026-09-27) any single response over 2MB. Fetching in
-// smaller batches keeps each individual request's cache entry well under
-// that ceiling. `maxPages` is a safety cap, not an expected limit — 40
-// reports/page × 10 pages is 400 reports, comfortably above the current
-// archive size; if it's ever actually hit, reports beyond it just won't
-// appear (better than an unbounded loop against a runaway total).
-// perPage kept modest (not WP's max of 100, and lower than you might
-// expect for a 2MB-cache-safe batch) because the origin has shown it
-// can time out (522) on a heavier _embed=wp:featuredmedia,wp:term query
-// over too many posts at once — smaller, more numerous requests are
-// individually cheaper for it to answer, on top of staying well under
-// Next's 2MB fetch-cache ceiling (see getWpReports()'s own note).
+// the wrong way to get there in practice: 100 reports came back as 3.2MB
+// from the real site, and Next.js's fetch data cache silently refuses to
+// cache (and the page then fails to render, per Yv 2026-09-27) any
+// single response over 2MB. Fetching in smaller batches keeps each
+// individual request's cache entry well under that ceiling.
+// Revisited 2026-09-28: that 3.2MB was originally blamed on
+// `_embed=wp:featuredmedia` pulling every registered image size per
+// cover photo — since confirmed `_embed` never actually did anything on
+// this site (see the note above mapPost() in the previous section), so
+// the real weight was almost certainly each report's own
+// `content.rendered` (a PDF-viewer block's full HTML/JSON config, in the
+// one example inspected) plus the very large `yoast_head`/
+// `yoast_head_json` SEO blocks WordPress attaches by default — neither
+// excluded by the `_fields` param if this same CDN/cache layer also
+// ignores `_fields` the way it ignores `_embed` (not verified either
+// way). getWpReports() now asks for far fewer fields regardless
+// (`id,date,link,title,featured_media,report-type` — no `content`, no
+// `_links`), which should help if `_fields` is honoured, and does no
+// harm if it isn't. `maxPages` is a safety cap, not an expected limit —
+// 40 reports/page × 10 pages is 400 reports, comfortably above the
+// current archive size; if it's ever actually hit, reports beyond it
+// just won't appear (better than an unbounded loop against a runaway
+// total). perPage kept modest (not WP's max of 100) both to stay well
+// under the 2MB ceiling even in the worst case (bloated, unfiltered
+// responses — 20 reports at ~32KB/report worst case is still only
+// ~640KB) and because the origin has shown it can time out (522) on a
+// heavier query over too many posts at once — smaller, more numerous
+// requests are individually cheaper for it to answer.
 export async function getAllWpReports({ perPage = 20, maxPages = 20 } = {}) {
   let page = 1;
   let totalPages = 1;
