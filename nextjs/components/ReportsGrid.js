@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
 
 // Sidebar-filtered reports grid (2026-09-27, at Yv's call) — mirrors the
@@ -17,6 +16,26 @@ import FadeImg from "./FadeImg";
 // button, and reappears on its own once a report using it is published.
 // See the note above getWpReports()/mapReport() in lib/wp.js for what
 // "filterTerms" actually are and what's still unconfirmed about them.
+//
+// Found and fixed (2026-09-28) — the actual "grid stays empty" bug: this
+// used to wrap the grid in <Reveal stagger>, the same scroll-reveal
+// fade-in every other grid on the site uses (CategoryGrid.js). Reveal
+// only adds its "is-visible" class (the one thing that takes opacity
+// from 0 to 1) once an IntersectionObserver reports the element at
+// least 15% inside the viewport. That works for CategoryGrid because it
+// paginates ("load more"), so its grid stays short. Reports deliberately
+// loads its WHOLE corpus at once for instant client-side filtering (Yv's
+// original ask) — with 45+ cards that makes the grid several times
+// taller than the screen, so even a full viewport's worth of it in view
+// is well under 15% of its TOTAL height, and the 15% threshold is never
+// crossed: the grid sat at opacity:0 forever, invisible but fully
+// present in the DOM (which is why `.reports-grid .story` always
+// counted correctly in tests, and why disabling the filters or fixing
+// the data fetch — see lib/wp.js's retry/522 and 2MB-cache fixes —
+// never helped: neither one touched this). Fix: this grid no longer
+// uses Reveal at all — it renders as a plain div, visible immediately,
+// which also suits a fully-loaded, instantly-filterable list better
+// than a scroll-in animation anyway.
 export default function ReportsGrid({ articles, filters }) {
   const [activeFilter, setActiveFilter] = useState(null);
 
@@ -27,11 +46,11 @@ export default function ReportsGrid({ articles, filters }) {
 
   const grid = (
     <>
-      <Reveal as="div" className="reports-grid" stagger>
+      <div className="reports-grid">
         {visible.map((story, i) => (
           <ReportCard story={story} key={`${story.link}-${i}`} />
         ))}
-      </Reveal>
+      </div>
       {visible.length === 0 && <p className="reports-empty">No reports in this category yet.</p>}
     </>
   );

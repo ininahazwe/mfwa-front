@@ -12,11 +12,45 @@ const WP_API_BASE = process.env.WP_API_BASE || "https://mfwa.org/wp-json/wp/v2";
 // pages fast without serving stale content for long.
 const REVALIDATE_SECONDS = 300;
 
-async function fetchJson(path) {
-  const res = await fetch(`${WP_API_BASE}${path}`, {
-    next: { revalidate: REVALIDATE_SECONDS },
-  });
+// mfwa.org sits behind a CDN/proxy (Cloudflare) in front of shared
+// WordPress hosting — a heavier query (e.g. reports with
+// _embed=wp:featuredmedia,wp:term across many posts) occasionally makes
+// the origin too slow to accept the CDN's connection in time, surfacing
+// as a 522 "origin connection timed out" (or a sibling 5xx/52x code, or
+// even a raw network error) rather than a real problem with the request
+// itself. Retrying a couple of times with a short backoff clears these
+// transient blips in practice, so a single flaky response doesn't take
+// the whole page down with it. A real 4xx (bad request, not found) is
+// NOT retried — that's a genuine error, retrying would just waste time.
+const FETCH_RETRIES = 2;
+const RETRY_DELAY_MS = 600;
+
+function isRetryableStatus(status) {
+  return status === 429 || status === 502 || status === 503 || status === 504 || (status >= 520 && status <= 527);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchJson(path, attempt = 0) {
+  let res;
+  try {
+    res = await fetch(`${WP_API_BASE}${path}`, {
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+  } catch (err) {
+    if (attempt < FETCH_RETRIES) {
+      await sleep(RETRY_DELAY_MS * (attempt + 1));
+      return fetchJson(path, attempt + 1);
+    }
+    throw err;
+  }
   if (!res.ok) {
+    if (isRetryableStatus(res.status) && attempt < FETCH_RETRIES) {
+      await sleep(RETRY_DELAY_MS * (attempt + 1));
+      return fetchJson(path, attempt + 1);
+    }
     throw new Error(`WordPress API request failed (${res.status}): ${path}`);
   }
   const totalPages = Number(res.headers.get("X-WP-TotalPages") || "1");
@@ -336,7 +370,13 @@ export async function getWpReports({ page = 1, perPage = 12 } = {}) {
 // reports/page × 10 pages is 400 reports, comfortably above the current
 // archive size; if it's ever actually hit, reports beyond it just won't
 // appear (better than an unbounded loop against a runaway total).
-export async function getAllWpReports({ perPage = 40, maxPages = 10 } = {}) {
+// perPage kept modest (not WP's max of 100, and lower than you might
+// expect for a 2MB-cache-safe batch) because the origin has shown it
+// can time out (522) on a heavier _embed=wp:featuredmedia,wp:term query
+// over too many posts at once — smaller, more numerous requests are
+// individually cheaper for it to answer, on top of staying well under
+// Next's 2MB fetch-cache ceiling (see getWpReports()'s own note).
+export async function getAllWpReports({ perPage = 20, maxPages = 20 } = {}) {
   let page = 1;
   let totalPages = 1;
   const items = [];

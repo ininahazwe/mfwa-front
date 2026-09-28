@@ -1,0 +1,78 @@
+import { chromium } from "playwright-core";
+
+const results = [];
+function check(label, cond) {
+  results.push({ label, ok: !!cond });
+}
+
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+
+// -- Nav ---------------------------------------------------------------
+await page.goto("http://localhost:3311/", { waitUntil: "networkidle" });
+const reportsLink = page.locator(".nav__link", { hasText: "Reports" }).first();
+check("home: 'Reports' nav link present", (await reportsLink.count()) === 1);
+check("home: 'Reports' link points to /reports", (await reportsLink.getAttribute("href")) === "/reports");
+
+// -- /reports page -------------------------------------------------------
+await reportsLink.click();
+await page.waitForURL("**/reports");
+await page.waitForLoadState("networkidle");
+check("reports: title is 'Reports'", (await page.locator("h1.category__title").innerText()) === "Reports");
+
+// Sidebar
+check("reports: sidebar present", (await page.locator(".reports-filters").count()) === 1);
+const filterLabels = await page.locator(".reports-filters__btn").allTextContents();
+check("reports: 'All' is the first filter button", filterLabels[0] === "All");
+check(
+  "reports: only non-empty mock types appear (Annual/Policy Briefs/Research), nothing else",
+  JSON.stringify(filterLabels) === JSON.stringify(["All", "Annual Reports", "Policy Briefs\/Papers", "Research Reports"])
+);
+check("reports: 'All' starts active", await page.locator(".reports-filters__btn", { hasText: "All" }).first().evaluate((el) => el.classList.contains("is-active")));
+
+// Grid must actually be visible, not just present in the DOM — this is
+// the exact bug found 2026-09-28 (opacity:0 forever on a Reveal-wrapped
+// grid too tall to cross the scroll-reveal's 15% intersection threshold,
+// see the note atop ReportsGrid.js): count() alone missed it earlier.
+check("reports: grid is visible (opacity 1), not stuck at 0", (await page.locator(".reports-grid").evaluate((el) => getComputedStyle(el).opacity)) === "1");
+
+const allCount = await page.locator(".reports-grid .story").count();
+check("reports: grid shows all reports with 'All' selected", allCount === 45);
+
+// Click a filter and confirm the grid narrows
+await page.locator(".reports-filters__btn", { hasText: "Annual Reports" }).click();
+await page.waitForTimeout(200);
+const filteredCount = await page.locator(".reports-grid .story").count();
+check("reports: clicking 'Annual Reports' narrows the grid", filteredCount > 0 && filteredCount < allCount);
+check(
+  "reports: 'Annual Reports' button is now active, 'All' isn't",
+  (await page.locator(".reports-filters__btn", { hasText: "Annual Reports" }).first().evaluate((el) => el.classList.contains("is-active"))) &&
+    !(await page.locator(".reports-filters__btn", { hasText: "All" }).first().evaluate((el) => el.classList.contains("is-active")))
+);
+
+// Back to All
+await page.locator(".reports-filters__btn", { hasText: "All" }).click();
+await page.waitForTimeout(200);
+check("reports: clicking 'All' restores the full grid", (await page.locator(".reports-grid .story").count()) === allCount);
+
+check(
+  "reports: no horizontal overflow",
+  await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)
+);
+
+await page.screenshot({ path: "/tmp/mfwa-build/shot-reports.png", fullPage: false, clip: { x: 0, y: 0, width: 1440, height: 900 } });
+
+// Click a filter again for a "filtered" screenshot
+await page.locator(".reports-filters__btn", { hasText: "Policy Briefs/Papers" }).click();
+await page.waitForTimeout(200);
+await page.screenshot({ path: "/tmp/mfwa-build/shot-reports-filtered.png", fullPage: false, clip: { x: 0, y: 0, width: 1440, height: 900 } });
+
+await browser.close();
+
+let fails = 0;
+for (const r of results) {
+  console.log(`${r.ok ? "PASS" : "FAIL"} ${r.label}`);
+  if (!r.ok) fails++;
+}
+console.log(`\n${results.length - fails}/${results.length} passed`);
+process.exit(fails > 0 ? 1 : 0);
