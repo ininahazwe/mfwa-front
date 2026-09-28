@@ -403,7 +403,7 @@ export async function getCta() {
     links: [
       { label: "Partner", href: "#partner" },
       { label: "Engage", href: "#engage" },
-      { label: "Contact", href: "#contact" },
+      { label: "Contact", href: "/contact" },
     ],
   };
 }
@@ -434,7 +434,7 @@ export async function getFooter() {
     legal: [
       { label: "Privacy", href: "#privacy" },
       { label: "Terms", href: "#terms" },
-      { label: "Contact", href: "#contact" },
+      { label: "Contact", href: "/contact" },
     ],
   };
 }
@@ -1365,6 +1365,58 @@ export async function getVolunteerPage() {
         },
       ],
     },
+  };
+}
+
+// -- Contact ----------------------------------------------------------------
+//
+// Standalone page (2026-09-28, at Yv's call) — the site had "Contact"
+// links pointing nowhere (getFooter()'s legal nav, getCta()'s "Take
+// action" links on the home page, both now updated to /contact) but no
+// real destination. No live-form backend exists anywhere on this site
+// today (every other "get in touch" moment — Volunteer, Intern, the
+// About FAQ — is a mailto: link, see getVolunteerPage() above), so this
+// mirrors that same convention rather than introducing the site's first
+// working form: address/phone/email as plain info, phone and email as
+// tel:/mailto: links. Real values (address, both phone numbers) supplied
+// directly by Yv — not guessed, and not reachable from this session
+// (mfwa.org is unreachable from every tool surface here, see wp.js's
+// notes). Social links deliberately NOT duplicated here — they live in
+// getFooter().social (still "#" placeholders; Yv said he'll fill those in
+// himself), and the footer already appears on this page like every other.
+export async function getContactPage() {
+  return {
+    hero: {
+      crumbs: [{ label: "Contact" }],
+      eyebrow: "Contact",
+      titleLines: ["Get in touch", "with our team."],
+      lede: "Questions about our work, partnerships, media enquiries or anything else — reach us at our Accra head office, by phone, or by email.",
+      primary: { label: "Write to us", href: "mailto:info@mfwa.org" },
+      secondary: { label: "About MFWA", href: "/about-us" },
+    },
+    cards: [
+      {
+        id: "address",
+        icon: "pin",
+        title: "Address",
+        lines: ["FA 678 Aar-Baakor Street, Ogbojo", "Adentan Municipality", "Accra-Ghana"],
+      },
+      {
+        id: "telephone",
+        icon: "phone",
+        title: "Telephone",
+        links: [
+          { label: "+233 302 555327", href: "tel:+233302555327" },
+          { label: "+233 302 955213", href: "tel:+233302955213" },
+        ],
+      },
+      {
+        id: "email",
+        icon: "mail",
+        title: "Email",
+        links: [{ label: "info@mfwa.org", href: "mailto:info@mfwa.org" }],
+      },
+    ],
   };
 }
 

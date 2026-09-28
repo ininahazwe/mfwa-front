@@ -3343,3 +3343,21 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 @media (prefers-reduced-motion: reduce){
   .ab-tile--link{ transition:none !important; }
 }
+
+/* Contact page (2026-09-28): three short info cards (address / telephone /
+   email) — reuses .ab-card/.ab-circle/.ab-card__title as-is, just needs
+   its own grid sized for much shorter content than .ab-drives__grid's
+   (that one carries min-height:300px for longer copy, which would leave
+   a lot of empty space here). */
+.contact-cards{
+  margin-top:clamp(36px, 5vh, 56px);
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:20px;
+}
+.contact-cards .ab-card__text a{ color:inherit; text-decoration-color:var(--ab-line); }
+.contact-cards .ab-card__text a:hover{ text-decoration-color:currentColor; }
+
+@media (max-width:900px){
+  .contact-cards{ grid-template-columns:1fr; }
+}

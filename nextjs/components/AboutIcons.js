@@ -86,6 +86,24 @@ export const ICONS = {
       <path d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6l7-3z" />
     </svg>
   ),
+  // Contact page (2026-09-28): address/phone/email card icons.
+  pin: (
+    <svg {...base}>
+      <path d="M12 21s7-6.4 7-11.5A7 7 0 0 0 5 9.5C5 14.6 12 21 12 21z" />
+      <circle cx="12" cy="9.5" r="2.4" />
+    </svg>
+  ),
+  phone: (
+    <svg {...base}>
+      <path d="M5.5 4h3l1.5 4-2 1.5a11 11 0 0 0 5.5 5.5l1.5-2 4 1.5v3c0 1.1-.9 2-2 2C10.5 19.5 4.5 13.5 4.5 6.5c0-1.1.9-2.1 2-2.1z" />
+    </svg>
+  ),
+  mail: (
+    <svg {...base}>
+      <rect x="3" y="5" width="18" height="14" rx="2.4" />
+      <path d="m4 6.5 8 6 8-6" />
+    </svg>
+  ),
 };
 
 export const ARROW_RIGHT = (
