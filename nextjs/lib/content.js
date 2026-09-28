@@ -689,7 +689,22 @@ const ISSUE_CATEGORY_SLUGS = [
 export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
   const [reach, categories] = await Promise.all([
     getReach(),
-    getWpCategories(ISSUE_CATEGORY_SLUGS),
+    // Non-fatal (2026-09-28, at Yv's call): the 13 Issues chips are a
+    // secondary filter layered on top of the country map/list, not the
+    // reason this page exists. If the WordPress origin can't serve
+    // /categories even after fetchJson()'s built-in retries (see
+    // lib/wp.js) — as happened live, the same 522 origin-timeout seen
+    // earlier on /reports, just on a different endpoint — that shouldn't
+    // take the whole page down the way an unhandled rejection here
+    // would. Falling back to an empty list just means the chips row
+    // temporarily shows only "All issues" (WhereWeWorkList.js's chip
+    // for that is unconditional, not driven by this array); the map,
+    // country list and article grid, none of which depend on
+    // categories, still render normally.
+    getWpCategories(ISSUE_CATEGORY_SLUGS).catch((err) => {
+      console.error("getWhereWeWorkPage: getWpCategories failed, continuing without Issues chips —", err);
+      return [];
+    }),
   ]);
 
   const activeCountry = countrySlug

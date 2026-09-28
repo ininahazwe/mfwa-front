@@ -36,13 +36,39 @@ import FadeImg from "./FadeImg";
 // uses Reveal at all — it renders as a plain div, visible immediately,
 // which also suits a fully-loaded, instantly-filterable list better
 // than a scroll-in animation anyway.
+// Same initial page size CategoryGrid.js uses for its own "load more"
+// grids, so Reports doesn't stand out from the rest of the site.
+const PAGE_SIZE = 12;
+
 export default function ReportsGrid({ articles, filters }) {
   const [activeFilter, setActiveFilter] = useState(null);
+  // "hasMore" pagination (2026-09-28, at Yv's call), on top of the fix
+  // above: everything is still fetched and filtered up front (no extra
+  // API round trip — the whole point of this page), but only
+  // `displayCount` of the current, already-filtered list is actually
+  // rendered at a time, with a "Load more" button underneath — same
+  // pattern as CategoryGrid.js's own hasMore/"load more", just driven
+  // from the in-memory list instead of another page fetch. This also
+  // keeps the DOM (and the page's real height) from ballooning to
+  // hundreds of cards at once on an archive that keeps growing.
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
-  const visible = useMemo(() => {
+  const filtered = useMemo(() => {
     if (!activeFilter) return articles;
     return articles.filter((story) => story.filterTerms.some((f) => f.slug === activeFilter));
   }, [activeFilter, articles]);
+
+  // Switching filters always starts back at the first page — otherwise
+  // "Annual Reports" could open already expanded to however many cards
+  // "All" happened to be showing, which reads as broken rather than
+  // filtered.
+  function selectFilter(slug) {
+    setActiveFilter(slug);
+    setDisplayCount(PAGE_SIZE);
+  }
+
+  const visible = filtered.slice(0, displayCount);
+  const hasMore = displayCount < filtered.length;
 
   const grid = (
     <>
@@ -51,7 +77,14 @@ export default function ReportsGrid({ articles, filters }) {
           <ReportCard story={story} key={`${story.link}-${i}`} />
         ))}
       </div>
-      {visible.length === 0 && <p className="reports-empty">No reports in this category yet.</p>}
+      {filtered.length === 0 && <p className="reports-empty">No reports in this category yet.</p>}
+      {hasMore && (
+        <div className="category__loadmore">
+          <button type="button" className="btn btn--loadmore" onClick={() => setDisplayCount((c) => c + PAGE_SIZE)}>
+            Load more
+          </button>
+        </div>
+      )}
     </>
   );
 
@@ -65,7 +98,7 @@ export default function ReportsGrid({ articles, filters }) {
         <button
           type="button"
           className={`reports-filters__btn${!activeFilter ? " is-active" : ""}`}
-          onClick={() => setActiveFilter(null)}
+          onClick={() => selectFilter(null)}
         >
           All
         </button>
@@ -74,7 +107,7 @@ export default function ReportsGrid({ articles, filters }) {
             key={f.slug}
             type="button"
             className={`reports-filters__btn${activeFilter === f.slug ? " is-active" : ""}`}
-            onClick={() => setActiveFilter(f.slug)}
+            onClick={() => selectFilter(f.slug)}
           >
             {f.name}
           </button>

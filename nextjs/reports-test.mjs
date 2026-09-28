@@ -36,24 +36,42 @@ check("reports: 'All' starts active", await page.locator(".reports-filters__btn"
 // see the note atop ReportsGrid.js): count() alone missed it earlier.
 check("reports: grid is visible (opacity 1), not stuck at 0", (await page.locator(".reports-grid").evaluate((el) => getComputedStyle(el).opacity)) === "1");
 
-const allCount = await page.locator(".reports-grid .story").count();
-check("reports: grid shows all reports with 'All' selected", allCount === 45);
+// -- hasMore / "Load more" pagination (2026-09-28) ------------------------
+// 45 mock reports, page size 12: first page shows 12, "Load more" is
+// present, and clicking it grows the grid without re-fetching (all 45
+// were already fetched server-side — this just reveals more of what's
+// already in memory).
+check("reports: first page shows 12 of 45 under 'All'", (await page.locator(".reports-grid .story").count()) === 12);
+check("reports: 'Load more' button present (45 > 12)", (await page.locator(".category__loadmore .btn--loadmore").count()) === 1);
 
-// Click a filter and confirm the grid narrows
+await page.locator(".category__loadmore .btn--loadmore").click();
+await page.waitForTimeout(150);
+check("reports: 'Load more' grows the grid to 24", (await page.locator(".reports-grid .story").count()) === 24);
+
+await page.locator(".category__loadmore .btn--loadmore").click();
+await page.waitForTimeout(150);
+await page.locator(".category__loadmore .btn--loadmore").click();
+await page.waitForTimeout(150);
+const allCount = await page.locator(".reports-grid .story").count();
+check("reports: clicking through exhausts to all 45 and hides the button", allCount === 45 && (await page.locator(".category__loadmore .btn--loadmore").count()) === 0);
+
+// Click a filter and confirm the grid narrows AND resets to page 1 (not
+// stuck at whatever page "All" had reached).
 await page.locator(".reports-filters__btn", { hasText: "Annual Reports" }).click();
 await page.waitForTimeout(200);
 const filteredCount = await page.locator(".reports-grid .story").count();
-check("reports: clicking 'Annual Reports' narrows the grid", filteredCount > 0 && filteredCount < allCount);
+check("reports: clicking 'Annual Reports' narrows the grid and resets to its own first page", filteredCount > 0 && filteredCount <= 12);
 check(
   "reports: 'Annual Reports' button is now active, 'All' isn't",
   (await page.locator(".reports-filters__btn", { hasText: "Annual Reports" }).first().evaluate((el) => el.classList.contains("is-active"))) &&
     !(await page.locator(".reports-filters__btn", { hasText: "All" }).first().evaluate((el) => el.classList.contains("is-active")))
 );
 
-// Back to All
+// Back to All — also resets to the first page, not wherever "Annual
+// Reports" left off.
 await page.locator(".reports-filters__btn", { hasText: "All" }).click();
 await page.waitForTimeout(200);
-check("reports: clicking 'All' restores the full grid", (await page.locator(".reports-grid .story").count()) === allCount);
+check("reports: clicking 'All' restores the first page (12 of 45)", (await page.locator(".reports-grid .story").count()) === 12);
 
 check(
   "reports: no horizontal overflow",
