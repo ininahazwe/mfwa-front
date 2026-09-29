@@ -1668,6 +1668,30 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   color:rgba(255,255,255,.58);
 }
 
+/* -- Label qualite (NGOSource) -------------------------------- */
+.footer-credential{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:10px;
+}
+.footer-credential__badge{
+  display:flex;
+  border-radius:8px;
+}
+.footer-credential__img{
+  display:block;
+  width:100px;
+  height:auto;
+}
+.footer-credential__caption{
+  margin:0;
+  max-width:150px;
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(255,255,255,.58);
+}
+
 /* -- Bas de page ------------------------------------------ */
 .footer-bottom{
   display:flex;

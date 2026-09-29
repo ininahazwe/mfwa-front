@@ -429,6 +429,23 @@ export async function getFooter() {
       { network: "Facebook", url: "#" },
       { network: "Instagram", url: "#" },
     ],
+    // Quality/accreditation seal (2026-09-28, at Yv's call): NGOSource
+    // Equivalency Determination already appears as plain text in
+    // getAboutUs().glance.credentials ("At a glance") — this is the same
+    // credential, given a second, site-wide home in the footer, next to
+    // the social icons rather than folded into either block. Hotlinked to
+    // mfwa.org (same convention as report/story cover images elsewhere in
+    // this file) rather than assumed to be a local asset — swap to
+    // /images/... the way the Our Staff hero photo was (see
+    // components/StaffHero.js's history) if Yv would rather not depend on
+    // the live site for this one image.
+    credential: {
+      image: {
+        src: "/images/ngo-source.png",
+        alt: "NGOSource Equivalency Determination",
+      },
+      caption: "NGOSource Equivalency Determination",
+    },
     taglineLines: ["For a free and independent media", "in West Africa."],
     copy: "© 2026 MFWA. All rights reserved.",
     legal: [

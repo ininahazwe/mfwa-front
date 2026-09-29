@@ -1,6 +1,6 @@
 "use client";
 
-// API: footer.nav[], footer.social[] { network, url }, footer.legal[]
+// API: footer.nav[], footer.social[] { network, url }, footer.credential { image, caption }, footer.legal[]
 import FadeImg from "./FadeImg";
 import Link from "next/link";
 import { useFooterReveal } from "../lib/hooks";
@@ -60,6 +60,18 @@ export default function Footer({ data }) {
             <br />
             {data.taglineLines[1]}
           </p>
+        </div>
+
+        <div className="footer-credential">
+          <span className="footer-credential__badge">
+            <FadeImg
+              className="footer-credential__img"
+              src={data.credential.image.src}
+              alt={data.credential.image.alt}
+              removeOnError
+            />
+          </span>
+          <p className="footer-credential__caption">{data.credential.caption}</p>
         </div>
       </div>
 
