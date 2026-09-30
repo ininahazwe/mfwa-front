@@ -2554,33 +2554,38 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    soft, painterly blob rather than three visible rings. */
 .ab-hero__blob--red{
   background:
-    radial-gradient(circle at 14% 10%, #ff9466 0%, transparent 1.8%),
-    radial-gradient(circle at 16% 12%, var(--red-dark) 0%, transparent 1.9%),
-    radial-gradient(circle at 50% 50%, var(--red) 0%, #fce8e6 55%, transparent 2.4%);
+    radial-gradient(circle at 34% 30%, #ff9466 15%, transparent 1%),
+    radial-gradient(circle at 66% 72%, var(--red-dark) 10%, transparent 1%),
+    radial-gradient(circle at 50% 50%, var(--red) 5%, #fce8e6 55%, transparent 90%);
+  opacity: 0.5;
 }
 .ab-hero__blob--navy{
   background:
-    radial-gradient(circle at 34% 30%, #7fb2e5 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, var(--navy-ink) 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, var(--blue) 0%, #e4eefa 55%, transparent 47.4%);
+    radial-gradient(circle at 34% 30%, #7fb2e5 15%, transparent 34.8%),
+    radial-gradient(circle at 66% 72%, var(--navy-ink) 10%, transparent 37.9%),
+    radial-gradient(circle at 50% 50%, var(--blue) 5%, #e4eefa 55%, transparent 47.4%);
+  opacity: 0.5;
 }
 .ab-hero__blob--lavender{
   background:
-    radial-gradient(circle at 34% 30%, #b9a9f2 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #5b4bb0 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #7c6fd1 0%, #ece7fb 55%, transparent 47.4%);
+    radial-gradient(circle at 34% 30%, #b9a9f2 15%, transparent 34.8%),
+    radial-gradient(circle at 66% 72%, #5b4bb0 10%, transparent 37.9%),
+    radial-gradient(circle at 50% 50%, #7c6fd1 5%, #ece7fb 55%, transparent 47.4%);
+  opacity: 0.5;
 }
 .ab-hero__blob--green{
   background:
-    radial-gradient(circle at 34% 30%, #8fd6b4 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #2a7d5c 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #3fa579 0%, #e3f3ea 55%, transparent 47.4%);
+    radial-gradient(circle at 34% 30%, #8fd6b4 15%, transparent 34.8%),
+    radial-gradient(circle at 66% 72%, #2a7d5c 10%, transparent 37.9%),
+    radial-gradient(circle at 50% 50%, #3fa579 5%, #e3f3ea 55%, transparent 47.4%);
+  opacity: 0.5;
 }
 .ab-hero__blob--amber{
   background:
-    radial-gradient(circle at 34% 30%, #f4cf7a 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #b9811a 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #e0a52e 0%, #fdf3dd 55%, transparent 47.4%);
+    radial-gradient(circle at 34% 30%, #f4cf7a 15%, transparent 34.8%),
+    radial-gradient(circle at 66% 72%, #b9811a 10%, transparent 37.9%),
+    radial-gradient(circle at 50% 50%, #e0a52e 5%, #fdf3dd 55%, transparent 47.4%);
+  opacity: 0.5;
 }
 @media (prefers-reduced-motion: reduce){
   .ab-hero__blob{ transform:translate(-50%, -50%) !important; }
