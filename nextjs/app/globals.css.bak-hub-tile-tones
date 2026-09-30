@@ -2448,11 +2448,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 /* =========================================================
    1. Hero
    ========================================================= */
-/* overflow:hidden (2026-09-30): clips the decorative blob below
-   (.ab-hero__blob*) to this section's own box instead of the page —
-   shared with AboutHero.js's ".ab-hero" too, but nothing there bleeds
-   past its box today, so this has no visible effect there. */
-.ab-hero{ overflow:hidden; }
 .ab-hero__grid{
   display:grid;
   grid-template-columns:repeat(12, minmax(0, 1fr));
@@ -2510,94 +2505,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .ab-tile--pale{ --m-bg:#f5faff; }
 .ab-tile--dark{ --m-bg:var(--navy-panel); --m-a:var(--white); --m-c:#5b86c7; }
 .ab-tile--red{ --m-bg:var(--red); --m-a:var(--white); --m-b:var(--navy-ink); }
-
-/* Tiles slot + colour blob (2026-09-30, at Yv's call): wraps the tile <ul>
-   (components/InvolvedHero.js) only when it's rendered with a "tone" —
-   i.e. only on the 5 programme detail pages, never the /programmes hub
-   (all 5 programmes at once, no single blob colour) nor Where We
-   Work/Intern/Volunteer (no tone passed there either). Duplicates the
-   grid-column/row/justify-self already on .ab-tiles rather than moving
-   them, since .ab-tiles itself is still needed unchanged for its OTHER
-   role — the 3-col grid that actually lays out the tiles — and is also
-   reused as-is by AboutHero.js/BoardHero.js, which never get this
-   wrapper. */
-.ab-hero__tiles-slot{
-  grid-column:8 / -1;
-  grid-row:1;
-  justify-self:end;
-  position:relative;
-  /* Explicit width/max-width (matching .ab-tiles' own, rather than
-     relying on justify-self's shrink-to-fit sizing): without this, the
-     wrapper's box resolves far wider than the tile grid it wraps (the ul
-     inside has width:100%, so shrink-to-fit sizing anchors to the whole
-     grid track, not to 560px) and the 170%-sized blob balloons to cover
-     the entire hero instead of just bleeding past the tiles. */
-  width:100%;
-  max-width:560px;
-}
-.ab-hero__tiles-slot .ab-tiles{ position:relative; z-index:1; }
-.ab-hero__blob{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%); /* no-JS / reduced-motion fallback; useParallax() overrides this inline once mounted */
-  width:170%;
-  height:170%;
-  border-radius:50%;
-  z-index:0;
-  pointer-events:none;
-  filter:blur(70px);
-  will-change:transform;
-}
-/* Each tone blends 3 shades of the same hue (a light highlight, the core
-   tone, a deeper shadow) — the blur above is what fuses them into one
-   soft, painterly blob rather than three visible rings. */
-.ab-hero__blob--red{
-  background:
-    radial-gradient(circle at 34% 30%, #ff9466 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, var(--red-dark) 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, var(--red) 0%, #fce8e6 55%, transparent 47.4%);
-}
-.ab-hero__blob--navy{
-  background:
-    radial-gradient(circle at 34% 30%, #7fb2e5 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, var(--navy-ink) 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, var(--blue) 0%, #e4eefa 55%, transparent 47.4%);
-}
-.ab-hero__blob--lavender{
-  background:
-    radial-gradient(circle at 34% 30%, #b9a9f2 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #5b4bb0 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #7c6fd1 0%, #ece7fb 55%, transparent 47.4%);
-}
-.ab-hero__blob--green{
-  background:
-    radial-gradient(circle at 34% 30%, #8fd6b4 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #2a7d5c 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #3fa579 0%, #e3f3ea 55%, transparent 47.4%);
-}
-.ab-hero__blob--amber{
-  background:
-    radial-gradient(circle at 34% 30%, #f4cf7a 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #b9811a 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #e0a52e 0%, #fdf3dd 55%, transparent 47.4%);
-}
-@media (prefers-reduced-motion: reduce){
-  .ab-hero__blob{ transform:translate(-50%, -50%) !important; }
-}
-/* Hub-only tile tones (2026-09-30, at Yv's call): the /programmes hero's
-   5 cross-nav tiles get their own programme's colour instead of the
-   generic dark/pale/white rotation — same pastel values as
-   .ab-focus-panel--<tone>/.header--<tone>/.ab-hero--<tone> elsewhere.
-   Named "prog-*" (not "red"/"navy"/...) to avoid colliding with
-   .ab-tile--red above, a bold accent already used by AboutHero.js's
-   decorative tile grid — these are pale backgrounds, unrelated to that
-   one. Revert: see the comment on PROGRAMME_TILES in lib/content.js. */
-.ab-tile--prog-red{ --m-bg:#fce8e6; }
-.ab-tile--prog-navy{ --m-bg:#e4eefa; }
-.ab-tile--prog-lavender{ --m-bg:#ece7fb; }
-.ab-tile--prog-green{ --m-bg:#e3f3ea; }
-.ab-tile--prog-amber{ --m-bg:#fdf3dd; }
 
 /* =========================================================
    2. At a glance

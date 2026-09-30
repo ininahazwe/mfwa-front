@@ -2,10 +2,9 @@ import FadeImg from "./FadeImg";
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
 
-export default function Header({ data, tone }) {
+export default function Header({ data }) {
   return (
     <header className="header">
-      {/*<header className={`header${tone ? ` header--${tone}` : ""}`}>*/}
       <div className="header__inner">
         <Link className="brand" href="/" aria-label={data.homeAriaLabel}>
           <FadeImg className="logo" src={data.logo.src} alt={data.logo.alt} />

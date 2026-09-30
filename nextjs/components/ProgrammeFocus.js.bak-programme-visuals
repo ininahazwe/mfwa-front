@@ -18,7 +18,7 @@ export default function ProgrammeFocus({ data }) {
   return (
     <section className="ab-section ab-focus" id="focus">
       <div className="ab-wrap ab-aside-grid">
-        <Reveal as="header" className={`ab-aside-grid__head ab-focus-panel ab-focus-panel--${data.tone || "navy"}`}>
+        <Reveal as="header" className="ab-aside-grid__head">
           <p className="eyebrow">{data.eyebrow}</p>
           <h2 className="ab-h2">{data.title}</h2>
           {data.contact && (

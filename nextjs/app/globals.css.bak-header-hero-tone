@@ -180,19 +180,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   align-items:center;
   gap:24px;
 }
-/* Per-programme accent (2026-09-30, at Yv's call): the 5 programme
-   detail pages pass a "tone" prop through to Header so the site-wide
-   nav picks up that page's pastel colour (same 5 hex values as
-   .ab-focus-panel--<tone> below, reused on purpose for consistency).
-   Every other page renders <Header> with no tone, so .header keeps its
-   plain white background everywhere else. Revert: drop the "tone" prop
-   passed to <Header> in the 5 app/programmes/<slug>/page.js files (and
-   the tone={...} param on Header.js itself) — these rules stop matching. */
-.header--red{ background:#fce8e6; }
-.header--navy{ background:#e4eefa; }
-.header--lavender{ background:#ece7fb; }
-.header--green{ background:#e3f3ea; }
-.header--amber{ background:#fdf3dd; }
 
 /* -- Logo ------------------------------------------------ */
 .brand{ display:flex; align-items:center; gap:16px; }
@@ -1681,30 +1668,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   color:rgba(255,255,255,.58);
 }
 
-/* -- Label qualite (NGOSource) -------------------------------- */
-.footer-credential{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-start;
-  gap:10px;
-}
-.footer-credential__badge{
-  display:flex;
-  border-radius:8px;
-}
-.footer-credential__img{
-  display:block;
-  width:100px;
-  height:auto;
-}
-.footer-credential__caption{
-  margin:0;
-  max-width:150px;
-  font-size:13px;
-  line-height:1.55;
-  color:rgba(255,255,255,.58);
-}
-
 /* -- Bas de page ------------------------------------------ */
 .footer-bottom{
   display:flex;
@@ -2448,11 +2411,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 /* =========================================================
    1. Hero
    ========================================================= */
-/* overflow:hidden (2026-09-30): clips the decorative blob below
-   (.ab-hero__blob*) to this section's own box instead of the page —
-   shared with AboutHero.js's ".ab-hero" too, but nothing there bleeds
-   past its box today, so this has no visible effect there. */
-.ab-hero{ overflow:hidden; }
 .ab-hero__grid{
   display:grid;
   grid-template-columns:repeat(12, minmax(0, 1fr));
@@ -2510,94 +2468,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .ab-tile--pale{ --m-bg:#f5faff; }
 .ab-tile--dark{ --m-bg:var(--navy-panel); --m-a:var(--white); --m-c:#5b86c7; }
 .ab-tile--red{ --m-bg:var(--red); --m-a:var(--white); --m-b:var(--navy-ink); }
-
-/* Tiles slot + colour blob (2026-09-30, at Yv's call): wraps the tile <ul>
-   (components/InvolvedHero.js) only when it's rendered with a "tone" —
-   i.e. only on the 5 programme detail pages, never the /programmes hub
-   (all 5 programmes at once, no single blob colour) nor Where We
-   Work/Intern/Volunteer (no tone passed there either). Duplicates the
-   grid-column/row/justify-self already on .ab-tiles rather than moving
-   them, since .ab-tiles itself is still needed unchanged for its OTHER
-   role — the 3-col grid that actually lays out the tiles — and is also
-   reused as-is by AboutHero.js/BoardHero.js, which never get this
-   wrapper. */
-.ab-hero__tiles-slot{
-  grid-column:8 / -1;
-  grid-row:1;
-  justify-self:end;
-  position:relative;
-  /* Explicit width/max-width (matching .ab-tiles' own, rather than
-     relying on justify-self's shrink-to-fit sizing): without this, the
-     wrapper's box resolves far wider than the tile grid it wraps (the ul
-     inside has width:100%, so shrink-to-fit sizing anchors to the whole
-     grid track, not to 560px) and the 170%-sized blob balloons to cover
-     the entire hero instead of just bleeding past the tiles. */
-  width:100%;
-  max-width:560px;
-}
-.ab-hero__tiles-slot .ab-tiles{ position:relative; z-index:1; }
-.ab-hero__blob{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%); /* no-JS / reduced-motion fallback; useParallax() overrides this inline once mounted */
-  width:170%;
-  height:170%;
-  border-radius:50%;
-  z-index:0;
-  pointer-events:none;
-  filter:blur(70px);
-  will-change:transform;
-}
-/* Each tone blends 3 shades of the same hue (a light highlight, the core
-   tone, a deeper shadow) — the blur above is what fuses them into one
-   soft, painterly blob rather than three visible rings. */
-.ab-hero__blob--red{
-  background:
-    radial-gradient(circle at 34% 30%, #ff9466 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, var(--red-dark) 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, var(--red) 0%, #fce8e6 55%, transparent 47.4%);
-}
-.ab-hero__blob--navy{
-  background:
-    radial-gradient(circle at 34% 30%, #7fb2e5 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, var(--navy-ink) 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, var(--blue) 0%, #e4eefa 55%, transparent 47.4%);
-}
-.ab-hero__blob--lavender{
-  background:
-    radial-gradient(circle at 34% 30%, #b9a9f2 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #5b4bb0 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #7c6fd1 0%, #ece7fb 55%, transparent 47.4%);
-}
-.ab-hero__blob--green{
-  background:
-    radial-gradient(circle at 34% 30%, #8fd6b4 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #2a7d5c 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #3fa579 0%, #e3f3ea 55%, transparent 47.4%);
-}
-.ab-hero__blob--amber{
-  background:
-    radial-gradient(circle at 34% 30%, #f4cf7a 0%, transparent 34.8%),
-    radial-gradient(circle at 66% 72%, #b9811a 0%, transparent 37.9%),
-    radial-gradient(circle at 50% 50%, #e0a52e 0%, #fdf3dd 55%, transparent 47.4%);
-}
-@media (prefers-reduced-motion: reduce){
-  .ab-hero__blob{ transform:translate(-50%, -50%) !important; }
-}
-/* Hub-only tile tones (2026-09-30, at Yv's call): the /programmes hero's
-   5 cross-nav tiles get their own programme's colour instead of the
-   generic dark/pale/white rotation — same pastel values as
-   .ab-focus-panel--<tone>/.header--<tone>/.ab-hero--<tone> elsewhere.
-   Named "prog-*" (not "red"/"navy"/...) to avoid colliding with
-   .ab-tile--red above, a bold accent already used by AboutHero.js's
-   decorative tile grid — these are pale backgrounds, unrelated to that
-   one. Revert: see the comment on PROGRAMME_TILES in lib/content.js. */
-.ab-tile--prog-red{ --m-bg:#fce8e6; }
-.ab-tile--prog-navy{ --m-bg:#e4eefa; }
-.ab-tile--prog-lavender{ --m-bg:#ece7fb; }
-.ab-tile--prog-green{ --m-bg:#e3f3ea; }
-.ab-tile--prog-amber{ --m-bg:#fdf3dd; }
 
 /* =========================================================
    2. At a glance
@@ -2774,25 +2644,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .ab-focus-panel--lavender{ --ab-pastel:#ece7fb; }
 .ab-focus-panel--green{ --ab-pastel:#e3f3ea; }
 .ab-focus-panel--amber{ --ab-pastel:#fdf3dd; }
-
-/* Same per-programme accent, on the page hero this time (2026-09-30):
-   a top-to-bottom gradient from the programme's pastel tone (solid for
-   the top 35% of the section) fading to white by 65%, so the hero
-   itself signals which programme the visitor is on rather than staying
-   identical across all 5. .ab-hero is otherwise unstyled (no background
-   of its own — see .ab-hero__grid above for its padding), so this never
-   overrides anything: it only ever adds a background where none existed.
-   Passed as an optional "tone" prop on <InvolvedHero>, only from the 5
-   app/programmes/<slug>/page.js files — the /programmes hub and the
-   Intern/Volunteer detail pages (which also use InvolvedHero) pass no
-   tone and keep their plain white hero. Revert: drop the "tone" prop
-   passed to <InvolvedHero> in those 5 files (and the tone param on
-   InvolvedHero.js itself) — these rules stop matching. */
-.ab-hero--red{ background:linear-gradient(180deg, #fce8e6 0%, #fce8e6 15%, var(--white) 100%); }
-.ab-hero--navy{ background:linear-gradient(180deg, #e4eefa 0%, #e4eefa 15%, var(--white) 100%); }
-.ab-hero--lavender{ background:linear-gradient(180deg, #ece7fb 0%, #ece7fb 15%, var(--white) 100%); }
-.ab-hero--green{ background:linear-gradient(180deg, #e3f3ea 0%, #e3f3ea 15%, var(--white) 100%); }
-.ab-hero--amber{ background:linear-gradient(180deg, #fdf3dd 0%, #fdf3dd 15%, var(--white) 100%); }
 
 /* =========================================================
    5–8. Aside layouts (Who we are, FAQ, Get involved)

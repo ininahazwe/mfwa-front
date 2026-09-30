@@ -5,18 +5,18 @@ import SectionHead from "@/components/SectionHead";
 import ProgrammeFocus from "@/components/ProgrammeFocus";
 import AboutGetInvolved from "@/components/AboutGetInvolved";
 
-import { getHeader, getFooter, getDigitalRightsPage } from "@/lib/content";
+import { getHeader, getFooter, getMediaPeacePage } from "@/lib/content";
 
 export async function generateMetadata() {
   return {
-    title: "Tech & Digital Rights — Media Foundation for West Africa",
+    title: "Media for Peace & Social Cohesion — Media Foundation for West Africa",
     description:
-      "Working toward a freer and safer online environment for expression and participation by all, especially women, across West Africa.",
+      "Engaging the media to address extremism, polarisation, mis/disinformation and promote conflict prevention across West Africa.",
   };
 }
 
-export default async function DigitalRightsPage() {
-  const [header, footer, programme] = await Promise.all([getHeader(), getFooter(), getDigitalRightsPage()]);
+export default async function MediaPeacePage() {
+  const [header, footer, programme] = await Promise.all([getHeader(), getFooter(), getMediaPeacePage()]);
 
   return (
     <>
@@ -25,10 +25,10 @@ export default async function DigitalRightsPage() {
           Aller au contenu principal
         </a>
 
-        <Header data={header} tone={programme.focus.tone} />
+        <Header data={header} />
 
         <main id="main" className="about">
-          <InvolvedHero data={programme.hero} tiles={programme.hero.tiles} tone={programme.focus.tone} />
+          <InvolvedHero data={programme.hero} tiles={programme.hero.tiles} />
 
           <section className="ab-section" id="overview">
             <div className="ab-wrap">

@@ -25,10 +25,10 @@ export default async function FreedomOfExpressionPage() {
           Aller au contenu principal
         </a>
 
-        <Header data={header} />
+        <Header data={header} tone={programme.focus.tone} />
 
         <main id="main" className="about">
-          <InvolvedHero data={programme.hero} tiles={programme.hero.tiles} />
+          <InvolvedHero data={programme.hero} tiles={programme.hero.tiles} tone={programme.focus.tone} />
 
           <section className="ab-section" id="overview">
             <div className="ab-wrap">

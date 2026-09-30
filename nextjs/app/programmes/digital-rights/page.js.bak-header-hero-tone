@@ -25,10 +25,10 @@ export default async function DigitalRightsPage() {
           Aller au contenu principal
         </a>
 
-        <Header data={header} tone={programme.focus.tone} />
+        <Header data={header} />
 
         <main id="main" className="about">
-          <InvolvedHero data={programme.hero} tiles={programme.hero.tiles} tone={programme.focus.tone} />
+          <InvolvedHero data={programme.hero} tiles={programme.hero.tiles} />
 
           <section className="ab-section" id="overview">
             <div className="ab-wrap">

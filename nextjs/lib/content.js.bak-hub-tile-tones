@@ -1631,19 +1631,11 @@ export async function getNetworksPage() {
 // appears (hub tile, cross-nav tile, and — self only — its own focus
 // section's aside motif), so the icon reads as that programme's identity.
 const PROGRAMME_TILES = [
-  // hubTone (2026-09-30, at Yv's call): the same red/lavender/navy/green/
-  // amber palette as focus.tone/header--*/ab-hero--* elsewhere, but kept
-  // as a SEPARATE field from "tone" — "tone" (dark/pale/white) is what the
-  // 4 cross-nav tiles on each programme detail page's own hero still use,
-  // unchanged. Only /programmes' own hub hero remaps tone -> hubTone for
-  // its 5 tiles (see getProgrammesPage() below), so this stays scoped to
-  // that one page. Revert: in getProgrammesPage(), set tiles back to
-  // PROGRAMME_TILES (drop the .map override) — hubTone then goes unread.
-  { id: "foe", label: "Freedom of Expression", href: "/programmes/freedom-of-expression", variant: "mic", tone: "dark", hubTone: "prog-red" },
-  { id: "digital", label: "Digital Rights", href: "/programmes/digital-rights", variant: "orbit", tone: "pale", hubTone: "prog-lavender" },
-  { id: "governance", label: "Media & Governance", href: "/programmes/media-democracy-governance", variant: "newspaper", tone: "white", hubTone: "prog-navy" },
-  { id: "peace", label: "Peace & Cohesion", href: "/programmes/media-peace-social-cohesion", variant: "quote", tone: "pale", hubTone: "prog-green" },
-  { id: "institutional", label: "Institutional Dev.", href: "/programmes/institutional-development", variant: "search", tone: "white", hubTone: "prog-amber" },
+  { id: "foe", label: "Freedom of Expression", href: "/programmes/freedom-of-expression", variant: "mic", tone: "dark" },
+  { id: "digital", label: "Digital Rights", href: "/programmes/digital-rights", variant: "orbit", tone: "pale" },
+  { id: "governance", label: "Media & Governance", href: "/programmes/media-democracy-governance", variant: "newspaper", tone: "white" },
+  { id: "peace", label: "Peace & Cohesion", href: "/programmes/media-peace-social-cohesion", variant: "quote", tone: "pale" },
+  { id: "institutional", label: "Institutional Dev.", href: "/programmes/institutional-development", variant: "search", tone: "white" },
 ];
 
 export async function getProgrammesPage() {
@@ -1655,7 +1647,7 @@ export async function getProgrammesPage() {
       lede: "Over 27 years working across West Africa, our 2025–2029 Strategic Plan focuses on four thematic areas — Freedom of Expression, Tech & Digital Rights, Media for Democracy & Good Governance, and Media for Peace & Social Cohesion — with Institutional Development as a cross-cutting pillar and women's empowerment as a cross-cutting theme.",
       primary: { label: "Our overall strategy", href: "https://mfwa.org/wp-content/uploads/2025/10/Strategic-Plan-doc_MFWA_2025-to-2029_clean-1.pdf" },
       secondary: { label: "About MFWA", href: "/about-us" },
-      tiles: PROGRAMME_TILES.map((t) => ({ ...t, tone: t.hubTone })),
+      tiles: PROGRAMME_TILES,
     },
     nav: {
       eyebrow: "Explore",

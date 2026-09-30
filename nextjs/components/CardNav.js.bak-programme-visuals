@@ -21,7 +21,7 @@ export default function CardNav({ data }) {
               <a className="ab-card ab-network" href={item.href}>
                 <span className="ab-network__top">
                   <span className="ab-tag">{item.scope}</span>
-                  <span className="ab-network__icon">{ICONS[item.icon] || ICONS.globe}</span>
+                  <span className="ab-network__icon">{ICONS.globe}</span>
                 </span>
                 <span className="ab-card__title">{item.name}</span>
                 <span className="ab-card__text">{item.desc}</span>

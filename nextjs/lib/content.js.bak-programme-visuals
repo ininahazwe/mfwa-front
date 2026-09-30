@@ -429,23 +429,6 @@ export async function getFooter() {
       { network: "Facebook", url: "#" },
       { network: "Instagram", url: "#" },
     ],
-    // Quality/accreditation seal (2026-09-28, at Yv's call): NGOSource
-    // Equivalency Determination already appears as plain text in
-    // getAboutUs().glance.credentials ("At a glance") — this is the same
-    // credential, given a second, site-wide home in the footer, next to
-    // the social icons rather than folded into either block. Hotlinked to
-    // mfwa.org (same convention as report/story cover images elsewhere in
-    // this file) rather than assumed to be a local asset — swap to
-    // /images/... the way the Our Staff hero photo was (see
-    // components/StaffHero.js's history) if Yv would rather not depend on
-    // the live site for this one image.
-    credential: {
-      image: {
-        src: "/images/ngo-source.png",
-        alt: "NGOSource Equivalency Determination",
-      },
-      caption: "NGOSource Equivalency Determination",
-    },
     taglineLines: ["For a free and independent media", "in West Africa."],
     copy: "© 2026 MFWA. All rights reserved.",
     legal: [
@@ -1631,19 +1614,11 @@ export async function getNetworksPage() {
 // appears (hub tile, cross-nav tile, and — self only — its own focus
 // section's aside motif), so the icon reads as that programme's identity.
 const PROGRAMME_TILES = [
-  // hubTone (2026-09-30, at Yv's call): the same red/lavender/navy/green/
-  // amber palette as focus.tone/header--*/ab-hero--* elsewhere, but kept
-  // as a SEPARATE field from "tone" — "tone" (dark/pale/white) is what the
-  // 4 cross-nav tiles on each programme detail page's own hero still use,
-  // unchanged. Only /programmes' own hub hero remaps tone -> hubTone for
-  // its 5 tiles (see getProgrammesPage() below), so this stays scoped to
-  // that one page. Revert: in getProgrammesPage(), set tiles back to
-  // PROGRAMME_TILES (drop the .map override) — hubTone then goes unread.
-  { id: "foe", label: "Freedom of Expression", href: "/programmes/freedom-of-expression", variant: "mic", tone: "dark", hubTone: "prog-red" },
-  { id: "digital", label: "Digital Rights", href: "/programmes/digital-rights", variant: "orbit", tone: "pale", hubTone: "prog-lavender" },
-  { id: "governance", label: "Media & Governance", href: "/programmes/media-democracy-governance", variant: "newspaper", tone: "white", hubTone: "prog-navy" },
-  { id: "peace", label: "Peace & Cohesion", href: "/programmes/media-peace-social-cohesion", variant: "quote", tone: "pale", hubTone: "prog-green" },
-  { id: "institutional", label: "Institutional Dev.", href: "/programmes/institutional-development", variant: "search", tone: "white", hubTone: "prog-amber" },
+  { id: "foe", label: "Freedom of Expression", href: "/programmes/freedom-of-expression", variant: "mic", tone: "dark" },
+  { id: "digital", label: "Digital Rights", href: "/programmes/digital-rights", variant: "orbit", tone: "pale" },
+  { id: "governance", label: "Media & Governance", href: "/programmes/media-democracy-governance", variant: "newspaper", tone: "white" },
+  { id: "peace", label: "Peace & Cohesion", href: "/programmes/media-peace-social-cohesion", variant: "quote", tone: "pale" },
+  { id: "institutional", label: "Institutional Dev.", href: "/programmes/institutional-development", variant: "search", tone: "white" },
 ];
 
 export async function getProgrammesPage() {
@@ -1655,7 +1630,7 @@ export async function getProgrammesPage() {
       lede: "Over 27 years working across West Africa, our 2025–2029 Strategic Plan focuses on four thematic areas — Freedom of Expression, Tech & Digital Rights, Media for Democracy & Good Governance, and Media for Peace & Social Cohesion — with Institutional Development as a cross-cutting pillar and women's empowerment as a cross-cutting theme.",
       primary: { label: "Our overall strategy", href: "https://mfwa.org/wp-content/uploads/2025/10/Strategic-Plan-doc_MFWA_2025-to-2029_clean-1.pdf" },
       secondary: { label: "About MFWA", href: "/about-us" },
-      tiles: PROGRAMME_TILES.map((t) => ({ ...t, tone: t.hubTone })),
+      tiles: PROGRAMME_TILES,
     },
     nav: {
       eyebrow: "Explore",
@@ -1664,7 +1639,6 @@ export async function getProgrammesPage() {
       items: [
         {
           id: "foe",
-          icon: "mic",
           name: "Freedom of Expression",
           scope: "Thematic area",
           desc: "Protecting the right to free expression and access to information across West Africa.",
@@ -1672,7 +1646,6 @@ export async function getProgrammesPage() {
         },
         {
           id: "digital",
-          icon: "orbit",
           name: "Tech & Digital Rights",
           scope: "Thematic area",
           desc: "A freer and safer online environment for expression and participation by all, especially women.",
@@ -1680,7 +1653,6 @@ export async function getProgrammesPage() {
         },
         {
           id: "governance",
-          icon: "newspaper",
           name: "Media for Democracy & Good Governance",
           scope: "Thematic area",
           desc: "Strengthening the media's capacity to contribute to participatory, accountable governance.",
@@ -1688,7 +1660,6 @@ export async function getProgrammesPage() {
         },
         {
           id: "peace",
-          icon: "quote",
           name: "Media for Peace & Social Cohesion",
           scope: "Thematic area",
           desc: "Engaging the media to address extremism, polarisation, mis/disinformation and conflict prevention.",
@@ -1696,7 +1667,6 @@ export async function getProgrammesPage() {
         },
         {
           id: "institutional",
-          icon: "search",
           name: "Institutional Development",
           scope: "Cross-cutting pillar",
           desc: "Building an efficient, resilient organisation capable of delivering fully on its mandate.",
@@ -1742,7 +1712,6 @@ export async function getFreedomOfExpressionPage() {
       eyebrow: "Areas of work",
       title: "Where we focus our efforts",
       motif: "mic",
-      tone: "red",
       contact: { label: "All programmes", href: "/programmes" },
       items: [
         "Law and policy reform advocacy relating to digital migration, Internet freedom, and de-criminalisation of defamation laws",
@@ -1793,7 +1762,6 @@ export async function getDigitalRightsPage() {
       eyebrow: "Areas of work",
       title: "Where we focus our efforts",
       motif: "orbit",
-      tone: "lavender",
       contact: { label: "All programmes", href: "/programmes" },
       items: [
         "Improving the policy environment through research and stakeholder engagement",
@@ -1840,7 +1808,6 @@ export async function getMediaGovernancePage() {
       eyebrow: "Areas of work",
       title: "Where we focus our efforts",
       motif: "newspaper",
-      tone: "navy",
       contact: { label: "All programmes", href: "/programmes" },
       items: [
         "Access to information and civic participation in governance",
@@ -1893,7 +1860,6 @@ export async function getMediaPeacePage() {
       eyebrow: "Areas of work",
       title: "Where we focus our efforts",
       motif: "quote",
-      tone: "green",
       contact: { label: "All programmes", href: "/programmes" },
       items: [
         "Strengthening collaboration with ECOWAS to promote its conflict-prevention framework through the media",
@@ -1939,7 +1905,6 @@ export async function getInstitutionalDevelopmentPage() {
       eyebrow: "Areas of work",
       title: "Where we focus our efforts",
       motif: "search",
-      tone: "amber",
       contact: { label: "All programmes", href: "/programmes" },
       items: [
         "Continuously monitoring, evaluating and strengthening institutional policies and practices in line with global best practices",
