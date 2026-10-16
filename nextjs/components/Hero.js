@@ -3,18 +3,24 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import FadeImg from "./FadeImg";
 
-// Ports initHeroCarousel() (the editorial hero__intro slides) and
-// initArticleGallery() (the independent hero__feature > news__thumb
-// gallery) from assets/js/main.js. Both are plain React state + effects
-// instead of DOM querying: the active slide/thumb is driven by index
-// state and rendered via the "is-active" class, and each autoplay effect
-// re-schedules its own setTimeout whenever its index (manual nav included)
-// or pause/visibility/reduced-motion state changes — the same "restart the
+// Ports initHeroCarousel() (the editorial hero__intro slides) from
+// assets/js/main.js. It is plain React state + effects instead of DOM
+// querying: the active slide is driven by index state and rendered via the
+// "is-active" class, and the autoplay effect re-schedules its own
+// setTimeout whenever its index (manual nav included) or
+// pause/visibility/reduced-motion state changes — the same "restart the
 // countdown after a user action" behaviour as the original's
 // goTo(target, fromUser).
+//
+// 2026-10-16 (retours équipe com #1): the right-hand "Latest news" block
+// (one featured article + initArticleGallery()'s auto-rotating thumbnail)
+// is now a swipe-through carousel of four stories — a native
+// CSS scroll-snap track, so touch swipe, trackpad and keyboard scrolling
+// need no JS — with arrows and dots for mouse users, and no "Latest news"
+// label. Its original single-article/gallery version is in git history
+// (and components/Hero.js.bak-com-feedback).
 
 const AUTOPLAY_DELAY = 7000; // ms — matches main.js (0 disables autoplay)
-const GALLERY_DELAY = 4500; // ms — matches main.js's initArticleGallery()
 const SWIPE_THRESHOLD = 45; // px — matches main.js
 
 const HERO_ARROW = (
@@ -74,24 +80,23 @@ function getTabHiddenServerSnapshot() {
   return false;
 }
 
-// API: hero.eyebrow, hero.slides[] { title, lede, cta } — see getHero()
-// API: hero.featuredArticle { image, region, country, eyebrow, title,
-//      excerpt, link, linkLabel, gallery[] } — see getHero()
+// API: hero.eyebrow? (omitted — see getHero()), hero.slides[] { title, lede,
+//      cta }, hero.news { ariaLabel, stories[] { image, region, country,
+//      title, excerpt, link, linkLabel } } — see getHero()
 export default function Hero({ data }) {
   const slides = data.slides;
   const total = slides.length;
-  const gallery = data.featuredArticle.gallery;
-  const galleryTotal = gallery.length;
+  const stories = data.news.stories;
+  const storyTotal = stories.length;
 
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [galleryIndex, setGalleryIndex] = useState(0);
-  const [galleryPaused, setGalleryPaused] = useState(false);
+  const [storyIndex, setStoryIndex] = useState(0);
+  const storiesRef = useRef(null);
 
-  // prefers-reduced-motion and tab visibility, shared by both autoplay
-  // effects below — matches the single reducedMotion/visibilitychange
-  // listeners in main.js, which both initHeroCarousel() and
-  // initArticleGallery() read from.
+  // prefers-reduced-motion and tab visibility, used by the autoplay effect
+  // below — matches the reducedMotion/visibilitychange listeners in
+  // main.js.
   const reducedMotion = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotionSnapshot,
@@ -118,15 +123,28 @@ export default function Hero({ data }) {
     return () => window.clearTimeout(timer);
   }, [index, paused, tabHidden, reducedMotion, total]);
 
-  // Featured-article inner gallery: independent autoplay, own pause state,
-  // no controls — matches initArticleGallery() exactly.
-  useEffect(() => {
-    if (galleryTotal < 2 || galleryPaused || tabHidden || reducedMotion) return undefined;
-    const timer = window.setTimeout(() => {
-      setGalleryIndex((i) => (i + 1) % galleryTotal);
-    }, GALLERY_DELAY);
-    return () => window.clearTimeout(timer);
-  }, [galleryIndex, galleryPaused, tabHidden, reducedMotion, galleryTotal]);
+  // News carousel: the scroll position is the source of truth (so a
+  // finger swipe, trackpad or keyboard scroll all just work); storyIndex
+  // only mirrors it for the dots/counter/aria state.
+  function onStoriesScroll() {
+    const el = storiesRef.current;
+    if (!el || !el.clientWidth) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== storyIndex && i >= 0 && i < storyTotal) setStoryIndex(i);
+  }
+  function goToStory(i) {
+    const el = storiesRef.current;
+    if (!el) return;
+    const target = (i + storyTotal) % storyTotal;
+    el.scrollTo({ left: target * el.clientWidth, behavior: reducedMotion ? "auto" : "smooth" });
+    setStoryIndex(target);
+  }
+  // The section-level pointer handlers below drive the left-hand hero
+  // slides on touch swipes; a swipe that starts on the news carousel must
+  // scroll that carousel only, not also advance the headline slides.
+  function stopSwipePropagation(e) {
+    e.stopPropagation();
+  }
 
   function handlePointerDown(e) {
     if (e.pointerType === "mouse") return;
@@ -167,7 +185,7 @@ export default function Hero({ data }) {
     >
       {/* Colonne 1 : accroche */}
       <div className="hero__intro">
-        <p className="eyebrow">{data.eyebrow}</p>
+        {data.eyebrow && <p className="eyebrow">{data.eyebrow}</p>}
 
         <div className="hero__slides" data-hero-slides>
           {slides.map((slide, i) => {
@@ -210,50 +228,82 @@ export default function Hero({ data }) {
         </div>
       </div>
 
-      {/* Bloc fusionné : article en vogue (indépendant du carrousel ci-dessus) */}
-      <div className="hero__feature">
-        <div className="hero__media">
-          <figure className="hero__shot is-active">
-            <FadeImg src={data.featuredArticle.image.src} alt={data.featuredArticle.image.alt} removeOnError />
-            <figcaption className="hero__caption">
-              {data.featuredArticle.region} <span></span> {data.featuredArticle.country}
-            </figcaption>
-          </figure>
+      {/* Carrousel d'actualités : 4 articles, défilement par balayage (indépendant du carrousel ci-dessus) */}
+      <div
+        className="hero__carousel"
+        role="group"
+        aria-roledescription="carrousel"
+        aria-label={data.news.ariaLabel}
+      >
+        <div
+          className="hero__stories"
+          ref={storiesRef}
+          onScroll={onStoriesScroll}
+          onPointerDown={stopSwipePropagation}
+          onPointerUp={stopSwipePropagation}
+          onKeyDown={stopSwipePropagation}
+          tabIndex={0}
+          aria-label={data.news.ariaLabel}
+          data-news-track
+        >
+          {stories.map((story, i) => {
+            const active = i === storyIndex;
+            return (
+              <article
+                className="hero__feature hero__story"
+                key={story.title}
+                aria-roledescription="diapositive"
+                aria-label={`${i + 1} sur ${storyTotal}`}
+                aria-hidden={active ? "false" : "true"}
+                inert={!active}
+              >
+                <div className="hero__media">
+                  <figure className="hero__shot is-active">
+                    <FadeImg src={story.image.src} alt={story.image.alt} removeOnError />
+                    <figcaption className="hero__caption">
+                      {story.region} <span></span> {story.country}
+                    </figcaption>
+                  </figure>
+                </div>
+
+                <div className="hero__news">
+                  <h2 className="news__title">{story.title}</h2>
+                  <p className="news__text">{story.excerpt}</p>
+                  <a className="news__link" href={story.link}>
+                    {story.linkLabel}
+                    {NEWS_ARROW}
+                  </a>
+                </div>
+              </article>
+            );
+          })}
         </div>
 
-        <aside className="hero__news" aria-label="Article en vogue">
-          <p className="eyebrow">{data.featuredArticle.eyebrow}</p>
-
-          <h2 className="news__title">{data.featuredArticle.title}</h2>
-
-          <p className="news__text">{data.featuredArticle.excerpt}</p>
-
-          <a className="news__link" href={data.featuredArticle.link}>
-            {data.featuredArticle.linkLabel}
-            {NEWS_ARROW}
-          </a>
-
-          <div
-            className="news__thumb"
-            data-article-gallery
-            aria-label="Images de l'article"
-            onMouseEnter={() => setGalleryPaused(true)}
-            onMouseLeave={() => setGalleryPaused(false)}
-          >
-            {gallery.map((img, i) => {
-              const active = i === galleryIndex;
-              return (
-                <figure
-                  className={`news__thumb-slide${active ? " is-active" : ""}`}
-                  key={img.src}
-                  aria-hidden={active ? "false" : "true"}
-                >
-                  <FadeImg src={img.src} alt={img.alt} removeOnError />
-                </figure>
-              );
-            })}
+        <div className="news-controls">
+          <p className="news-controls__count" aria-live="polite">
+            <b>{pad(storyIndex + 1)}</b> / {pad(storyTotal)}
+          </p>
+          <div className="news-controls__dots" role="group" aria-label="Choisir un article">
+            {stories.map((story, i) => (
+              <button
+                key={story.title}
+                type="button"
+                className={`news-controls__dot${i === storyIndex ? " is-active" : ""}`}
+                aria-label={`Article ${i + 1}`}
+                aria-current={i === storyIndex ? "true" : "false"}
+                onClick={() => goToStory(i)}
+              />
+            ))}
           </div>
-        </aside>
+          <div className="news-controls__nav">
+            <button className="news-controls__btn" type="button" onClick={() => goToStory(storyIndex - 1)} aria-label="Article précédent">
+              {CHEVRON_PREV}
+            </button>
+            <button className="news-controls__btn" type="button" onClick={() => goToStory(storyIndex + 1)} aria-label="Article suivant">
+              {CHEVRON_NEXT}
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );

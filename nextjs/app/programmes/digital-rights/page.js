@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import InvolvedHero from "@/components/InvolvedHero";
 import SectionHead from "@/components/SectionHead";
 import ProgrammeFocus from "@/components/ProgrammeFocus";
+import ProgrammeReports from "@/components/ProgrammeReports";
 import AboutGetInvolved from "@/components/AboutGetInvolved";
 
 import { getHeader, getFooter, getDigitalRightsPage } from "@/lib/content";
@@ -37,6 +38,7 @@ export default async function DigitalRightsPage() {
           </section>
 
           <ProgrammeFocus data={programme.focus} />
+          {programme.reports && <ProgrammeReports data={programme.reports} />}
           <AboutGetInvolved data={programme.involve} />
         </main>
       </div>

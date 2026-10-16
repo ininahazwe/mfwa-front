@@ -40,8 +40,15 @@ import FadeImg from "./FadeImg";
 // grids, so Reports doesn't stand out from the rest of the site.
 const PAGE_SIZE = 12;
 
-export default function ReportsGrid({ articles, filters }) {
+export default function ReportsGrid({ articles, filters, categories = [], initialCategory }) {
   const [activeFilter, setActiveFilter] = useState(null);
+  // Programme tabs (retours équipe com #11, 2026-10-16): the live site's 3
+  // higher-level report groupings. `initialCategory` comes from
+  // /reports?category=<slug> (the "Browse the reports" button on each
+  // programme page); an unknown slug just means "All".
+  const [activeCategory, setActiveCategory] = useState(
+    categories.some((c) => c.slug === initialCategory) ? initialCategory : null
+  );
   // "hasMore" pagination (2026-09-28, at Yv's call), on top of the fix
   // above: everything is still fetched and filtered up front (no extra
   // API round trip — the whole point of this page), but only
@@ -54,9 +61,12 @@ export default function ReportsGrid({ articles, filters }) {
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
   const filtered = useMemo(() => {
-    if (!activeFilter) return articles;
-    return articles.filter((story) => story.filterTerms.some((f) => f.slug === activeFilter));
-  }, [activeFilter, articles]);
+    return articles.filter(
+      (story) =>
+        (!activeFilter || story.filterTerms.some((f) => f.slug === activeFilter)) &&
+        (!activeCategory || (story.categoryTerms ?? []).some((c) => c.slug === activeCategory))
+    );
+  }, [activeFilter, activeCategory, articles]);
 
   // Switching filters always starts back at the first page — otherwise
   // "Annual Reports" could open already expanded to however many cards
@@ -64,6 +74,10 @@ export default function ReportsGrid({ articles, filters }) {
   // filtered.
   function selectFilter(slug) {
     setActiveFilter(slug);
+    setDisplayCount(PAGE_SIZE);
+  }
+  function selectCategory(slug) {
+    setActiveCategory(slug);
     setDisplayCount(PAGE_SIZE);
   }
 
@@ -88,11 +102,46 @@ export default function ReportsGrid({ articles, filters }) {
     </>
   );
 
+  const tabs =
+    categories.length > 0 ? (
+      <nav className="reports-tabs" aria-label="Browse reports by programme">
+        <button
+          type="button"
+          className={`reports-tabs__btn${!activeCategory ? " is-active" : ""}`}
+          aria-pressed={!activeCategory}
+          onClick={() => selectCategory(null)}
+        >
+          All reports
+        </button>
+        {categories.map((c) => (
+          <button
+            key={c.slug}
+            type="button"
+            className={`reports-tabs__btn${activeCategory === c.slug ? " is-active" : ""}`}
+            aria-pressed={activeCategory === c.slug}
+            onClick={() => selectCategory(c.slug)}
+          >
+            {c.slug === "annual-reports" ? c.name : c.name.replace(/ Reports$/, "")}
+            <span className="reports-tabs__count">{c.count}</span>
+          </button>
+        ))}
+      </nav>
+    ) : null;
+
   // No taxonomy data at all (e.g. the local mock server, which doesn't
   // simulate report types) — just the plain grid, no empty sidebar.
-  if (filters.length === 0) return grid;
+  if (filters.length === 0) {
+    return (
+      <>
+        {tabs}
+        {grid}
+      </>
+    );
+  }
 
   return (
+    <>
+    {tabs}
     <div className="reports-layout">
       <nav className="reports-filters" aria-label="Filter reports by type">
         <button
@@ -116,6 +165,7 @@ export default function ReportsGrid({ articles, filters }) {
 
       <div className="reports-main">{grid}</div>
     </div>
+    </>
   );
 }
 

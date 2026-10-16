@@ -20,6 +20,7 @@ import {
   getWpCategories,
   getWpCountriesBySlug,
   getWpFilteredPosts,
+  searchWp,
 } from "./wp";
 import { STAFF, STAFF_TEAMS } from "./staff";
 import { BOARD, BOARD_ROLES } from "./board";
@@ -42,14 +43,42 @@ export async function getHeader() {
     // "Latest" section (components/Latest.js#stories, still there,
     // unchanged); this instead links to a real page for the live site's
     // Publications > Reports archive — see getReportsPage().
+    // 2026-10-16 (retours équipe com, #8/#9/#10): "Reports" becomes
+    // "Publications" (the old site's label) and "Data" is back as a tab.
+    // Dropdowns are deliberately minimal — never more than 3 entries
+    // (#8). Items without `href` are button-only parents (Data has no page
+    // of its own, like on the old site); `children[].external` opens the
+    // standalone site in a new tab. Revert: restore the flat 5-item array.
     nav: [
       { label: "Our Work", href: "/programmes" },
       { label: "Where We Work", href: "/where-we-work" },
-      { label: "Reports", href: "/reports" },
+      {
+        label: "Publications",
+        href: "/reports",
+        children: [
+          { label: "Reports", href: "/reports" },
+          { label: "Newsletter", href: "https://mfwa.org/newsletter/", external: true },
+          { label: "Blog", href: "https://mfwa.org/publication-type/blog/", external: true },
+        ],
+      },
+      {
+        label: "Data",
+        children: [
+          { label: "Mediascape", href: "https://mediascape.mfwa.org", external: true },
+          { label: "The Red List", href: "https://memorial.mfwa.org/", external: true },
+          { label: "Media Ownership Monitor", href: "https://ghana.mom-gmr.org/", external: true },
+        ],
+      },
       { label: "Our Impact", href: "/impact-stories" },
       { label: "About", href: "/about-us" },
     ],
-    searchAriaLabel: "Rechercher",
+    // NGOSource badge (#18, 2026-10-16): moved here from the footer —
+    // same asset/caption that getFooter() used to carry as `credential`.
+    credential: {
+      image: { src: "/images/ngo-source.png", alt: "NGOSource Equivalency Determination" },
+      caption: "NGOSource Equivalency Determination",
+    },
+    searchAriaLabel: "Search the site",
     donate: { label: "Donate", href: "https://mfwa.org/donate" },
   };
 }
@@ -76,7 +105,10 @@ export async function getUtilityBar() {
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/hero-slides`).then(r => r.json())
 export async function getHero() {
   return {
-    eyebrow: "Media Foundation for West Africa",
+    // eyebrow removed 2026-10-16 (retours équipe com #3): the logo already
+    // sits at the top of every page, so the left box no longer repeats
+    // "Media Foundation for West Africa". Hero.js renders the eyebrow only
+    // when this field is set — restore the string to bring it back.
     slides: [
       {
         title: "Media & Voices for Public Good",
@@ -99,34 +131,68 @@ export async function getHero() {
         cta: { label: "Read the campaign", href: "#digital-rights" },
       },
     ],
-    // API: featured_article.image + .region + .country
-    // API: featured_article.title + .excerpt + .link
-    // API: featured_article.gallery[] — inner images of the featured article, auto-rotating
-    featuredArticle: {
-      image: {
-        src: "/images/ghana1.jpg",
-        alt: "Image d'illustration : une femme portant un grand bassin sur la tête sur un marché de rue au Ghana.",
-      },
-      region: "West Africa",
-      country: "Ghana",
-      eyebrow: "Latest news",
-      title: "Journalists in Ghana demand stronger protection for media freedom",
-      excerpt:
-        "Media professionals are calling for urgent measures to ensure the safety and independence of journalists in the country.",
-      link: "#article",
-      linkLabel: "Read more",
-      gallery: [
+    // Swipe-through news carousel (retours équipe com #1, 2026-10-16): the
+    // single "Latest news" featured article + its inner image gallery is
+    // replaced by four stories the reader swipes (or arrows/dots) through,
+    // and the "Latest news" label is gone. Sample copy, like every story
+    // in this file, until the WordPress feed is wired in — the first is
+    // the former featured article, the other three reuse the titles of
+    // the "Latest" grid below.
+    // API: news.stories[] { image, region, country, title, excerpt, link, linkLabel }
+    news: {
+      ariaLabel: "Latest stories",
+      stories: [
         {
-          src: "/images/ghana2.jpg",
-          alt: "Image d'illustration : danseurs en tenues traditionnelles kente lors d'un festival.",
+          image: {
+            src: "/images/ghana1.jpg",
+            alt: "Image d'illustration : une femme portant un grand bassin sur la tête sur un marché de rue au Ghana.",
+          },
+          region: "West Africa",
+          country: "Ghana",
+          title: "Journalists in Ghana demand stronger protection for media freedom",
+          excerpt:
+            "Media professionals are calling for urgent measures to ensure the safety and independence of journalists in the country.",
+          link: "#article",
+          linkLabel: "Read more",
         },
         {
-          src: "/images/ghana3.jpg",
-          alt: "Image d'illustration : vue aérienne de pirogues de pêche alignées sur une plage.",
+          image: {
+            src: "/images/ghana4.jpg",
+            alt: "Image d'illustration : rassemblement public au Black Star Square, à Accra.",
+          },
+          region: "West Africa",
+          country: "Ghana",
+          title: "Every Dollar Invested, Millions Returned",
+          excerpt:
+            "How investigative reporting backed by MFWA helped expose losses and recover public funds.",
+          link: "/articles/every-dollar-invested-millions-returned",
+          linkLabel: "Read more",
         },
         {
-          src: "/images/ghana4.jpg",
-          alt: "Image d'illustration : rassemblement public au Black Star Square, à Accra.",
+          image: {
+            src: "/images/ghana3.jpg",
+            alt: "Image d'illustration : vue aérienne de pirogues de pêche alignées sur une plage.",
+          },
+          region: "West Africa",
+          country: "Regional",
+          title: "The digital rights challenges facing young people in West Africa",
+          excerpt:
+            "From shutdowns to online harassment, what young people say they need to participate safely online.",
+          link: "#article-digital-rights",
+          linkLabel: "Read more",
+        },
+        {
+          image: {
+            src: "/images/ghana2.jpg",
+            alt: "Image d'illustration : danseurs en tenues traditionnelles kente lors d'un festival.",
+          },
+          region: "West Africa",
+          country: "Sierra Leone",
+          title: "Supporting young journalists in Sierra Leone: from training to impact",
+          excerpt:
+            "A new generation of reporters is turning MFWA training into stories that change their communities.",
+          link: "#article-young-journalists",
+          linkLabel: "Read more",
         },
       ],
     },
@@ -140,6 +206,12 @@ export async function getLatestStories() {
     eyebrow: "What’s happening",
     title: "The latest from MFWA",
     viewAll: { label: "View all stories", href: "#stories-archive" },
+    // 2026-10-16 (retours équipe com #6): only 3 stories show before the
+    // "View all stories" link, which now sits under the grid instead of
+    // beside the title. The 4th sample story stays in `stories` (the
+    // topic filter still searches all of them) — Latest.js slices after
+    // filtering. Set back to 4 (or remove) to restore the old row.
+    visibleCount: 3,
     topics: [
       { label: "MFWA Now", slug: "mfwa-now", active: true },
       { label: "Freedom of Expression", slug: "freedom-of-expression" },
@@ -239,7 +311,20 @@ export async function getWork() {
 
 // Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/impact-stats`).then(r => r.json())
 export async function getImpactStats() {
+  // Funders showcase (retours équipe com #17 / #5, 2026-10-16): the same
+  // funding-partner logos as /about-us/our-partners/funding-partners,
+  // shown under the home statistics with their count, as "Partners
+  // Highlights".
+  const { logos: funderLogos } = await getFundingPartnersPage();
   return {
+    funders: {
+      eyebrow: "Our funders",
+      title: "Partners Highlights",
+      count: funderLogos.length,
+      countLabel: "funding partners",
+      link: { label: "Meet our funding partners", href: "/about-us/our-partners/funding-partners" },
+      items: funderLogos,
+    },
     media: { src: "/images/ghana5.jpg", alt: "" },
     titleLines: ["From story", "to change."],
     text: "Through investigative reporting, research and advocacy, MFWA has helped expose injustice, strengthen media and drive real change across West Africa.",
@@ -313,7 +398,10 @@ export async function getImpactHighlights() {
 export async function getReach() {
   return {
     eyebrow: "Our reach",
-    titleLines: ["16 countries.", "One region."],
+    // 2026-10-16 (retours équipe com #4): was ["16 countries.", "One
+    // region."]. (#20 asks for "Mediascape" under "Our Reach" — the same
+    // heading; see the hand-off note, not applied twice.)
+    titleLines: ["Country", "Highlights."],
     text: "We work across West Africa, supporting independent media and protecting press freedom in some of the region\u2019s most challenging environments.",
     link: { label: "Explore our countries", href: "/where-we-work" },
     map: {
@@ -397,14 +485,31 @@ export async function getCta() {
   return {
     media: { src: "/images/4.jpg", alt: "" },
     eyebrow: "Take action",
-    titleLines: ["Stronger media", "Stronger voices"],
+    // Tagline (retours équipe com #2, 2026-10-16): was "Stronger media /
+    // Stronger voices". "Empowering Media & Voices for Public Good" is the
+    // slogan the live mfwa.org footer carries — confirm it is the one the
+    // com team means by "our official tagline".
+    titleLines: ["Empowering Media &", "Voices for Public Good"],
     text: "Support our work and help build a future where media, rights and democracy thrive.",
-    button: { label: "Support MFWA", href: "#donate" },
+    // The "Support MFWA" button above the footer was removed (#7) — Donate
+    // already lives in the header — and the standalone sites below take
+    // its place as a banner. Restore `button: { label, href }` to bring
+    // the button back (Cta.js renders it only when present).
     links: [
       { label: "Partner", href: "#partner" },
       { label: "Engage", href: "#engage" },
       { label: "Contact", href: "/contact" },
     ],
+    // Other websites banner (#7) — the live site's footer "Quick Links".
+    sites: {
+      title: "Our other websites",
+      items: [
+        { name: "WAMECA", host: "wameca.mfwa.org", href: "https://wameca.mfwa.org" },
+        { name: "The Fourth Estate", host: "thefourthestategh.com", href: "https://thefourthestategh.com/" },
+        { name: "Fact-Check Ghana", host: "fact-checkghana.com", href: "https://fact-checkghana.com/" },
+        { name: "MediaGB", host: "mediagb.org", href: "https://mediagb.org" },
+      ],
+    },
   };
 }
 
@@ -414,11 +519,14 @@ export async function getFooter() {
     logo: { src: "/images/mfwa-logo-01.png", alt: "MFWA" },
     homeAriaLabel: "Media Foundation for West Africa — accueil",
     brandNameLines: ["Media Foundation", "for West Africa"],
-    // Mirrors getHeader()'s nav — see the note there.
+    // Mirrors getHeader()'s nav — see the note there. 2026-10-16 (retours
+    // équipe com #10/#9): "Reports" → "Publications" and "Data" is back;
+    // the footer lists flat links only (the header carries the dropdowns).
     nav: [
       { label: "Our Work", href: "/programmes" },
       { label: "Where We Work", href: "/where-we-work" },
-      { label: "Reports", href: "/reports" },
+      { label: "Publications", href: "/reports" },
+      { label: "Data", href: "https://mediascape.mfwa.org" },
       { label: "Our Impact", href: "/impact-stories" },
       { label: "About", href: "/about-us" },
     ],
@@ -429,23 +537,11 @@ export async function getFooter() {
       { network: "Facebook", url: "#" },
       { network: "Instagram", url: "#" },
     ],
-    // Quality/accreditation seal (2026-09-28, at Yv's call): NGOSource
-    // Equivalency Determination already appears as plain text in
-    // getAboutUs().glance.credentials ("At a glance") — this is the same
-    // credential, given a second, site-wide home in the footer, next to
-    // the social icons rather than folded into either block. Hotlinked to
-    // mfwa.org (same convention as report/story cover images elsewhere in
-    // this file) rather than assumed to be a local asset — swap to
-    // /images/... the way the Our Staff hero photo was (see
-    // components/StaffHero.js's history) if Yv would rather not depend on
-    // the live site for this one image.
-    credential: {
-      image: {
-        src: "/images/ngo-source.png",
-        alt: "NGOSource Equivalency Determination",
-      },
-      caption: "NGOSource Equivalency Determination",
-    },
+    // The NGOSource badge that used to live here (2026-09-28) moved to
+    // the header on 2026-10-16 (retours équipe com #18) — see
+    // getHeader().credential. Footer.js renders a credential block only
+    // if this field comes back, so re-adding { image, caption } here
+    // restores it.
     taglineLines: ["For a free and independent media", "in West Africa."],
     copy: "© 2026 MFWA. All rights reserved.",
     legal: [
@@ -454,6 +550,54 @@ export async function getFooter() {
       { label: "Contact", href: "/contact" },
     ],
   };
+}
+
+// -- Site search (retours équipe com #13, 2026-10-16) ----------------------
+//
+// /search?q=… combines two things: (1) a small hand-kept index of this
+// site's own pages — the part WordPress can't answer, since most of them
+// live in this file rather than in the WP database — matched on title +
+// keywords, and (2) WordPress' own search over stories and reports (see
+// searchWp() in lib/wp.js). Add a page here when a new top-level page ships.
+const SEARCHABLE_PAGES = [
+  { title: "Our programmes", href: "/programmes", keywords: "what we do programmes work thematic areas strategy" },
+  { title: "Freedom of Expression", href: "/programmes/freedom-of-expression", keywords: "programme press freedom journalists access to information" },
+  { title: "Tech & Digital Rights", href: "/programmes/digital-rights", keywords: "programme internet shutdowns surveillance online safety" },
+  { title: "Media for Democracy & Good Governance", href: "/programmes/media-democracy-governance", keywords: "programme elections accountability investigative fact-checking" },
+  { title: "Media for Peace & Social Cohesion", href: "/programmes/media-peace-social-cohesion", keywords: "programme conflict extremism disinformation peace" },
+  { title: "Where we work", href: "/where-we-work", keywords: "countries map issues west africa benin ghana nigeria senegal" },
+  { title: "Publications — Reports", href: "/reports", keywords: "reports annual research policy briefs publications" },
+  { title: "Our impact stories", href: "/impact-stories", keywords: "impact stories change results" },
+  { title: "About MFWA", href: "/about-us", keywords: "about mission vision objectives strategy values faq" },
+  { title: "Our staff", href: "/about-us/our-staff", keywords: "team staff people directory" },
+  { title: "Our board", href: "/about-us/our-board", keywords: "board members governance" },
+  { title: "Our partners", href: "/about-us/our-partners", keywords: "partners" },
+  { title: "Funding partners", href: "/about-us/our-partners/funding-partners", keywords: "funders donors funding partners supporters" },
+  { title: "National partners", href: "/about-us/our-partners/national-partners", keywords: "national partner organisations" },
+  { title: "Our networks", href: "/about-us/our-partners/our-networks", keywords: "networks ifex afex apai wacsof afic" },
+  { title: "Get involved", href: "/about-us/get-involved", keywords: "donate volunteer intern support" },
+  { title: "Intern", href: "/about-us/get-involved/intern", keywords: "internship intern apply" },
+  { title: "Volunteer", href: "/about-us/get-involved/volunteer", keywords: "volunteer volunteering apply" },
+  { title: "Contact us", href: "/contact", keywords: "contact email phone address accra" },
+  { title: "Mediascape", href: "https://mediascape.mfwa.org", keywords: "data media landscape mediascape", external: true },
+  { title: "The Red List", href: "https://memorial.mfwa.org/", keywords: "data memorial journalists killed red list", external: true },
+  { title: "Media Ownership Monitor", href: "https://ghana.mom-gmr.org/", keywords: "data media ownership monitor", external: true },
+];
+
+export async function getSearchResults(rawQuery) {
+  const query = (rawQuery ?? "").trim().slice(0, 100);
+  if (!query) return { query: "", pages: [], posts: [], reports: [] };
+
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const pages = SEARCHABLE_PAGES.filter((page) => {
+    const haystack = `${page.title} ${page.keywords}`.toLowerCase();
+    return terms.every((term) => haystack.includes(term));
+  });
+
+  // `null` = that half of the WordPress search was unavailable (the page
+  // says so instead of pretending nothing matched).
+  const { posts, reports } = await searchWp(query);
+  return { query, pages, posts, reports };
 }
 
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/posts?slug=${slug}&_embed`).then(r => r.json())
@@ -923,6 +1067,28 @@ export async function getReportsPage() {
   }
   const filters = [...filterCounts.values()].sort((a, b) => a.name.localeCompare(b.name));
 
+  // The live site organises Publications > Reports by 3 higher-level
+  // groupings (retours équipe com #11, 2026-10-16): Annual Reports,
+  // Freedom of Expression & Digital Rights Reports, and Media for
+  // Democracy & Good Governance Reports — the programmes' own reports.
+  // Same "only what has content" rule as `filters`, in the live site's
+  // order (anything else the taxonomy gains is appended alphabetically).
+  const CATEGORY_ORDER = ["annual-reports", "foedr-reports", "mdgg-reports"];
+  const categoryCounts = new Map();
+  for (const item of items) {
+    for (const term of item.categoryTerms ?? []) {
+      const existing = categoryCounts.get(term.slug);
+      if (existing) existing.count += 1;
+      else categoryCounts.set(term.slug, { slug: term.slug, name: term.name, count: 1 });
+    }
+  }
+  const categories = [...categoryCounts.values()].sort((a, b) => {
+    const ai = CATEGORY_ORDER.indexOf(a.slug);
+    const bi = CATEGORY_ORDER.indexOf(b.slug);
+    if (ai !== -1 || bi !== -1) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    return a.name.localeCompare(b.name);
+  });
+
   return {
     eyebrow: "Publications",
     label: "Reports",
@@ -930,6 +1096,7 @@ export async function getReportsPage() {
       "Annual reports, policy papers and research from MFWA on media freedom, digital rights and democratic governance across West Africa.",
     articles: items,
     filters,
+    categories,
     total,
   };
 }
@@ -952,7 +1119,13 @@ export async function getReportsPage() {
 // the board, partners, Intern/Volunteer detail) link out to mfwa.org — the
 // same pattern as Reach.js's country links — until they are ported.
 // Future: return fetch(`${process.env.WP_API_BASE}/mfwa/v1/about`).then(r => r.json())
+// Number of projects for "At a glance" (#15). NOT provided yet — left null
+// on purpose rather than inventing a figure; the "Projects" stat appears
+// as soon as this is set to the real number.
+const ABOUT_PROJECTS_COUNT = null;
+
 export async function getAboutUs() {
+  const fundersCount = (await getFundingPartnersPage()).logos.length;
   return {
     hero: {
       eyebrow: "About MFWA",
@@ -969,7 +1142,12 @@ export async function getAboutUs() {
       stats: [
         { label: "Countries covered", count: 16 },
         { label: "National partner organisations", count: 16 },
-        { label: "Team members", count: 36 },
+        // 2026-10-16 (retours équipe com #15): the "Team members 36" figure
+        // was replaced by the funders count (derived from the funding
+        // partners list by getAboutUs() below) and, once the number is
+        // confirmed, the project count — see ABOUT_PROJECTS_COUNT.
+        ...(ABOUT_PROJECTS_COUNT ? [{ label: "Projects", count: ABOUT_PROJECTS_COUNT }] : []),
+        { label: "Funders", count: fundersCount },
         { label: "Regional & global networks", count: 6 },
       ],
       credentials: [
@@ -1043,7 +1221,7 @@ export async function getAboutUs() {
       rows: [
         {
           icon: "team",
-          label: "Team members",
+          label: "Staff", // #16: was "Team members"
           count: 36,
           text: "Full-time staff, fellows and interns at our Accra headquarters, plus correspondents, researchers and a network of lawyers across West Africa who provide legal assistance.",
           href: "/about-us/our-staff",
@@ -1643,7 +1821,13 @@ const PROGRAMME_TILES = [
   { id: "digital", label: "Digital Rights", href: "/programmes/digital-rights", variant: "orbit", tone: "pale", hubTone: "prog-lavender" },
   { id: "governance", label: "Media & Governance", href: "/programmes/media-democracy-governance", variant: "newspaper", tone: "white", hubTone: "prog-navy" },
   { id: "peace", label: "Peace & Cohesion", href: "/programmes/media-peace-social-cohesion", variant: "quote", tone: "pale", hubTone: "prog-green" },
-  { id: "institutional", label: "Institutional Dev.", href: "/programmes/institutional-development", variant: "search", tone: "white", hubTone: "prog-amber" },
+  // Institutional Development (retours équipe com #12, 2026-10-16) was
+  // removed from the Programmes section: no hub tile, no cross-nav tile,
+  // no hub card. Its page (getInstitutionalDevelopmentPage) still exists
+  // at /programmes/institutional-development, just no longer linked from
+  // here. Revert: restore this entry
+  //   { id: "institutional", label: "Institutional Dev.", href: "/programmes/institutional-development", variant: "search", tone: "white", hubTone: "prog-amber" }
+  // and the matching hub card in getProgrammesPage().nav.items.
 ];
 
 export async function getProgrammesPage() {
@@ -1651,7 +1835,7 @@ export async function getProgrammesPage() {
     hero: {
       crumbs: [{ label: "Programmes" }],
       eyebrow: "What we do",
-      titleLines: ["Five ways we", "defend free expression."],
+      titleLines: ["Four ways we", "defend free expression."],
       lede: "Over 27 years working across West Africa, our 2025–2029 Strategic Plan focuses on four thematic areas — Freedom of Expression, Tech & Digital Rights, Media for Democracy & Good Governance, and Media for Peace & Social Cohesion — with Institutional Development as a cross-cutting pillar and women's empowerment as a cross-cutting theme.",
       primary: { label: "Our overall strategy", href: "https://mfwa.org/wp-content/uploads/2025/10/Strategic-Plan-doc_MFWA_2025-to-2029_clean-1.pdf" },
       secondary: { label: "About MFWA", href: "/about-us" },
@@ -1659,7 +1843,7 @@ export async function getProgrammesPage() {
     },
     nav: {
       eyebrow: "Explore",
-      title: "Our five programmes",
+      title: "Our four programmes",
       text: "Each programme is pursued through impact-oriented advocacy, strategic partnerships, research and documentation, and stronger institutional systems.",
       items: [
         {
@@ -1693,14 +1877,6 @@ export async function getProgrammesPage() {
           scope: "Thematic area",
           desc: "Engaging the media to address extremism, polarisation, mis/disinformation and conflict prevention.",
           href: "/programmes/media-peace-social-cohesion",
-        },
-        {
-          id: "institutional",
-          icon: "search",
-          name: "Institutional Development",
-          scope: "Cross-cutting pillar",
-          desc: "Building an efficient, resilient organisation capable of delivering fully on its mandate.",
-          href: "/programmes/institutional-development",
         },
       ],
     },
@@ -1755,6 +1931,15 @@ export async function getFreedomOfExpressionPage() {
         { label: "Access to Justice and anti-impunity campaigns", href: "/category/impunity" },
       ],
     },
+    // Reports for this programme (retours équipe com #11, 2026-10-16): the
+    // live site files its reports under the programme they belong to; the
+    // button opens /reports on that grouping.
+    reports: {
+      eyebrow: "Publications",
+      title: "Reports from this programme",
+      text: "Read the Freedom of Expression & Digital Rights reports published by MFWA.",
+      cta: { label: "Browse the reports", href: "/reports?category=foedr-reports" },
+    },
     involve: {
       eyebrow: "Get involved",
       title: "Support this programme",
@@ -1801,6 +1986,15 @@ export async function getDigitalRightsPage() {
         "Cybersecurity",
         "Gender digital equity and equality, empowering women to assert their online rights",
       ],
+    },
+    // Reports for this programme (retours équipe com #11, 2026-10-16): the
+    // live site files its reports under the programme they belong to; the
+    // button opens /reports on that grouping.
+    reports: {
+      eyebrow: "Publications",
+      title: "Reports from this programme",
+      text: "Read the Freedom of Expression & Digital Rights reports published by MFWA.",
+      cta: { label: "Browse the reports", href: "/reports?category=foedr-reports" },
     },
     involve: {
       eyebrow: "Get involved",
@@ -1854,6 +2048,15 @@ export async function getMediaGovernancePage() {
         { name: "The Fourth Estate", href: "https://thefourthestategh.com/" },
         { name: "Fact-check Ghana", href: "https://www.fact-checkghana.com/" },
       ],
+    },
+    // Reports for this programme (retours équipe com #11, 2026-10-16): the
+    // live site files its reports under the programme they belong to; the
+    // button opens /reports on that grouping.
+    reports: {
+      eyebrow: "Publications",
+      title: "Reports from this programme",
+      text: "Read the Media for Democracy & Good Governance reports published by MFWA.",
+      cta: { label: "Browse the reports", href: "/reports?category=mdgg-reports" },
     },
     involve: {
       eyebrow: "Get involved",

@@ -1,6 +1,6 @@
 "use client";
 
-// API: footer.nav[], footer.social[] { network, url }, footer.credential { image, caption }, footer.legal[]
+// API: footer.nav[], footer.social[] { network, url }, footer.credential? { image, caption }, footer.legal[]
 import FadeImg from "./FadeImg";
 import Link from "next/link";
 import { useFooterReveal } from "../lib/hooks";
@@ -62,17 +62,21 @@ export default function Footer({ data }) {
           </p>
         </div>
 
-        <div className="footer-credential">
-          <span className="footer-credential__badge">
-            <FadeImg
-              className="footer-credential__img"
-              src={data.credential.image.src}
-              alt={data.credential.image.alt}
-              removeOnError
-            />
-          </span>
-          <p className="footer-credential__caption">{data.credential.caption}</p>
-        </div>
+        {/* The NGOSource credential moved to the header (2026-10-16, retours
+            équipe com #18); a `credential` in getFooter() would bring it back. */}
+        {data.credential && (
+          <div className="footer-credential">
+            <span className="footer-credential__badge">
+              <FadeImg
+                className="footer-credential__img"
+                src={data.credential.image.src}
+                alt={data.credential.image.alt}
+                removeOnError
+              />
+            </span>
+            <p className="footer-credential__caption">{data.credential.caption}</p>
+          </div>
+        )}
       </div>
 
       <div className="footer-bottom">

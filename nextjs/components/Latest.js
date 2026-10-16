@@ -41,10 +41,16 @@ export default function Latest({ data }) {
     data.topics.find((topic) => topic.active)?.slug ?? defaultTopic
   );
 
+  // data.visibleCount (retours équipe com #6, 2026-10-16): show 2-3
+  // stories, then the "View all stories" link — slice AFTER the topic
+  // filter so a topic still surfaces its own stories.
   const visibleStories = useMemo(() => {
-    if (!activeTopic || activeTopic === defaultTopic) return data.stories;
-    return data.stories.filter((story) => story.tag.some((t) => slugifyTag(t) === activeTopic));
-  }, [activeTopic, defaultTopic, data.stories]);
+    const matching =
+      !activeTopic || activeTopic === defaultTopic
+        ? data.stories
+        : data.stories.filter((story) => story.tag.some((t) => slugifyTag(t) === activeTopic));
+    return data.visibleCount ? matching.slice(0, data.visibleCount) : matching;
+  }, [activeTopic, defaultTopic, data.stories, data.visibleCount]);
 
   return (
     <section className="latest" id="stories">
@@ -72,10 +78,6 @@ export default function Latest({ data }) {
 
       <div className="latest__head">
         <p className="eyebrow">{data.eyebrow}</p>
-        <a className="latest__all" href={data.viewAll.href}>
-          <span>{data.viewAll.label}</span>
-          {ARROW}
-        </a>
       </div>
 
       <Reveal as="h2" className="latest__title">
@@ -117,6 +119,13 @@ export default function Latest({ data }) {
           </article>
         ))}
       </Reveal>
+
+      <div className="latest__more">
+        <a className="latest__all" href={data.viewAll.href}>
+          <span>{data.viewAll.label}</span>
+          {ARROW}
+        </a>
+      </div>
     </section>
   );
 }

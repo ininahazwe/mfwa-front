@@ -12,13 +12,14 @@ import { getReportsPage, getNewsletter, getHeader, getFooter } from "@/lib/conte
 
 export async function generateMetadata() {
   return {
-    title: "Reports — Media Foundation for West Africa",
+    title: "Publications — Media Foundation for West Africa",
     description:
       "Annual reports, policy papers and research from MFWA on media freedom, digital rights and democratic governance across West Africa.",
   };
 }
 
-export default async function ReportsPage() {
+export default async function ReportsPage({ searchParams }) {
+  const { category } = await searchParams;
   const [reports, newsletter, header, footer] = await Promise.all([
     getReportsPage(),
     getNewsletter(),
@@ -40,7 +41,12 @@ export default async function ReportsPage() {
               <h1 className="category__title">{reports.label}</h1>
               <p className="category__description">{reports.description}</p>
             </header>
-            <ReportsGrid articles={reports.articles} filters={reports.filters} />
+            <ReportsGrid
+              articles={reports.articles}
+              filters={reports.filters}
+              categories={reports.categories}
+              initialCategory={Array.isArray(category) ? category[0] : category}
+            />
           </section>
 
           <Newsletter data={newsletter} />

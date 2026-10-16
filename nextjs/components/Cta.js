@@ -1,4 +1,4 @@
-// API: cta.title, cta.text, cta.button{label,link}
+// API: cta.titleLines, cta.text, cta.button? {label,href} (omitted since 2026-10-16), cta.links[], cta.sites { title, items[] { name, host, href } }
 import FadeImg from "./FadeImg";
 
 export default function Cta({ data }) {
@@ -21,12 +21,14 @@ export default function Cta({ data }) {
         <div className="cta__aside">
           <p className="cta__text">{data.text}</p>
           <div className="cta__buttons">
-            <a className="btn btn--cta" href={data.button.href}>
-              {data.button.label}
-              <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
-              </svg>
-            </a>
+            {data.button && (
+              <a className="btn btn--cta" href={data.button.href}>
+                {data.button.label}
+                <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
+                </svg>
+              </a>
+            )}
             <ul className="cta__link">
               {data.links.map((link) => (
                 <li key={link.href}>
@@ -37,6 +39,25 @@ export default function Cta({ data }) {
           </div>
         </div>
       </div>
+
+      {data.sites && (
+        <div className="cta__sites">
+          <p className="cta__sites-title">{data.sites.title}</p>
+          <ul className="cta__sites-list">
+            {data.sites.items.map((site) => (
+              <li key={site.href}>
+                <a href={site.href} target="_blank" rel="noopener noreferrer">
+                  <span className="cta__site-name">{site.name}</span>
+                  <span className="cta__site-host">{site.host}</span>
+                  <svg className="cta__site-arrow" width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M3 1h6v6M9 1 1 9" />
+                  </svg>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

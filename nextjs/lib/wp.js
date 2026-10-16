@@ -372,10 +372,20 @@ export async function getWpImpactStories({ page = 1, perPage = 12 } = {}) {
 // only because embedding could never be verified as working in the first
 // place, and it's now confirmed not to work at all (see above), so there
 // was nothing to read back regardless of taxonomy name.
-function mapReport(post, { mediaMap, reportTypeMap } = {}) {
+function mapReport(post, { mediaMap, reportTypeMap, reportCategoryMap } = {}) {
   const title = decodeEntities(post.title?.rendered ?? "");
   const filterTerms = (post["report-type"] ?? [])
     .map((id) => reportTypeMap?.get(id))
+    .filter(Boolean)
+    .map((t) => ({ slug: t.slug, name: t.name }));
+  // 2026-10-16 (retours équipe com #11): the 3 higher-level groupings the
+  // live site organises Publications > Reports by — Annual Reports,
+  // Freedom of Expression & Digital Rights Reports, Media for Democracy &
+  // Good Governance Reports — come from the `report-category` taxonomy
+  // (see the note above, previously "not ported"). Empty when the
+  // taxonomy can't be read, so /reports degrades to the old layout.
+  const categoryTerms = (post["report-category"] ?? [])
+    .map((id) => reportCategoryMap?.get(id))
     .filter(Boolean)
     .map((t) => ({ slug: t.slug, name: t.name }));
 
@@ -387,20 +397,65 @@ function mapReport(post, { mediaMap, reportTypeMap } = {}) {
     date: formatWpDate(post.date),
     readTime: undefined,
     filterTerms,
+    categoryTerms,
   };
+}
+
+// `report-category`'s REST base is assumed to match its taxonomy name (the
+// same pattern `report-type` follows, which IS confirmed) — if the live
+// site registers it differently the request 404s, and this resolves to an
+// empty Map instead of taking /reports down with it.
+async function getWpReportCategoriesByIds(ids) {
+  try {
+    return await getWpTermsByIds("report-category", ids);
+  } catch {
+    return new Map();
+  }
 }
 
 export async function getWpReports({ page = 1, perPage = 12 } = {}) {
   const { data, totalPages, total } = await fetchJson(
     `/report?page=${page}&per_page=${perPage}&orderby=date&order=desc` +
-      `&_fields=id,date,link,title,featured_media,report-type`
+      `&_fields=id,date,link,title,featured_media,report-type,report-category`
   );
-  const [mediaMap, reportTypeMap] = await Promise.all([
+  const [mediaMap, reportTypeMap, reportCategoryMap] = await Promise.all([
     getWpMediaByIds(data.map((p) => p.featured_media)),
     getWpTermsByIds("report-type", data.flatMap((p) => p["report-type"] ?? [])),
+    getWpReportCategoriesByIds(data.flatMap((p) => p["report-category"] ?? [])),
   ]);
-  const items = data.map((p) => mapReport(p, { mediaMap, reportTypeMap }));
+  const items = data.map((p) => mapReport(p, { mediaMap, reportTypeMap, reportCategoryMap }));
   return { items, totalPages, total };
+}
+
+// -- Site search (retours équipe com #13, 2026-10-16) ---------------------
+//
+// Free-text search over the two content types the site actually lists:
+// regular posts (stories) and reports. Uses WordPress' own `search=`
+// parameter, so ranking/matching is whatever WP does — nothing is
+// re-implemented here. Each half is independent: if one request fails the
+// other still renders (the caller treats `null` as "unavailable").
+export async function searchWp(query, { perPage = 8 } = {}) {
+  const q = encodeURIComponent(query);
+  const [posts, reports] = await Promise.all([
+    fetchPostsWithTerms(`search=${q}&per_page=${perPage}&orderby=relevance`).then(
+      (r) => r.items,
+      () => null
+    ),
+    getWpReportsSearch(q, perPage).then(
+      (r) => r,
+      () => null
+    ),
+  ]);
+  return { posts, reports };
+}
+
+async function getWpReportsSearch(encodedQuery, perPage) {
+  const { data } = await fetchJson(
+    `/report?search=${encodedQuery}&per_page=${perPage}&orderby=relevance` +
+      `&_fields=id,date,link,title,featured_media`
+  );
+  const mediaMap = await getWpMediaByIds(data.map((p) => p.featured_media));
+  return data.map((p) => mapReport(p, { mediaMap }));
 }
 
 // The new /reports page fetches every report up front and filters
