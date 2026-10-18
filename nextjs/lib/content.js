@@ -20,6 +20,7 @@ import {
   getWpCategories,
   getWpCountriesBySlug,
   getWpFilteredPosts,
+  getWpPostTeasers,
   searchWp,
 } from "./wp";
 import { STAFF, STAFF_TEAMS } from "./staff";
@@ -847,8 +848,62 @@ const ISSUE_CATEGORY_SLUGS = [
   "safety-of-journalists",
 ];
 
+const WHERE_WE_WORK_HERO = {
+  crumbs: [{ label: "Where we work" }],
+  eyebrow: "Where we work",
+  titleLines: ["16 countries.", "One region."],
+  lede: "The MFWA works to promote freedom of expression, press freedom, access to information, internet freedom and media development throughout the 16 countries of West Africa — the 15 member states of ECOWAS, and Mauritania.",
+  primary: { label: "About MFWA", href: "/about-us" },
+  secondary: { label: "Our programmes", href: "/programmes" },
+  // This hub's own children (the 16 countries + 13 issues) already
+  // fill the full explorer section below, so — unlike
+  // PROGRAMME_TILES, which cross-links a page to its four sibling
+  // programmes — these tiles cross-link out to the other major site
+  // destinations instead, the same "ab-tiles" treatment used on
+  // /programmes to keep this hero from leaving the wide empty margin
+  // a tile-less "ab-hero__copy--wide" hero otherwise does.
+  tiles: [
+    { id: "donate", label: "Donate", href: "https://mfwa.org/donate", variant: "halfspin", tone: "dark" },
+    { id: "programmes", label: "Our Programmes", href: "/programmes", variant: "broadcast", tone: "pale" },
+    { id: "about", label: "About MFWA", href: "/about-us", variant: "press", tone: "white" },
+    { id: "involved", label: "Get Involved", href: "/about-us/get-involved", variant: "megaphone", tone: "pale" },
+  ],
+};
+
+// Static part of /where-we-work (2026-10-18): hero, intro and the 16
+// countries' names/links come from getReach() and this file only — no
+// WordPress request — so app/where-we-work/page.js can render them (and the
+// skeleton of the explorer) immediately while getWhereWeWorkPage() below
+// waits on WordPress inside a <Suspense> boundary.
+export async function getWhereWeWorkStatic({ countrySlug, categorySlug } = {}) {
+  const reach = await getReach();
+  function countryHref(slug) {
+    const params = new URLSearchParams();
+    if (slug !== countrySlug) params.set("country", slug);
+    if (categorySlug) params.set("category", categorySlug);
+    const qs = params.toString();
+    return `/where-we-work${qs ? `?${qs}` : ""}`;
+  }
+  return {
+    hero: WHERE_WE_WORK_HERO,
+    intro: WHERE_WE_WORK_INTRO,
+    countries: reach.countries.map((c) => ({ name: c.name, slug: c.slug, href: countryHref(c.slug) })),
+    activeCountrySlug: countrySlug ?? null,
+  };
+}
+
+const WHERE_WE_WORK_INTRO = [
+  "In every country, we work through our national partner organisations, our in-country freedom of expression rights monitors, and members of our Network of Human Rights Lawyers, who offer pro-bono legal services in defence of victims of free expression rights violations.",
+];
+
 export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
-  const [reach, categories] = await Promise.all([
+  // Speed-up (2026-10-18): this used to run as 4 sequential waves of
+  // WordPress requests (reach+categories → 16 countries' ids → 16 map
+  // queries with full card data, ~64 requests → the grid). It is now 2
+  // waves — (1) categories + the 16 countries' ids together, (2) the 16
+  // lean map queries (getWpPostTeasers, 1 request each) together with the
+  // grid — i.e. ~23 requests instead of ~70, and half the round trips.
+  const [reach, categories, wpCountries] = await Promise.all([
     getReach(),
     // Non-fatal (2026-09-28, at Yv's call): the 13 Issues chips are a
     // secondary filter layered on top of the country map/list, not the
@@ -866,6 +921,7 @@ export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
       console.error("getWhereWeWorkPage: getWpCategories failed, continuing without Issues chips —", err);
       return [];
     }),
+    getReach().then((r) => getWpCountriesBySlug(r.countries.map((c) => c.slug))),
   ]);
 
   const activeCountry = countrySlug
@@ -882,7 +938,6 @@ export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
   // (getWpCountriesBySlug) rather than one lookup per country, since the
   // map restyle below (severity/recent stories) needs every country's WP
   // id anyway, not just the active one.
-  const wpCountries = await getWpCountriesBySlug(reach.countries.map((c) => c.slug));
   const wpCountryBySlug = new Map(wpCountries.map((c) => [c.slug, c]));
   const activeWpCountry = activeCountry ? wpCountryBySlug.get(activeCountry.slug) ?? null : null;
 
@@ -892,16 +947,23 @@ export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
   // filter when one is set. Cached via wp.js's REVALIDATE_SECONDS like
   // every other WP call here, so this doesn't mean 16 live requests on
   // every render — see the note above severityOf().
+  const gridPromise = getWpFilteredPosts({
+    countryId: activeWpCountry?.id,
+    categoryId: activeCategory?.id,
+    page: 1,
+    perPage: EXPLORE_PAGE_SIZE,
+  });
   const countryStats = await Promise.all(
     reach.countries.map(async (c) => {
       const wpCountry = wpCountryBySlug.get(c.slug);
       if (!wpCountry) return { slug: c.slug, count: 0, recent: [] };
-      const { items: recent, total: count } = await getWpFilteredPosts({
+      // One failing country only greys that country out on the map instead
+      // of failing the whole page.
+      const { items: recent, total: count } = await getWpPostTeasers({
         countryId: wpCountry.id,
         categoryId: activeCategory?.id,
-        page: 1,
         perPage: MAP_RECENT_PER_COUNTRY,
-      });
+      }).catch(() => ({ items: [], total: 0 }));
       return { slug: c.slug, count, recent };
     })
   );
@@ -913,12 +975,7 @@ export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
     ? reach.countries.find((c) => c.slug === busiestSlug)?.name ?? null
     : null;
 
-  const { items, totalPages, total } = await getWpFilteredPosts({
-    countryId: activeWpCountry?.id,
-    categoryId: activeCategory?.id,
-    page: 1,
-    perPage: EXPLORE_PAGE_SIZE,
-  });
+  const { items, totalPages, total } = await gridPromise;
 
   // Every filter link carries the OTHER axis's current selection along
   // with it (so switching country never drops the category filter, and
@@ -940,30 +997,8 @@ export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
   }
 
   return {
-    hero: {
-      crumbs: [{ label: "Where we work" }],
-      eyebrow: "Where we work",
-      titleLines: ["16 countries.", "One region."],
-      lede: "The MFWA works to promote freedom of expression, press freedom, access to information, internet freedom and media development throughout the 16 countries of West Africa — the 15 member states of ECOWAS, and Mauritania.",
-      primary: { label: "About MFWA", href: "/about-us" },
-      secondary: { label: "Our programmes", href: "/programmes" },
-      // This hub's own children (the 16 countries + 13 issues) already
-      // fill the full explorer section below, so — unlike
-      // PROGRAMME_TILES, which cross-links a page to its four sibling
-      // programmes — these tiles cross-link out to the other major site
-      // destinations instead, the same "ab-tiles" treatment used on
-      // /programmes to keep this hero from leaving the wide empty margin
-      // a tile-less "ab-hero__copy--wide" hero otherwise does.
-      tiles: [
-        { id: "donate", label: "Donate", href: "https://mfwa.org/donate", variant: "halfspin", tone: "dark" },
-        { id: "programmes", label: "Our Programmes", href: "/programmes", variant: "broadcast", tone: "pale" },
-        { id: "about", label: "About MFWA", href: "/about-us", variant: "press", tone: "white" },
-        { id: "involved", label: "Get Involved", href: "/about-us/get-involved", variant: "megaphone", tone: "pale" },
-      ],
-    },
-    intro: [
-      "In every country, we work through our national partner organisations, our in-country freedom of expression rights monitors, and members of our Network of Human Rights Lawyers, who offer pro-bono legal services in defence of victims of free expression rights violations.",
-    ],
+    hero: WHERE_WE_WORK_HERO,
+    intro: WHERE_WE_WORK_INTRO,
     map: reach.map,
     countries: reach.countries.map((c) => {
       const stats = statsBySlug.get(c.slug);

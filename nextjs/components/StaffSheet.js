@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ARROW_RIGHT } from "./AboutIcons";
+import Portrait from "./Portrait";
 
 const CLOSE_MS = 450;
 
@@ -74,6 +75,7 @@ export default function StaffSheet({ person, teamLabel, position, total, neighbo
     neighbours.forEach((n) => {
       if (!n) return;
       const img = new Image();
+      img.referrerPolicy = "no-referrer"; // same request as <Portrait>, so the preload is actually reused
       img.src = n.photo;
     });
   }, [neighbours]);
@@ -157,7 +159,7 @@ export default function StaffSheet({ person, teamLabel, position, total, neighbo
 
         <div className="st-sheet__body" key={current.slug}>
           <figure className="st-sheet__photo">
-            <img src={current.photo} alt={`Portrait of ${current.name}`} />
+            <Portrait src={current.photo} name={current.name} alt={`Portrait of ${current.name}`} lazy={false} />
           </figure>
           <div className="st-sheet__text" tabIndex={0}>
             <p className="eyebrow">{shown.teamLabel}</p>

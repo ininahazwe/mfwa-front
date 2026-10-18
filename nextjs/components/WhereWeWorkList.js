@@ -6,6 +6,7 @@ import Link from "next/link";
 import Reveal from "./Reveal";
 import SectionHead from "./SectionHead";
 import CategoryGrid from "./CategoryGrid";
+import { FilterTabs, FilterTab, filterIcon } from "./FilterTabs";
 
 // API: {
 //   eyebrow, title, text (from getWhereWeWorkPage()'s intro),
@@ -286,20 +287,20 @@ export default function WhereWeWorkList({ data, initialItems, initialTotalPages,
 
         </div>
 
-        <div className="ww-issues" role="group" aria-label="Filtrer par thématique">
-          <a className={`ww-chip${!data.activeCategorySlug ? " is-selected" : ""}`} href={data.allIssuesHref}>
-            All issues
-          </a>
+        {/* Issue filters restyled 2026-10-18 (shared FilterTabs look). Still real
+            links (navigation keeps the country filter), hence href. */}
+        <FilterTabs className="ww-ftabs" label="Filtrer par thématique">
+          <FilterTab href={data.allIssuesHref} active={!data.activeCategorySlug} icon="all" label="All issues" />
           {data.categories.map((category) => (
-            <a
+            <FilterTab
               key={category.slug}
-              className={`ww-chip${category.slug === data.activeCategorySlug ? " is-selected" : ""}`}
               href={category.href}
-            >
-              {category.name}
-            </a>
+              active={category.slug === data.activeCategorySlug}
+              icon={filterIcon(category.slug, category.name)}
+              label={category.name}
+            />
           ))}
-        </div>
+        </FilterTabs>
 
         {hasFilter && (
           <p className="ww-filter-summary">

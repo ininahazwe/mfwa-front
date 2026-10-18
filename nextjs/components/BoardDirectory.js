@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
 import StaffSheet from "./StaffSheet";
+import Portrait from "./Portrait";
 
 export default function BoardDirectory({ data }) {
   const people = data.people;
@@ -76,7 +77,7 @@ export default function BoardDirectory({ data }) {
                 aria-haspopup="dialog"
               >
                 <span className="st-card__media">
-                  <img src={person.thumb} alt="" loading="lazy" decoding="async" />
+                  <Portrait src={person.thumb} name={person.name} />
                 </span>
                 <span className="ab-tag st-card__team">{person.role}</span>
                 <span className="st-card__name">{person.name}</span>

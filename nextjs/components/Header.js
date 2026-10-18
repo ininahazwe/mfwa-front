@@ -3,6 +3,7 @@ import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
 import NavDropdown from "./NavDropdown";
 import HeaderSearch from "./HeaderSearch";
+import MobileNav from "./MobileNav";
 
 export default function Header({ data, tone }) {
   return (
@@ -49,6 +50,10 @@ export default function Header({ data, tone }) {
               <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
             </svg>
           </a>
+          {/* Mobile menu (2026-10-17): burger + panel, visible below 900px only
+              (the desktop <nav> above is display:none there). Revert: remove
+              this line, the import, and the .mobile-nav* block in globals.css. */}
+          <MobileNav nav={data.nav} donate={data.donate} credential={data.credential} />
         </div>
       </div>
     </header>

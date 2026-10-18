@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import FadeImg from "./FadeImg";
 
 // Sidebar-filtered reports grid (2026-09-27, at Yv's call) — mirrors the
@@ -102,72 +102,243 @@ export default function ReportsGrid({ articles, filters, categories = [], initia
     </>
   );
 
+  // Sidebar redesign (2026-10-18, at Yv's call — inspired by a classic app
+  // side-nav: a heading block with a muted sub-line, a hairline, then
+  // roomy icon + label rows, the active row marked only by a vertical
+  // accent bar on the left edge; no pills, no filled backgrounds). Both
+  // report-type filters (.reports-filters) live in that left column; the
+  // programme tabs (.reports-tabs) stay a horizontal row above the grid.
+  // Same state, same filtering as before; only the markup/CSS changed.
+  // Revert: ReportsGrid.js.bak-reports-nav + globals.css.bak-reports-nav.
+  const byCategory = activeCategory
+    ? articles.filter((story) => (story.categoryTerms ?? []).some((c) => c.slug === activeCategory))
+    : articles;
+  const typeCounts = {};
+  for (const story of byCategory) {
+    for (const f of story.filterTerms ?? []) typeCounts[f.slug] = (typeCounts[f.slug] ?? 0) + 1;
+  }
+
+  // Programme tabs stay horizontal, above the grid (Yv, 2026-10-18): same
+  // row styling as the side-nav (icon + label + count, active = red bar,
+  // here along the bottom edge), no group heading.
   const tabs =
     categories.length > 0 ? (
       <nav className="reports-tabs" aria-label="Browse reports by programme">
-        <button
-          type="button"
-          className={`reports-tabs__btn${!activeCategory ? " is-active" : ""}`}
-          aria-pressed={!activeCategory}
+        <SideButton
+          className="reports-tabs__btn"
+          active={!activeCategory}
+          icon="all"
+          label="All reports"
+          count={articles.length}
           onClick={() => selectCategory(null)}
-        >
-          All reports
-        </button>
+        />
         {categories.map((c) => (
-          <button
+          <SideButton
             key={c.slug}
-            type="button"
-            className={`reports-tabs__btn${activeCategory === c.slug ? " is-active" : ""}`}
-            aria-pressed={activeCategory === c.slug}
+            className="reports-tabs__btn"
+            active={activeCategory === c.slug}
+            icon={categoryIcon(c.slug)}
+            label={c.slug === "annual-reports" ? c.name : c.name.replace(/ Reports$/, "")}
+            count={c.count}
             onClick={() => selectCategory(c.slug)}
-          >
-            {c.slug === "annual-reports" ? c.name : c.name.replace(/ Reports$/, "")}
-            <span className="reports-tabs__count">{c.count}</span>
-          </button>
+          />
         ))}
       </nav>
     ) : null;
 
-  // No taxonomy data at all (e.g. the local mock server, which doesn't
-  // simulate report types) — just the plain grid, no empty sidebar.
-  if (filters.length === 0) {
+  const types =
+    filters.length > 0 ? (
+      <div className="reports-group">
+        <div className="reports-group__head">
+          <p className="reports-group__title">Report type</p>
+          <p className="reports-group__sub">
+            {filters.length} {filters.length > 1 ? "types" : "type"}
+          </p>
+        </div>
+        <nav className="reports-filters" aria-label="Filter reports by type">
+          <SideButton
+            className="reports-filters__btn"
+            active={!activeFilter}
+            icon="layers"
+            label="All"
+            count={byCategory.length}
+            onClick={() => selectFilter(null)}
+          />
+          {filters.map((f) => (
+            <SideButton
+              key={f.slug}
+              className="reports-filters__btn"
+              active={activeFilter === f.slug}
+              icon={typeIcon(f)}
+              label={f.name}
+              count={typeCounts[f.slug] ?? 0}
+              dim={!typeCounts[f.slug] && activeFilter !== f.slug}
+              onClick={() => selectFilter(f.slug)}
+            />
+          ))}
+        </nav>
+      </div>
+    ) : null;
+
+  // Mobile: the two groups become horizontally scrolling rows — keep the
+  // active row in view (e.g. /reports?category=mdgg-reports preselects the
+  // last tab, which would otherwise start off-screen). Desktop: no-op.
+  const sideRef = useRef(null);
+  useEffect(() => {
+    sideRef.current?.querySelectorAll(".reports-tabs, .reports-filters").forEach((row) => {
+      const btn = row.querySelector(".is-active");
+      if (btn && row.scrollWidth > row.clientWidth) row.scrollLeft = Math.max(0, btn.offsetLeft - row.offsetLeft - 16);
+    });
+  }, [activeCategory, activeFilter]);
+
+  if (!types) {
     return (
-      <>
+      <div ref={sideRef}>
         {tabs}
         {grid}
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-    {tabs}
-    <div className="reports-layout">
-      <nav className="reports-filters" aria-label="Filter reports by type">
-        <button
-          type="button"
-          className={`reports-filters__btn${!activeFilter ? " is-active" : ""}`}
-          onClick={() => selectFilter(null)}
-        >
-          All
-        </button>
-        {filters.map((f) => (
-          <button
-            key={f.slug}
-            type="button"
-            className={`reports-filters__btn${activeFilter === f.slug ? " is-active" : ""}`}
-            onClick={() => selectFilter(f.slug)}
-          >
-            {f.name}
-          </button>
-        ))}
-      </nav>
-
-      <div className="reports-main">{grid}</div>
+    <div className="reports-layout" ref={sideRef}>
+      <aside className="reports-side">{types}</aside>
+      <div className="reports-main">
+        {tabs}
+        {grid}
+      </div>
     </div>
-    </>
   );
 }
+
+/* ---------- side-nav rows ---------- */
+
+function SideButton({ className, active, icon, label, count, dim, onClick }) {
+  return (
+    <button
+      type="button"
+      className={`reports-side__btn ${className}${active ? " is-active" : ""}${dim ? " is-dim" : ""}`}
+      aria-pressed={active}
+      onClick={onClick}
+    >
+      <span className="reports-side__icon" aria-hidden="true">
+        {SIDE_ICONS[icon] ?? SIDE_ICONS.doc}
+      </span>
+      <span className="reports-side__label">{label}</span>
+      <span className="reports-side__count">{count}</span>
+    </button>
+  );
+}
+
+function categoryIcon(slug) {
+  if (/annual/.test(slug)) return "calendar";
+  if (/foe|expression|digital/.test(slug)) return "mic";
+  if (/mdgg|democracy|governance/.test(slug)) return "newspaper";
+  return "folder";
+}
+
+function typeIcon(f) {
+  const key = `${f.slug} ${f.name}`.toLowerCase();
+  if (/annual/.test(key)) return "calendar";
+  if (/monitor/.test(key)) return "eye";
+  if (/month|quarter/.test(key)) return "clock";
+  if (/polic|brief|paper/.test(key)) return "doc";
+  if (/research/.test(key)) return "search";
+  if (/analy/.test(key)) return "bars";
+  if (/strateg|framework/.test(key)) return "compass";
+  return "doc";
+}
+
+// Bold, geometric 24px icons (2px stroke, round joins) — the weight of the
+// reference's icons, drawn in the site's own line-icon language.
+const ico = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2.1,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+};
+const SIDE_ICONS = {
+  all: (
+    <svg {...ico}>
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" fill="currentColor" />
+    </svg>
+  ),
+  layers: (
+    <svg {...ico}>
+      <path d="M12 3 21 8l-9 5-9-5 9-5z" fill="currentColor" />
+      <path d="m3 12.5 9 5 9-5" />
+      <path d="m3 17 9 5 9-5" />
+    </svg>
+  ),
+  calendar: (
+    <svg {...ico}>
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
+      <path d="M3.5 10h17M8 3v4M16 3v4" />
+      <rect x="7" y="13" width="3.5" height="3.5" rx=".6" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  mic: (
+    <svg {...ico}>
+      <rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor" />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" />
+    </svg>
+  ),
+  newspaper: (
+    <svg {...ico}>
+      <rect x="3" y="5" width="14" height="14" rx="1.5" />
+      <path d="M17 8h4v9a2 2 0 0 1-2 2H7" />
+      <path d="M6.5 9h6M6.5 12h6M6.5 15h3" />
+    </svg>
+  ),
+  folder: (
+    <svg {...ico}>
+      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2.5h8.5A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" />
+    </svg>
+  ),
+  eye: (
+    <svg {...ico}>
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" fill="currentColor" />
+    </svg>
+  ),
+  clock: (
+    <svg {...ico}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </svg>
+  ),
+  doc: (
+    <svg {...ico}>
+      <path d="M6 3h8l4 4v14H6z" />
+      <path d="M14 3v4h4M9 12h6M9 16h6" />
+    </svg>
+  ),
+  search: (
+    <svg {...ico}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m19.5 19.5-4.6-4.6" />
+    </svg>
+  ),
+  bars: (
+    <svg {...ico}>
+      <path d="M4 20h16" />
+      <rect x="5.5" y="11" width="3" height="6.5" rx=".8" fill="currentColor" />
+      <rect x="10.5" y="6" width="3" height="11.5" rx=".8" fill="currentColor" />
+      <rect x="15.5" y="9" width="3" height="8.5" rx=".8" fill="currentColor" />
+    </svg>
+  ),
+  compass: (
+    <svg {...ico}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="m15.5 8.5-2 5-5 2 2-5z" fill="currentColor" />
+    </svg>
+  ),
+};
 
 function ReportCard({ story }) {
   return (

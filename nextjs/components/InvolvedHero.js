@@ -13,13 +13,13 @@ import Motif from "./Motif";
 import { ARROW_RIGHT } from "./AboutIcons";
 import { useParallax } from "../lib/hooks";
 
-export default function InvolvedHero({ data, tiles, tone }) {
+export default function InvolvedHero({ data, tiles, tone, art }) {
   const blobRef = useParallax(0.15);
   return (
-    <section className="ab-wrap">
+    <section className="ab-hero">
       {/*<section className={`ab-hero${tone ? ` ab-hero--${tone}` : ""}`}>*/}
       <div className="ab-wrap ab-hero__grid">
-        <div className={`ab-hero__copy${tiles ? "" : " ab-hero__copy--wide"}`}>
+        <div className={`ab-hero__copy${tiles || art ? "" : " ab-hero__copy--wide"}`}>
           <nav className="ab-crumbs" aria-label="Fil d’Ariane">
             {data.crumbs.map((crumb, i) =>
               crumb.href ? (
@@ -60,7 +60,11 @@ export default function InvolvedHero({ data, tiles, tone }) {
           </Reveal>
         </div>
 
-        {tiles && (
+        {/* `art` (2026-10-17, /programmes isometric illustration): optional node that
+            replaces the tile grid in the right-hand column. Not passing it gives back
+            the tiles exactly as before — that is the whole revert. */}
+        {art && <div className="ab-hero__art">{art}</div>}
+        {!art && tiles && (
           <div className="ab-hero__tiles-slot">
             {/* Decorative colour-blob behind the tiles (2026-09-30, at
                 Yv's call): only on programme pages that pass a "tone"

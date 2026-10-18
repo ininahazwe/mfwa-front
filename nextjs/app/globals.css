@@ -1592,7 +1592,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   min-height:100vh;
 }
 @media (prefers-reduced-motion: no-preference){
-  .page-shell{ margin-bottom:var(--footer-h); }
+  /* -1px : la page recouvre d'un pixel le haut du pied de page, pour qu'aucun
+     arrondi sous-pixel ne laisse apparaître un fin filet blanc entre les deux (2026-10-18) */
+  .page-shell{ margin-bottom:calc(var(--footer-h) - 1px); }
   .site-footer{
     position:fixed;
     left:0; right:0; bottom:0;
@@ -2096,33 +2098,12 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    country pages) since only /reports has a sidebar. */
 .reports-layout{
   display:grid;
-  grid-template-columns:220px 1fr;
+  grid-template-columns:250px 1fr;
   gap:clamp(28px, 3vw, 48px);
   align-items:start;
   padding-top:16px;
 }
-.reports-filters{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-  position:sticky;
-  top:32px;
-}
-.reports-filters__btn{
-  text-align:left;
-  padding:11px 16px;
-  border:none;
-  border-radius:var(--radius-sm);
-  background:none;
-  font-size:13.5px;
-  font-weight:600;
-  color:var(--ink-muted);
-  cursor:pointer;
-  transition:background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
-}
-.reports-filters__btn:hover{ color:var(--navy-ink); background:#f5faff; }
-.reports-filters__btn.is-active{ background:var(--navy); color:#fff; }
-.reports-filters__btn.is-active:hover{ color:#fff; }
+/* .reports-filters / .reports-tabs : voir le bloc « Rapports : navigation latérale » (2026-10-18) en fin de fichier. */
 
 .reports-main{ min-width:0; }
 .reports-grid{
@@ -2138,14 +2119,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 @media (max-width:900px){
   .reports-layout{ grid-template-columns:1fr; }
-  .reports-filters{
-    position:static;
-    flex-direction:row;
-    flex-wrap:wrap;
-    gap:8px;
-  }
-  .reports-filters__btn{ border:1px solid rgba(15,46,85,.16); border-radius:999px; padding:8px 14px; }
-  .reports-filters__btn.is-active{ border-color:var(--navy); }
   .reports-grid{ grid-template-columns:repeat(2, 1fr); }
 }
 @media (max-width:600px){
@@ -3928,38 +3901,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .funders__inner{ grid-template-columns:1fr; }
 }
 
-/* -- Rapports : onglets par programme (#11) ------------------------------ */
-.reports-tabs{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  padding:clamp(20px, 3vh, 28px) 0 4px;
-}
-.reports-tabs__btn{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 18px;
-  border:1px solid rgba(15,46,85,.18);
-  border-radius:999px;
-  background:var(--white);
-  font:inherit;
-  font-size:13px;
-  font-weight:600;
-  color:var(--navy);
-  cursor:pointer;
-  transition:background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
-}
-.reports-tabs__btn:hover{ background:#f5faff; }
-.reports-tabs__btn.is-active{ background:var(--navy); border-color:var(--navy); color:var(--white); }
-.reports-tabs__count{
-  font-size:11px;
-  font-weight:700;
-  padding:2px 7px;
-  border-radius:999px;
-  background:rgba(15,46,85,.1);
-}
-.reports-tabs__btn.is-active .reports-tabs__count{ background:rgba(255,255,255,.2); }
+/* -- Rapports : onglets par programme (#11) — restylés le 2026-10-18, voir « Rapports : navigation latérale » en fin de fichier. */
 
 /* -- Bandeau « Reports from this programme » (#11) ------------------------ */
 .ab-prog-reports{ padding-top:0; }
@@ -4043,3 +3985,614 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
     width:auto;
   }
 }
+
+/* =========================================================
+   Menu de navigation mobile (2026-10-17, demande de Yv)
+   Burger + panneau plein largeur sous l'en-tête, ≤900px uniquement
+   (le <nav> desktop est display:none à ce seuil, voir plus haut).
+   Revert: globals.css.bak-mobile-nav = fichier avant ce bloc ; retirer
+   aussi <MobileNav> de Header.js.
+   ========================================================= */
+.mobile-nav{ display:contents; } /* simple porte-ref : le panneau s'ancre sur .header (position:relative) */
+.mobile-nav__burger,
+.mobile-nav__panel{ display:none; }
+
+/* Seuil du menu burger : 1279px (et non 900px) — entre 901 et ~1270px, la rangée d'actions
+   (badge NGOSource + EN/FR + recherche + Donate) ajoutée le 2026-10-16 ne tenait plus à côté
+   du menu desktop et dépassait de l'écran (défilement horizontal). */
+@media (max-width:1279px){
+  .nav{ display:none; }
+  .header__inner{ grid-template-columns:auto 1fr; }
+  .mobile-nav__burger{ display:grid; flex:none; }
+  .mobile-nav__panel a,
+  .mobile-nav__panel button,
+  .mobile-nav__burger{ -webkit-tap-highlight-color:transparent; }
+  .mobile-nav__panel{
+    display:flex;
+    flex-direction:column;
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    z-index:40;
+    max-height:calc(100vh - var(--header-h));
+    max-height:calc(100dvh - var(--header-h));
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    padding:8px var(--gutter) 28px;
+    background:var(--white);
+    border-top:1px solid var(--hairline);
+    box-shadow:0 22px 40px rgba(11,29,51,.16);
+  }
+  .mobile-nav__panel[hidden]{ display:none; }
+
+  .mobile-nav__list{ list-style:none; margin:0; padding:0; }
+  .mobile-nav__item{ border-bottom:1px solid var(--hairline); }
+  .mobile-nav__row{ display:flex; align-items:stretch; }
+  .mobile-nav__link{
+    flex:1 1 auto;
+    display:flex;
+    align-items:center;
+    min-height:56px;
+    padding:0;
+    background:none;
+    border:0;
+    font:inherit;
+    font-size:18px;
+    font-weight:600;
+    color:var(--navy);
+    text-align:left;
+    cursor:pointer;
+  }
+  .mobile-nav__link:hover,
+  .mobile-nav__link:focus-visible{ color:var(--red-dark); }
+  .mobile-nav__caret{
+    flex:none;
+    display:grid;
+    place-items:center;
+    width:56px;
+    background:none;
+    border:0;
+    color:var(--navy);
+    cursor:pointer;
+  }
+  .mobile-nav__caret svg{ transition:transform var(--dur-fast) var(--ease); }
+  .mobile-nav__item.is-open .mobile-nav__caret svg{ transform:rotate(180deg); }
+
+  .mobile-nav__sub{
+    list-style:none;
+    margin:0;
+    padding:0 0 12px 14px;
+    border-left:2px solid var(--red);
+    margin-left:2px;
+    margin-bottom:12px;
+  }
+  .mobile-nav__sub[hidden]{ display:none; }
+  .mobile-nav__sub a{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    min-height:46px;
+    font-size:16px;
+    font-weight:500;
+    color:var(--navy);
+  }
+  .mobile-nav__sub a:hover,
+  .mobile-nav__sub a:focus-visible{ color:var(--red-dark); }
+  .mobile-nav__sub a svg{ flex:none; opacity:.55; }
+
+  .mobile-nav__foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-top:22px;
+  }
+  .mobile-nav__donate{ flex:1 1 auto; justify-content:center; min-height:48px; }
+  .mobile-nav__credential{ display:none; }
+}
+
+@media (min-width:561px){
+  /* la barre montre déjà Donate (et le badge) : pas de doublon dans le panneau */
+  .mobile-nav__foot{ display:none; }
+}
+@media (max-width:560px){
+  /* le bouton Donate quitte la barre (il est dans le panneau) pour laisser la place au burger */
+  .header__actions > .btn--donate{ display:none; }
+  .mobile-nav__credential{
+    display:block;
+    flex:none;
+    padding:6px 10px;
+    background:var(--white);
+    border:1px solid var(--hairline);
+    border-radius:8px;
+  }
+  .mobile-nav__credential-img{ display:block; width:64px; max-width:none; height:auto; }
+}
+
+/* =========================================================
+   /programmes — illustration isométrique (2026-10-17, demande de Yv)
+   4 cubes (un par programme) au-dessus d'une dalle, SVG pur.
+   Revert: retirer la prop `art` dans app/programmes/page.js — ces règles
+   deviennent inertes (les tuiles reviennent). Sauvegardes .bak-iso-hero.
+   ========================================================= */
+.ab-hero__art{
+  grid-column:8 / -1;
+  grid-row:1;
+  justify-self:end;
+  width:100%;
+  max-width:520px;
+}
+.iso{
+  --iso-s:32px;
+  --iso-ink:var(--navy-ink);
+  margin:0;
+  position:relative;
+  color:var(--iso-ink);
+  /* repère discret façon papier millimétré, comme sur la référence */
+  background-image:
+    linear-gradient(to right, rgba(19,49,92,.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(19,49,92,.06) 1px, transparent 1px);
+  background-size:28px 28px;
+  border-radius:var(--radius-sm);
+}
+.iso__svg{ display:block; width:100%; height:auto; overflow:visible; }
+
+.iso .iso-face{ stroke:var(--iso-ink); stroke-width:1.3; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.iso .iso-line{ fill:none; stroke:var(--iso-ink); stroke-width:1; stroke-linejoin:round; stroke-linecap:round; vector-effect:non-scaling-stroke; opacity:.55; }
+.iso .iso-line--dashed{ stroke-dasharray:5 5; opacity:.45; }
+
+/* dalle */
+.iso .iso-slab .iso-face--slab{ fill:#f6f3ec; }
+.iso .iso-slab .iso-face--left{ fill:#e5e0d3; }
+.iso .iso-slab .iso-face--right{ fill:#ece8dd; }
+.iso .iso-network line,
+.iso .iso-network circle{ fill:none; stroke:var(--iso-ink); stroke-width:2.4; stroke-linecap:round; vector-effect:non-scaling-stroke; }
+.iso .iso-network__hub{ fill:var(--white); }
+
+/* cubes : une teinte par programme (mêmes pastels que le reste du site) */
+.iso-cube{ cursor:pointer; outline:none; }
+.iso-cube--red{ --top:#fce8e6; --left:#efc5c0; --right:#f6d6d2; --dot:#e11b22; }
+.iso-cube--lavender{ --top:#ece7fb; --left:#d3c9f1; --right:#e0d8f6; --dot:#7a5fd0; }
+.iso-cube--navy{ --top:#e4eefa; --left:#c3d6ef; --right:#d4e2f4; --dot:#1b4b8f; }
+.iso-cube--green{ --top:#e3f3ea; --left:#bfe0cd; --right:#d2eadb; --dot:#2f9a63; }
+.iso-cube .iso-face--top{ fill:var(--top); }
+.iso-cube .iso-face--left{ fill:var(--left); }
+.iso-cube .iso-face--right{ fill:var(--right); }
+.iso-cube .iso-glyph{ fill:none; stroke:var(--iso-ink); stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.iso-cube .iso-glyph *{ vector-effect:non-scaling-stroke; }
+.iso-cube .iso-hit{ fill:transparent; stroke:none; }
+.iso-cube__body{
+  transform:translateY(calc(var(--lift, .3) * var(--iso-s) * -1));
+  transition:transform .55s cubic-bezier(.2,.8,.2,1);
+}
+.iso-cube.is-active .iso-face--top{ filter:brightness(1.03); }
+.iso-cube:focus-visible .iso-face--top,
+.iso-cube:focus-visible .iso-face{ stroke:var(--red); stroke-width:2.2; }
+
+/* légende cliquable (aussi utile au clavier / tactile) */
+.iso__legend ul{
+  list-style:none;
+  margin:18px 0 0;
+  padding:0;
+  display:grid;
+  grid-template-columns:repeat(2, auto);
+  gap:6px 28px;
+  justify-content:center;
+}
+.iso__legend-link{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  font-weight:600;
+  color:var(--navy);
+  padding:4px 0;
+  border-bottom:2px solid transparent;
+  transition:border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.iso__legend-link i{ width:10px; height:10px; border-radius:2px; background:var(--dot, var(--navy)); border:1px solid var(--iso-ink); }
+.iso__legend-link--red{ --dot:#f4a5a0; }
+.iso__legend-link--lavender{ --dot:#b9a8ec; }
+.iso__legend-link--navy{ --dot:#8fb2e0; }
+.iso__legend-link--green{ --dot:#86cba5; }
+.iso__legend-link:hover,
+.iso__legend-link.is-active,
+.iso__legend-link:focus-visible{ border-bottom-color:var(--red); color:var(--red-dark); }
+
+@media (max-width:1100px){
+  .ab-hero__art{ grid-column:7 / -1; }
+}
+@media (max-width:900px){
+  .ab-hero__art{
+    grid-column:1 / -1;
+    grid-row:2;
+    justify-self:center;
+    max-width:440px;
+    margin-top:36px;
+  }
+}
+@media (prefers-reduced-motion: reduce){
+  .iso-cube__body{ transition:none; }
+}
+
+/* Section « Impact » de l'accueil, 901–1187px : aspect-ratio 33/10 + min-height 360px forçaient
+   la section à 1188px de large (défilement horizontal de la page entière). On garde la hauteur
+   minimale mais on laisse la hauteur suivre le contenu. (Constaté le 2026-10-17, déjà présent avant.) */
+@media (min-width:901px) and (max-width:1187px){
+  .impact{ aspect-ratio:auto; }
+}
+
+/* =========================================================
+   /programmes — illustration 2D (2026-10-17, demande de Yv)
+   4 panneaux « patchwork », personnages + bandes textiles.
+   Composant : components/ProgrammesFlat.js. Revenir à la 3D : dans
+   app/programmes/page.js, remplacer ProgrammesFlat par ProgrammesIso.
+   Légende partagée avec la 3D (.iso__legend*).
+   ========================================================= */
+.pflat{ --iso-ink:var(--navy-ink); margin:0; color:var(--iso-ink); }
+.pflat__svg{ display:block; width:100%; height:auto; overflow:visible; }
+
+.pf-panel{ cursor:pointer; outline:none; }
+.pf-panel__tilt{
+  transform:rotate(var(--tilt, 0deg));
+  transform-box:fill-box;
+  transform-origin:center;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.pf-panel__shadow{ fill:var(--iso-ink); opacity:0; transition:opacity .3s ease; }
+.pf-panel.is-active .pf-panel__shadow{ opacity:1; }
+.pf-panel__card{ transition:transform .45s cubic-bezier(.2,.8,.2,1); }
+.pf-panel__frame{ fill:none; stroke:var(--iso-ink); stroke-width:1.8; }
+
+/* survol / focus : le panneau se redresse et se soulève sur son ombre décalée */
+.pf-panel.is-active .pf-panel__tilt{ transform:rotate(0deg); }
+.pf-panel.is-active .pf-panel__card{ transform:translate(-7px, -7px); }
+.pflat.is-exploring .pf-panel:not(.is-active) .pf-panel__card{ filter:saturate(.55); }
+.pf-panel__card{ transition:transform .45s cubic-bezier(.2,.8,.2,1), filter .3s ease; }
+.pf-panel:focus-visible .pf-panel__frame{ stroke:var(--red); stroke-width:3; }
+
+/* petits mouvements propres à chaque scène */
+.pf-fx,
+.pf-prop{ transform-box:fill-box; transform-origin:center; transition:transform .5s cubic-bezier(.2,.8,.2,1), opacity .4s ease; }
+.pf-fx--waves path{ opacity:.35; transition:opacity .3s ease; }
+.pf-panel.is-active .pf-fx--waves path{ animation:pf-wave 1.2s ease-in-out infinite; }
+.pf-panel.is-active .pf-fx--waves path:nth-child(2){ animation-delay:.15s; }
+.pf-panel.is-active .pf-fx--waves path:nth-child(3){ animation-delay:.3s; }
+.pf-fx--signal path{ opacity:.35; }
+.pf-panel.is-active .pf-fx--signal path{ animation:pf-wave 1.4s ease-in-out infinite; }
+.pf-panel.is-active .pf-fx--signal path:nth-child(2){ animation-delay:.2s; }
+.pf-panel.is-active .pf-fx--signal path:nth-child(3){ animation-delay:.4s; }
+.pf-panel.is-active .pf-prop--paper{ transform:translateY(-4px) rotate(3deg); }
+.pf-panel.is-active .pf-fx--talk-a{ transform:translate(10px, 4px); }
+.pf-panel.is-active .pf-fx--talk-b{ transform:translate(-10px, 6px) rotate(-4deg); }
+@keyframes pf-wave{ 0%, 100%{ opacity:.25; } 50%{ opacity:1; } }
+
+@media (prefers-reduced-motion: reduce){
+  .pf-panel__tilt,
+  .pf-panel__card,
+  .pf-fx,
+  .pf-prop{ transition:none; }
+  .pf-panel.is-active .pf-fx--waves path,
+  .pf-panel.is-active .pf-fx--signal path{ animation:none; opacity:1; }
+}
+
+/* =========================================================
+   Rapports : navigation latérale (2026-10-18, demande de Yv)
+   Inspirée d'une side-nav d'application : bloc titre + sous-titre gris,
+   filet, lignes icône + libellé aérées ; l'élément actif n'est marqué
+   que par une barre verticale rouge sur le bord gauche (pas de pastille,
+   pas de fond plein). Programmes (.reports-tabs) et types
+   (.reports-filters) partagent ce style (.reports-side__btn).
+   Revert : globals.css.bak-reports-nav + ReportsGrid.js.bak-reports-nav.
+   ========================================================= */
+.reports-side{
+  min-width:0; /* sinon, en mobile, les rangées défilantes élargissent la colonne de la grille */
+  position:sticky;
+  top:28px;
+  display:flex;
+  flex-direction:column;
+  gap:clamp(28px, 4vh, 40px);
+}
+.reports-group__head{
+  padding:0 0 18px 22px;
+  border-bottom:1px solid var(--hairline);
+}
+.reports-group__title{
+  margin:0;
+  font-size:19px;
+  font-weight:600;
+  letter-spacing:-.01em;
+  color:var(--navy-ink);
+}
+.reports-group__sub{
+  margin:4px 0 0;
+  font-size:15px;
+  color:var(--ink-muted);
+}
+.reports-filters{
+  display:flex;
+  flex-direction:column;
+  padding:10px 0 0;
+}
+.reports-side__btn{
+  position:relative;
+  display:grid;
+  grid-template-columns:24px minmax(0, 1fr) auto;
+  align-items:center;
+  column-gap:18px;
+  width:100%;
+  padding:13px 10px 13px 22px;
+  border:0;
+  background:none;
+  font:inherit;
+  font-size:15.5px;
+  font-weight:500;
+  line-height:1.3;
+  text-align:left;
+  color:#2b3a4d;
+  cursor:pointer;
+  transition:color var(--dur-fast) var(--ease);
+}
+.reports-side__btn::before{
+  content:"";
+  position:absolute;
+  left:0; top:6px; bottom:6px;
+  width:3px;
+  border-radius:0 2px 2px 0;
+  background:var(--red);
+  transform:scaleY(0);
+  transition:transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.reports-side__icon{ display:grid; place-items:center; width:24px; height:24px; color:var(--navy-ink); }
+.reports-side__icon svg{ width:22px; height:22px; }
+.reports-side__count{
+  font-size:12.5px;
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink-muted);
+}
+.reports-side__btn:hover{ color:var(--navy-ink); }
+.reports-side__btn:hover::before{ transform:scaleY(1); background:var(--hairline); }
+.reports-side__btn.is-active{ color:var(--navy-ink); font-weight:600; }
+.reports-side__btn.is-active::before{ transform:scaleY(1); background:var(--red); }
+.reports-side__btn.is-active .reports-side__count{ color:var(--red-dark); }
+.reports-side__btn.is-dim{ opacity:.45; }
+.reports-side__btn:focus-visible{ outline:2px solid var(--blue); outline-offset:-2px; }
+
+@media (max-width:900px){
+  .reports-side{ position:static; gap:22px; }
+  .reports-group__head{ padding:0 0 12px; display:flex; align-items:baseline; gap:12px; }
+  .reports-group__title{ font-size:16px; }
+  .reports-group__sub{ margin:0; font-size:13.5px; }
+  .reports-filters{
+    flex-direction:row;
+    gap:4px;
+    padding:0;
+    overflow-x:auto;
+    scrollbar-width:none;
+    border-bottom:1px solid var(--hairline);
+  }
+  .reports-filters::-webkit-scrollbar{ display:none; }
+  .reports-side__btn{
+    width:auto;
+    flex:none;
+    grid-template-columns:20px auto auto;
+    column-gap:10px;
+    padding:14px 12px;
+    font-size:14.5px;
+    white-space:nowrap;
+  }
+  .reports-side__icon svg{ width:19px; height:19px; }
+  .reports-side__btn::before{ left:10px; right:10px; top:auto; bottom:0; width:auto; height:3px; border-radius:2px 2px 0 0; transform:scaleX(0); }
+  .reports-side__btn:hover::before,
+  .reports-side__btn.is-active::before{ transform:scaleX(1); }
+}
+
+/* -- Onglets programmes : rangée horizontale au-dessus de la grille (2026-10-18, demande de Yv) -- */
+.reports-tabs{
+  display:flex;
+  gap:4px;
+  margin:0 0 clamp(24px, 3.5vh, 34px);
+  overflow-x:auto;
+  scrollbar-width:none;
+  border-bottom:1px solid var(--hairline);
+}
+.reports-tabs::-webkit-scrollbar{ display:none; }
+.reports-tabs .reports-side__btn{
+  width:auto;
+  flex:none;
+  grid-template-columns:20px auto auto;
+  column-gap:10px;
+  padding:14px 14px 15px;
+  font-size:15px;
+  white-space:nowrap;
+}
+.reports-tabs .reports-side__icon svg{ width:20px; height:20px; }
+.reports-tabs .reports-side__btn::before{
+  left:10px; right:10px; top:auto; bottom:-1px;
+  width:auto; height:3px;
+  border-radius:2px 2px 0 0;
+  transform:scaleX(0);
+}
+.reports-tabs .reports-side__btn:hover::before,
+.reports-tabs .reports-side__btn.is-active::before{ transform:scaleX(1); }
+/* ≤1180px : rangée défilante horizontale (règles de base ci-dessus) ; au-delà, tout tient sur une ligne */
+@media (max-width:1180px){
+  /* fondu discret sur les bords : indique qu'on peut faire défiler */
+  .reports-tabs{
+    -webkit-mask-image:linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 28px), transparent 100%);
+            mask-image:linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 28px), transparent 100%);
+  }
+}
+@media (min-width:1181px){
+  /* une seule rangée : les onglets aux libellés longs se resserrent et passent
+     sur deux lignes plutôt que de déborder ou de créer une seconde rangée */
+  .reports-tabs{
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns:auto; /* colonnes « auto » : chacune grandit jusqu'à sa largeur naturelle,
+                               les libellés longs ne se resserrent qu'en dernier */
+    justify-content:start;
+    overflow:visible;
+    gap:0;
+  }
+  .reports-tabs .reports-side__btn{
+    grid-template-columns:20px auto auto;
+    justify-content:start;
+    column-gap:9px;
+    padding:12px 14px 13px;
+    font-size:14.5px;
+    line-height:1.25;
+    white-space:normal;
+  }
+}
+@media (max-width:900px){
+  .reports-tabs .reports-side__btn{ padding:13px 12px 14px; font-size:14.5px; }
+  /* mobile : onglets programmes d'abord, puis types, puis la grille */
+  .reports-layout > *{ min-width:0; }
+  .reports-main{ display:contents; }
+  .reports-tabs{ order:-1; margin-bottom:0; }
+  .reports-side{ order:0; }
+  .reports-layout > .reports-grid,
+  .reports-layout > .reports-empty,
+  .reports-layout > .category__loadmore{ order:1; }
+}
+
+/* =========================================================
+   Rangées de filtres partagées (2026-10-18, demande de Yv)
+   Même look que les onglets de /reports : icône + libellé (+ compteur),
+   pas de pastille ni de fond plein, barre rouge sous l'onglet actif,
+   barre grise au survol, filet sous la rangée. Composant :
+   components/FilterTabs.js — accueil (Latest), Our Staff (équipes),
+   Where We Work (thématiques).
+   Revert : fichiers .bak-filter-tabs (Latest.js, StaffDirectory.js,
+   WhereWeWorkList.js, globals.css).
+   ========================================================= */
+.ftabs{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:stretch;
+  gap:0 2px;
+  border-bottom:1px solid var(--hairline);
+}
+.ftab{
+  position:relative;
+  display:inline-grid;
+  grid-auto-flow:column;
+  align-items:center;
+  column-gap:9px;
+  padding:12px 13px 14px;
+  border:0;
+  background:none;
+  font:inherit;
+  font-size:14.5px;
+  font-weight:500;
+  line-height:1.25;
+  letter-spacing:0;
+  text-transform:none;
+  text-decoration:none;
+  text-align:left;
+  white-space:nowrap;
+  color:#2b3a4d;
+  cursor:pointer;
+  transition:color var(--dur-fast) var(--ease);
+}
+.ftab::before{
+  content:"";
+  position:absolute;
+  left:9px; right:9px; bottom:-1px;
+  height:3px;
+  border-radius:2px 2px 0 0;
+  background:var(--red);
+  transform:scaleX(0);
+  transition:transform var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.ftab__icon{ display:grid; place-items:center; width:20px; height:20px; color:var(--navy-ink); }
+.ftab__icon svg{ width:20px; height:20px; }
+.ftab__count{
+  font-size:12.5px;
+  font-weight:600;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink-muted);
+}
+.ftab:hover{ color:var(--navy-ink); }
+.ftab:hover::before{ transform:scaleX(1); background:var(--hairline); }
+.ftab.is-active{ color:var(--navy-ink); font-weight:600; }
+.ftab.is-active::before{ transform:scaleX(1); background:var(--red); }
+.ftab.is-active .ftab__count{ color:var(--red-dark); }
+.ftab:focus-visible{ outline:2px solid var(--blue); outline-offset:-2px; }
+
+/* placements */
+.latest > .latest__ftabs{ margin-bottom:clamp(28px, 4vw, 36px); }
+.st-ftabs{ margin-top:clamp(28px, 4vh, 40px); }
+.ww-ftabs{ margin-top:clamp(28px, 4vh, 40px); }
+
+@media (max-width:900px){
+  .ftabs{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    -webkit-mask-image:linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 28px), transparent 100%);
+            mask-image:linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 28px), transparent 100%);
+  }
+  .ftabs::-webkit-scrollbar{ display:none; }
+  .ftab{ flex:none; padding:12px 11px 13px; font-size:14px; }
+}
+
+/* -- Portraits (Our Staff / Our Board / fiche) : initiales de secours (2026-10-18) -- */
+.st-card__media,
+.st-sheet__photo{ position:relative; }
+.portrait__initials{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-family:var(--font-serif);
+  font-weight:600;
+  font-size:clamp(28px, 3vw, 44px);
+  letter-spacing:.02em;
+  color:var(--navy-ink);
+  background:linear-gradient(160deg, #eef3f9 0%, #e1e9f3 100%);
+}
+.st-card__media .portrait__img,
+.st-sheet__photo .portrait__img{ position:relative; z-index:1; }
+.st-sheet__photo .portrait__initials{ font-size:clamp(22px, 2.4vw, 36px); }
+
+/* =========================================================
+   Where We Work : squelette de chargement (2026-10-18)
+   components/WhereWeWorkSkeleton.js — affiché pendant que les données
+   WordPress (carte, thématiques, grille) arrivent en streaming.
+   ========================================================= */
+.skel{
+  display:block;
+  border-radius:6px;
+  background:linear-gradient(90deg, #edf1f6 25%, #f6f8fb 37%, #edf1f6 63%);
+  background-size:400% 100%;
+  animation:skel-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skel-shimmer{ 0%{ background-position:100% 50%; } 100%{ background-position:0 50%; } }
+.ww-skel__dot{ background:#dfe5ec !important; }
+.ww-skel__map{ width:100%; aspect-ratio:480 / 320; border-radius:12px; }
+.ww-skel__legend{ height:14px; width:100%; margin-bottom:22px; }
+.ww-skel .ww-map-detail{ display:flex; flex-direction:column; gap:12px; }
+.ww-skel__line{ height:12px; }
+.ww-skel__line--lg{ height:16px; margin-top:10px; }
+.ww-skel__tabs{ gap:18px; padding:14px 0 16px; }
+.ww-skel__tab{ height:18px; }
+.ww-skel__media{ width:100%; aspect-ratio:16 / 10; border-radius:var(--radius-sm); }
+.ww-skel__card{ pointer-events:none; }
+.ww-skel__error{
+  margin:18px auto 0;
+  max-width:62ch;
+  padding:14px 18px;
+  border-left:3px solid var(--red);
+  background:#fdf4f3;
+  font-size:14.5px;
+  color:var(--navy-ink);
+}
+.ww-skel__error a{ color:var(--red-dark); font-weight:600; }
+.ww-skel--error .skel{ animation:none; }
+@media (prefers-reduced-motion: reduce){ .skel{ animation:none; } }

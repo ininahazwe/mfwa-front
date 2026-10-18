@@ -1,8 +1,9 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
+import { FilterTabs, FilterTab, filterIcon } from "./FilterTabs";
 
 // Ports initTopicsFilter() from assets/js/main.js. The original only moved
 // the "is-active" state around (the real filtering was left as a WordPress
@@ -54,27 +55,19 @@ export default function Latest({ data }) {
 
   return (
     <section className="latest" id="stories">
-      <nav className="topics" aria-label="Filtrer les actualités par thème" data-topics>
-        {data.topics.map((topic, i) => (
-          <Fragment key={topic.slug}>
-            {i > 0 && (
-              <span className="topics__sep" aria-hidden="true">
-                ·
-              </span>
-            )}
-            <button
-              className={`topics__item${activeTopic === topic.slug ? " is-active" : ""}`}
-              type="button"
-              data-topic={topic.slug}
-              aria-current={activeTopic === topic.slug ? "true" : "false"}
-              onClick={() => setActiveTopic(topic.slug)}
-            >
-              {i === 0 && <span className="topics__dot" aria-hidden="true"></span>}
-              {topic.label}
-            </button>
-          </Fragment>
+      {/* Filter row restyled 2026-10-18 (shared FilterTabs look, see that file). */}
+      <FilterTabs className="latest__ftabs" label="Filtrer les actualités par thème">
+        {data.topics.map((topic) => (
+          <FilterTab
+            key={topic.slug}
+            active={activeTopic === topic.slug}
+            icon={filterIcon(topic.slug, topic.label)}
+            label={topic.label}
+            data-topic={topic.slug}
+            onClick={() => setActiveTopic(topic.slug)}
+          />
         ))}
-      </nav>
+      </FilterTabs>
 
       <div className="latest__head">
         <p className="eyebrow">{data.eyebrow}</p>

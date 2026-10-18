@@ -284,6 +284,26 @@ export async function getWpFilteredPosts({ countryId, categoryId, page = 1, perP
   return fetchPostsWithTerms(params.toString());
 }
 
+// Lean count + latest headlines for one country (2026-10-18, Where We Work
+// speed-up). The map only needs each country's post total (X-WP-Total) and
+// 2 recent titles — no image, no category/country tag — so this skips
+// fetchPostsWithTerms()'s 3 extra resolution requests (media + 2 taxonomy
+// lookups) per country: 16 requests for the whole map instead of up to 64.
+export async function getWpPostTeasers({ countryId, categoryId, perPage = 2 } = {}) {
+  const params = new URLSearchParams({ page: "1", per_page: String(perPage), orderby: "date", order: "desc" });
+  if (countryId) params.set("country", String(countryId));
+  if (categoryId) params.set("categories", String(categoryId));
+  const { data, total } = await fetchJson(`/posts?${params}&_fields=id,date,link,title`);
+  return {
+    total,
+    items: data.map((p) => ({
+      link: p.link,
+      heading: decodeEntities(p.title?.rendered ?? ""),
+      date: formatWpDate(p.date),
+    })),
+  };
+}
+
 // Resolves the 13 "Issues" category slugs (the live site's own menu,
 // merged into the explorer above rather than kept as a separate hub —
 // see getWhereWeWorkPage()'s note) to their WordPress term ids/names in

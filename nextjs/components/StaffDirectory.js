@@ -8,9 +8,11 @@
 // prev/next walk through whichever list is currently filtered. The open
 // profile is mirrored in the URL hash (#abigail-larbi-odei) so a profile
 // can be linked to directly, and reopened on load.
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Reveal from "./Reveal";
 import StaffSheet from "./StaffSheet";
+import Portrait from "./Portrait";
+import { FilterTabs, FilterTab, filterIcon } from "./FilterTabs";
 
 export default function StaffDirectory({ data, teams }) {
   const teamLabel = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t.label])), [teams]);
@@ -79,27 +81,19 @@ export default function StaffDirectory({ data, teams }) {
           </p>
         </Reveal>
 
-        <nav className="topics st-topics" aria-label="Filter staff by team">
-          {teams.map((t, i) => (
-            <Fragment key={t.id}>
-              {i > 0 && (
-                <span className="topics__sep" aria-hidden="true">
-                  ·
-                </span>
-              )}
-              <button
-                type="button"
-                className={`topics__item${team === t.id ? " is-active" : ""}`}
-                aria-pressed={team === t.id}
-                onClick={() => setTeam(t.id)}
-              >
-                {i === 0 && <span className="topics__dot" aria-hidden="true" />}
-                {t.label}
-                <span className="st-topics__n">{t.count}</span>
-              </button>
-            </Fragment>
+        {/* Team filter restyled 2026-10-18 (shared FilterTabs look). */}
+        <FilterTabs className="st-ftabs" label="Filter staff by team">
+          {teams.map((t) => (
+            <FilterTab
+              key={t.id}
+              active={team === t.id}
+              icon={t.id === "all" ? "people" : filterIcon(t.id, t.label)}
+              label={t.label}
+              count={t.count}
+              onClick={() => setTeam(t.id)}
+            />
           ))}
-        </nav>
+        </FilterTabs>
 
         <ul className="st-grid" key={team}>
           {people.map((person, i) => (
@@ -111,7 +105,7 @@ export default function StaffDirectory({ data, teams }) {
                 aria-haspopup="dialog"
               >
                 <span className="st-card__media">
-                  <img src={person.thumb} alt="" loading="lazy" decoding="async" />
+                  <Portrait src={person.thumb} name={person.name} />
                 </span>
                 <span className="ab-tag st-card__team">{teamLabel[person.team]}</span>
                 <span className="st-card__name">{person.name}</span>

@@ -105,7 +105,12 @@ export function useFooterReveal() {
     if (!el) return undefined;
 
     function setHeight() {
-      document.documentElement.style.setProperty("--footer-h", `${el.offsetHeight}px`);
+      // getBoundingClientRect (not offsetHeight, which rounds): with a
+      // fractional footer height (e.g. 340.75px) the rounded-up value let
+      // .page-shell scroll a fraction of a pixel too far, leaving a thin
+      // white line above the footer (2026-10-18). See also the -1px overlap
+      // on .page-shell's margin-bottom in globals.css.
+      document.documentElement.style.setProperty("--footer-h", `${el.getBoundingClientRect().height}px`);
     }
 
     setHeight();
