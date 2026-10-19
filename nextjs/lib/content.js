@@ -24,7 +24,10 @@ import {
   getWpPostTeasers,
   getWpHomePosts,
   searchWp,
+  getWpPostBySlug,
+  getWpRelatedPosts,
 } from "./wp";
+import { prepareArticleHtml } from "./articleHtml";
 import { STAFF, STAFF_TEAMS } from "./staff";
 import { BOARD, BOARD_ROLES } from "./board";
 
@@ -567,20 +570,69 @@ export async function getSearchResults(rawQuery) {
   return { query, pages, posts, reports };
 }
 
-// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/posts?slug=${slug}&_embed`).then(r => r.json())
-// Note: this is a layout proposal with placeholder ("fake") content — every
-// slug currently resolves to the same demo article so the article-page
-// design (hero, share icons, body, related stories, newsletter) can be
-// reviewed before the WordPress API is wired in. generateStaticParams()
-// only pre-renders this one demo slug for now.
+// -- Article page (app/articles/[slug]/page.js) ---------------------------
+//
+// Connected to WordPress 2026-10-19 (at Yv's call): getArticle(slug) loads
+// the post with that slug (getWpPostBySlug), its cleaned-up HTML body
+// (lib/articleHtml.js) and 3 related posts. Every post card on the site
+// (homepage hero + "What's happening", Where We Work, search) now links
+// here — /articles/<slug> — instead of the live mfwa.org permalink.
+// Returns null for an unknown slug (→ 404). If WordPress is unreachable
+// the error propagates, so an already-cached page keeps being served
+// (ISR) instead of being replaced by an error.
+// The original placeholder article below is kept as the design reference
+// and still answers its own demo slug when WordPress has no such post.
+const DEMO_ARTICLE_SLUG = "every-dollar-invested-millions-returned";
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
+
+export const getArticle = cache(async (slug) => {
+  let post;
+  try {
+    post = await getWpPostBySlug(slug);
+  } catch (err) {
+    if (slug === DEMO_ARTICLE_SLUG) return getDemoArticle(slug);
+    throw err;
+  }
+  if (!post) return slug === DEMO_ARTICLE_SLUG ? getDemoArticle(slug) : null;
+
+  const { html, readTime } = prepareArticleHtml(post.html);
+  const related = await getWpRelatedPosts({ excludeId: post.id, categoryId: post.category?.id }).catch(() => []);
+  // Until the new site is live, the public URL of a story is still its
+  // mfwa.org permalink; set NEXT_PUBLIC_SITE_URL at launch to share
+  // /articles/<slug> on the new domain instead.
+  const url = SITE_URL ? `${SITE_URL}/articles/${post.slug}` : post.sourceUrl;
+
+  return {
+    slug: post.slug,
+    source: "wordpress",
+    tag: post.tag,
+    tagLinks: [
+      post.category && { label: post.category.name, href: `/where-we-work?category=${post.category.slug}` },
+      post.country && { label: post.country.name, href: `/where-we-work?country=${post.country.slug}` },
+    ].filter(Boolean),
+    title: post.title,
+    excerpt: post.excerpt,
+    date: post.date,
+    isoDate: post.isoDate,
+    isoModified: post.isoModified,
+    readTime,
+    heroImage: post.heroImage,
+    share: { url, title: post.title },
+    html,
+    related,
+  };
+});
+
+// Placeholder article (layout proposal, 2026-09) — design reference only.
 // Note: `author` is kept in the data shape (WordPress will provide one)
 // but is intentionally not surfaced by ArticleHeader.js in this layout.
 // No `excerpt` here on purpose — that belongs to the story-card shape
 // used by pages that list/link to the article (Latest, RelatedArticles),
 // not to the article page itself.
-export async function getArticle(slug) {
+function getDemoArticle(slug) {
   return {
     slug,
+    source: "demo",
     tag: ["Ghana", "Investigative journalism"],
     title: "Every Dollar Invested, Millions Returned",
     author: {

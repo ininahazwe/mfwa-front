@@ -162,13 +162,24 @@ function mediaToImage(media, alt) {
 // lookups built by the caller from `getWpTermsByIds()` — every post in a
 // single response shares one such map, resolved once per page of results
 // rather than once per post.
+// Regular posts open on this site's own article template
+// (app/articles/[slug]/page.js, 2026-10-19 at Yv's call) instead of
+// sending readers to the live mfwa.org permalink. `slug` is a core field
+// of every WP post, so it only has to be listed in `_fields`; if it is ever
+// missing the card falls back to the live permalink rather than a dead link.
+export function articleHref(post) {
+  return post?.slug ? `/articles/${post.slug}` : post?.link;
+}
+
 function mapPost(post, { mediaMap, categoryMap, countryMap } = {}) {
   const title = decodeEntities(post.title?.rendered ?? "");
   const primaryTag = categoryMap?.get(post.categories?.[0])?.name ?? null;
   const secondaryTag = countryMap?.get(post.country?.[0])?.name ?? null;
 
   return {
-    link: post.link,
+    id: post.id,
+    link: articleHref(post),
+    sourceUrl: post.link,
     image: mediaToImage(mediaMap?.get(post.featured_media), title),
     // Filter out the missing half rather than rendering an empty "·" —
     // WordPress posts aren't guaranteed to carry a country term.
@@ -186,7 +197,7 @@ function mapPost(post, { mediaMap, categoryMap, countryMap } = {}) {
 // requests run in parallel, never one lookup per post).
 async function fetchPostsWithTerms(query) {
   const { data, totalPages, total } = await fetchJson(
-    `/posts?${query}&_fields=id,date,link,title,featured_media,categories,country`
+    `/posts?${query}&_fields=id,date,slug,link,title,featured_media,categories,country`
   );
   const [mediaMap, categoryMap, countryMap] = await Promise.all([
     getWpMediaByIds(data.map((p) => p.featured_media)),
@@ -293,11 +304,11 @@ export async function getWpPostTeasers({ countryId, categoryId, perPage = 2 } = 
   const params = new URLSearchParams({ page: "1", per_page: String(perPage), orderby: "date", order: "desc" });
   if (countryId) params.set("country", String(countryId));
   if (categoryId) params.set("categories", String(categoryId));
-  const { data, total } = await fetchJson(`/posts?${params}&_fields=id,date,link,title`);
+  const { data, total } = await fetchJson(`/posts?${params}&_fields=id,date,slug,link,title`);
   return {
     total,
     items: data.map((p) => ({
-      link: p.link,
+      link: articleHref(p),
       heading: decodeEntities(p.title?.rendered ?? ""),
       date: formatWpDate(p.date),
     })),
@@ -320,7 +331,7 @@ export async function getWpHomePosts({ perPage = 4, sticky, exclude = [] } = {})
   if (sticky !== undefined) params.set("sticky", sticky ? "true" : "false");
   if (exclude.length) params.set("exclude", exclude.join(","));
   const { data } = await fetchJson(
-    `/posts?${params}&_fields=id,date,link,title,excerpt,featured_media,categories,country`
+    `/posts?${params}&_fields=id,date,slug,link,title,excerpt,featured_media,categories,country`
   );
   const [mediaMap, categoryMap, countryMap] = await Promise.all([
     getWpMediaByIds(data.map((p) => p.featured_media)),
@@ -554,4 +565,70 @@ export async function getAllWpReports({ perPage = 20, maxPages = 20 } = {}) {
     page += 1;
   } while (page <= totalPages && page <= maxPages);
   return { items, total: items.length };
+}
+
+// -- Single article (2026-10-19, at Yv's call) ----------------------------
+//
+// One post by slug, for app/articles/[slug]/page.js. Same no-`_embed`
+// approach as everything above: the post carries plain id fields, resolved
+// with the batched media/term lookups. `content.rendered` is the HTML
+// WordPress itself renders (blocks, shortcodes, autop already applied);
+// it is cleaned up for display by lib/articleHtml.js, not here.
+// Returns null when no post has that slug (→ 404 page).
+function heroFromMedia(media, alt) {
+  const src =
+    media?.media_details?.sizes?.large?.source_url ||
+    media?.media_details?.sizes?.medium_large?.source_url ||
+    media?.source_url;
+  return src ? { src, alt: media.alt_text || alt } : null;
+}
+
+export async function getWpPostBySlug(slug) {
+  const { data } = await fetchJson(
+    `/posts?slug=${encodeURIComponent(slug)}` +
+      `&_fields=id,date,modified,slug,link,title,content,excerpt,featured_media,categories,country`
+  );
+  const post = data[0];
+  if (!post) return null;
+  const [mediaMap, categoryMap, countryMap] = await Promise.all([
+    getWpMediaByIds([post.featured_media]),
+    getWpTermsByIds("categories", post.categories ?? []),
+    getWpTermsByIds("country", post.country ?? []),
+  ]);
+  const card = mapPost(post, { mediaMap, categoryMap, countryMap });
+  return {
+    id: post.id,
+    slug: post.slug,
+    sourceUrl: post.link,
+    title: card.heading,
+    date: card.date,
+    isoDate: post.date,
+    isoModified: post.modified,
+    excerpt: plainExcerpt(post.excerpt?.rendered, 300),
+    heroImage: heroFromMedia(mediaMap.get(post.featured_media), card.heading),
+    tag: card.tag,
+    category: categoryMap.get(post.categories?.[0]) ?? null,
+    country: countryMap.get(post.country?.[0]) ?? null,
+    html: post.content?.rendered ?? "",
+  };
+}
+
+// "You may also like": latest posts sharing the article's first category,
+// topped up with the latest posts overall when the category is too small.
+// The current post is excluded (in the query AND defensively afterwards).
+export async function getWpRelatedPosts({ excludeId, categoryId, perPage = 3 } = {}) {
+  const base = `per_page=${perPage + 1}&orderby=date&order=desc${excludeId ? `&exclude=${excludeId}` : ""}`;
+  const seen = new Set([excludeId]);
+  const out = [];
+  const take = (items) => {
+    for (const it of items) {
+      if (out.length >= perPage) break;
+      if (seen.has(it.id)) continue;
+      seen.add(it.id);
+      out.push(it);
+    }
+  };
+  if (categoryId) take((await fetchPostsWithTerms(`categories=${categoryId}&${base}`)).items);
+  if (out.length < perPage) take((await fetchPostsWithTerms(base)).items);
+  return out;
 }
