@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import Reveal from "./Reveal";
-import FadeImg from "./FadeImg";
+import StoryMedia from "./StoryMedia";
 
 const ARROW = (
   <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -23,9 +23,7 @@ export default function RelatedArticles({ related }) {
         {related.map((story) => (
           <article className="story" key={story.link}>
             <a className="story__link" href={story.link}>
-              <figure className={`story__media${story.image.isFallback ? " story__media--fallback" : ""}`}>
-                <FadeImg src={story.image.src} alt={story.image.alt} removeOnError={!story.image.isFallback} />
-              </figure>
+              <StoryMedia story={story} />
               <div className="story__body">
                 {story.tag?.length > 0 && (
                   <p className="story__tag">

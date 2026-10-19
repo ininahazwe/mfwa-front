@@ -180,6 +180,9 @@ function mapPost(post, { mediaMap, categoryMap, countryMap } = {}) {
     id: post.id,
     link: articleHref(post),
     sourceUrl: post.link,
+    // first category, for the thumbnail watermark (components/CategoryMark.js)
+    categorySlug: categoryMap?.get(post.categories?.[0])?.slug ?? null,
+    categoryName: primaryTag,
     image: mediaToImage(mediaMap?.get(post.featured_media), title),
     // Filter out the missing half rather than rendering an empty "·" —
     // WordPress posts aren't guaranteed to carry a country term.

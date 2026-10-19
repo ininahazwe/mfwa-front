@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import Reveal from "./Reveal";
-import FadeImg from "./FadeImg";
+import StoryMedia from "./StoryMedia";
 
 // "What's happening" — homepage (reworked 2026-10-19, at Yv's call).
 // - The 3 most recent posts come from WordPress (getLatestStories() →
@@ -55,9 +55,7 @@ export default function Latest({ data }) {
           {data.stories.map((story) => (
             <article className="story" key={story.link}>
               <a className="story__link" href={story.link}>
-                <figure className={`story__media${story.image.isFallback ? " story__media--fallback" : ""}`}>
-                  <FadeImg src={story.image.src} alt={story.image.alt} removeOnError={!story.image.isFallback} />
-                </figure>
+                <StoryMedia story={story} />
                 <div className="story__body">
                   {story.tag.length > 0 && (
                     <p className="story__tag">

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Reveal from "./Reveal";
-import FadeImg from "./FadeImg";
+import StoryMedia from "./StoryMedia";
 
 const AUTO_LOAD_LIMIT = 3; // number of scroll-triggered batches before the button takes over
 
@@ -103,9 +103,7 @@ export default function CategoryGrid({
         {items.map((story, i) => (
           <article className="story" key={`${story.link}-${i}`}>
             <a className="story__link" href={story.link}>
-              <figure className={`story__media${story.image.isFallback ? " story__media--fallback" : ""}`}>
-                <FadeImg src={story.image.src} alt={story.image.alt} removeOnError={!story.image.isFallback} />
-              </figure>
+              <StoryMedia story={story} />
               <div className="story__body">
                 {story.tag.length > 0 && (
                   <p className="story__tag">

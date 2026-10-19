@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Newsletter from "@/components/Newsletter";
-import FadeImg from "@/components/FadeImg";
+import StoryMedia from "@/components/StoryMedia";
 import { getSearchResults, getNewsletter, getHeader, getFooter } from "@/lib/content";
 
 // Site search results (retours équipe com #13, 2026-10-16) — the target of
@@ -17,9 +17,7 @@ function StoryCard({ story }) {
   return (
     <article className="story">
       <a className="story__link" href={story.link}>
-        <figure className="story__media">
-          <FadeImg src={story.image.src} alt={story.image.alt} removeOnError />
-        </figure>
+        <StoryMedia story={story} />
         <div className="story__body">
           {story.tag?.length > 0 && <p className="story__tag">{story.tag.join(" · ")}</p>}
           <h3 className="story__heading">{story.heading}</h3>
