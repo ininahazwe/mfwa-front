@@ -4722,3 +4722,55 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 /* Hero sans actualités (WordPress indisponible) : l'accroche prend toute la largeur (2026-10-19) */
 .hero.hero--no-news{ grid-template-columns:1fr; }
+
+/* =========================================================
+   Impact — fond topographique SVG (test 2026-10-19, demande de Yv)
+   components/ImpactTopo.js · retour à la photo : TOPO_BG = false
+   dans components/ImpactStats.js
+   ========================================================= */
+.impact--topo .impact__media{ background:#11202f; }
+.impact--topo::before{
+  /* voile seulement à gauche, pour la lisibilité du texte */
+  background:linear-gradient(90deg, rgba(8,18,30,.6) 0%, rgba(8,18,30,.22) 42%, rgba(8,18,30,0) 70%);
+}
+.topo{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  display:block;
+  --draw:0; --pass:.5;
+}
+.topo__lines path{
+  fill:none;
+  stroke:rgba(214,226,240,.34);
+  stroke-width:1.1;
+  vector-effect:non-scaling-stroke;
+  stroke-linecap:round;
+  stroke-dasharray:1 1;
+  /* 1. scroll : les courbes se tracent, les niveaux bas d'abord */
+  stroke-dashoffset:calc(1 - clamp(0, var(--draw) * 1.9 - var(--d) * .9, 1));
+}
+.topo__layer{ will-change:transform; }
+/* 1. scroll : parallaxe inverse entre niveaux pairs / impairs */
+.topo__layer--a{ transform:translateY(calc((var(--pass) - .5) * -44px)); }
+.topo__layer--b{ transform:translateY(calc((var(--pass) - .5) * 30px)); }
+
+/* 2. survol : loupe « chaleur » qui suit la souris */
+.topo__lines--hot path{
+  stroke:url(#topo-heat);
+  stroke-width:2.1;
+}
+.topo__lens{
+  transform:scale(0);
+  transform-box:fill-box;
+  transform-origin:center;
+  transition:transform .55s cubic-bezier(.2,.7,.2,1);
+}
+.topo.is-hot .topo__lens{ transform:scale(1); }
+
+@media (prefers-reduced-motion: reduce){
+  .topo__layer{ transform:none; }
+  .topo__lens{ transition:none; }
+}
+@media (hover: none){
+  .topo__hot{ display:none; }
+}

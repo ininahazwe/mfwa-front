@@ -11,7 +11,7 @@
 import Reveal from "./Reveal";
 import Motif from "./Motif";
 import { ARROW_RIGHT } from "./AboutIcons";
-import { useParallax } from "../lib/hooks";
+import { useParallax } from "@/lib/hooks";
 
 export default function InvolvedHero({ data, tiles, tone, art }) {
   const blobRef = useParallax(0.15);

@@ -3,13 +3,19 @@
 import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
 import StatCounter from "./StatCounter";
+import ImpactTopo from "./ImpactTopo";
+
+// Background of the impact section (2026-10-19 test, at Yv's call):
+// true = animated topographic SVG (components/ImpactTopo.js),
+// false = the original photo (data.media). One switch to go back.
+const TOPO_BG = true;
 
 export default function ImpactStats({ data }) {
   return (
     <>
-    <section className="impact" id="impact">
+    <section className={`impact${TOPO_BG ? " impact--topo" : ""}`} id="impact">
       <div className="impact__media" aria-hidden="true">
-        <FadeImg src={data.media.src} alt={data.media.alt} removeOnError />
+        {TOPO_BG ? <ImpactTopo /> : <FadeImg src={data.media.src} alt={data.media.alt} removeOnError />}
       </div>
 
       <div className="impact__inner">

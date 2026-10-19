@@ -35,7 +35,7 @@ export default async function ProgrammesPage() {
           <InvolvedHero
             data={programmes.hero}
             tiles={programmes.hero.tiles}
-            art={<ProgrammesIso tiles={programmes.hero.tiles} />}
+            /*art={<ProgrammesIso tiles={programmes.hero.tiles} />}*/
           />
           <CardNav data={programmes.nav} />
           <AboutGetInvolved data={programmes.involve} />
