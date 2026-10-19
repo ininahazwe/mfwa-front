@@ -84,7 +84,13 @@ function getTabHiddenServerSnapshot() {
 //      cta }, hero.news { ariaLabel, stories[] { image, region, country,
 //      title, excerpt, link, linkLabel } } — see getHero()
 export default function Hero({ data }) {
-  const slides = data.slides;
+  // 2026-10-19 (at Yv's call): one carousel only in the hero. With
+  // `data.intro` (see getHero()) the left column is a fixed statement —
+  // no rotating slides, no autoplay, no slider controls, no swipe
+  // handling — and only the news carousel on the right moves. Without
+  // `intro`, the original rotating slides come back unchanged.
+  const intro = data.intro ?? null;
+  const slides = intro ? [] : data.slides;
   const total = slides.length;
   const stories = data.news.stories;
   const storyTotal = stories.length;
@@ -165,67 +171,94 @@ export default function Hero({ data }) {
 
   return (
     <section
-      className="hero"
+      className={`hero${intro ? " hero--static-intro" : ""}`}
       id="hero"
       data-hero
-      aria-roledescription="carrousel"
       aria-label="À la une"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setPaused(false);
-      }}
-      onKeyDown={handleKeyDown}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={() => {
-        pointerStartX.current = null;
-      }}
+      {...(intro
+        ? {}
+        : {
+            "aria-roledescription": "carrousel",
+            onMouseEnter: () => setPaused(true),
+            onMouseLeave: () => setPaused(false),
+            onFocus: () => setPaused(true),
+            onBlur: (e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) setPaused(false);
+            },
+            onKeyDown: handleKeyDown,
+            onPointerDown: handlePointerDown,
+            onPointerUp: handlePointerUp,
+            onPointerCancel: () => {
+              pointerStartX.current = null;
+            },
+          })}
     >
       {/* Colonne 1 : accroche */}
       <div className="hero__intro">
         {data.eyebrow && <p className="eyebrow">{data.eyebrow}</p>}
 
-        <div className="hero__slides" data-hero-slides>
-          {slides.map((slide, i) => {
-            const active = i === index;
-            const Heading = i === 0 ? "h1" : "h2";
-            return (
-              <article
-                className={`hero-slide${active ? " is-active" : ""}`}
-                key={slide.title}
-                aria-roledescription="diapositive"
-                aria-label={`${i + 1} sur ${total}`}
-                aria-hidden={active ? "false" : "true"}
-                inert={!active}
-              >
-                <Heading className="hero__title">{slide.title}</Heading>
-                <p className="hero__lede">{slide.lede}</p>
-                <a className="btn btn--hero hero__cta" href={slide.cta.href}>
-                  {slide.cta.label}
+        {intro ? (
+          <div className="hero__slides hero__slides--static">
+            <div className="hero-slide is-active">
+              <h1 className="hero__title">{intro.title}</h1>
+              <p className="hero__lede">{intro.lede}</p>
+              <div className="hero__actions">
+                <a className="btn btn--hero hero__cta" href={intro.primary.href}>
+                  {intro.primary.label}
                   {HERO_ARROW}
                 </a>
-              </article>
-            );
-          })}
-        </div>
-
-        <div className="slider">
-          <p className="slider__count" aria-live="polite">
-            <b data-hero-current>{pad(index + 1)}</b>
-            {"/ "}
-            <span data-hero-total>{pad(total)}</span>
-          </p>
-          <div className="slider__nav">
-            <button className="slider__btn" type="button" onClick={prev} data-hero-prev aria-label="Diapositive précédente">
-              {CHEVRON_PREV}
-            </button>
-            <button className="slider__btn" type="button" onClick={next} data-hero-next aria-label="Diapositive suivante">
-              {CHEVRON_NEXT}
-            </button>
+                {intro.secondary && (
+                  <a className="hero__secondary" href={intro.secondary.href}>
+                    {intro.secondary.label}
+                    {NEWS_ARROW}
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+          <div className="hero__slides" data-hero-slides>
+            {slides.map((slide, i) => {
+              const active = i === index;
+              const Heading = i === 0 ? "h1" : "h2";
+              return (
+                <article
+                  className={`hero-slide${active ? " is-active" : ""}`}
+                  key={slide.title}
+                  aria-roledescription="diapositive"
+                  aria-label={`${i + 1} sur ${total}`}
+                  aria-hidden={active ? "false" : "true"}
+                  inert={!active}
+                >
+                  <Heading className="hero__title">{slide.title}</Heading>
+                  <p className="hero__lede">{slide.lede}</p>
+                  <a className="btn btn--hero hero__cta" href={slide.cta.href}>
+                    {slide.cta.label}
+                    {HERO_ARROW}
+                  </a>
+                </article>
+              );
+            })}
+          </div>
+
+          <div className="slider">
+            <p className="slider__count" aria-live="polite">
+              <b data-hero-current>{pad(index + 1)}</b>
+              {"/ "}
+              <span data-hero-total>{pad(total)}</span>
+            </p>
+            <div className="slider__nav">
+              <button className="slider__btn" type="button" onClick={prev} data-hero-prev aria-label="Diapositive précédente">
+                {CHEVRON_PREV}
+              </button>
+              <button className="slider__btn" type="button" onClick={next} data-hero-next aria-label="Diapositive suivante">
+                {CHEVRON_NEXT}
+              </button>
+            </div>
+          </div>
+          </>
+        )}
       </div>
 
       {/* Carrousel d'actualités : 4 articles, défilement par balayage (indépendant du carrousel ci-dessus) */}

@@ -4596,3 +4596,126 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .ww-skel__error a{ color:var(--red-dark); font-weight:600; }
 .ww-skel--error .skel{ animation:none; }
 @media (prefers-reduced-motion: reduce){ .skel{ animation:none; } }
+
+/* =========================================================
+   Accueil : un seul carrousel dans le hero + « What's happening » (2026-10-19)
+   Colonne gauche fixe (slogan officiel + accroche + 2 liens) ; seules les
+   actualités de droite défilent. Revert : retirer `intro` de getHero().
+   ========================================================= */
+.hero__slides--static{ align-items:center; }
+.hero__slides--static .hero-slide{ align-self:center; transform:none; }
+.hero__actions{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:14px 28px;
+  margin-top:clamp(14px, 2.6vh, 34px);
+}
+.hero__actions .hero__cta{ margin-top:0; }
+.hero__secondary{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  font-weight:600;
+  color:var(--navy);
+}
+.hero__secondary svg{ flex:none; transition:transform var(--dur-fast) var(--ease); }
+.hero__secondary:hover{ color:var(--red-dark); }
+.hero__secondary:hover svg{ transform:translateX(4px); }
+
+.latest__empty{
+  margin:clamp(20px, 3vh, 32px) 0 0;
+  font-size:15px;
+  color:var(--ink-muted);
+}
+
+/* =========================================================
+   Where We Work : thématiques en colonne verticale (2026-10-19, demande de Yv)
+   Colonne de gauche (sticky) + grille d'articles à droite. Même look que
+   les autres FilterTabs, barre rouge sur le bord gauche. ≤900px : rangée
+   horizontale défilante au-dessus de la grille (comportement partagé).
+   ========================================================= */
+.ww-explore{
+  display:grid;
+  grid-template-columns:260px minmax(0, 1fr);
+  gap:clamp(28px, 3vw, 48px);
+  align-items:start;
+  margin-top:clamp(36px, 5vh, 56px);
+}
+.ww-explore__side{
+  position:sticky;
+  top:28px;
+  min-width:0;
+}
+.ww-explore__head{
+  padding:0 0 16px 20px;
+  border-bottom:1px solid var(--hairline);
+}
+.ww-explore__title{
+  margin:0;
+  font-size:19px;
+  font-weight:600;
+  letter-spacing:-.01em;
+  color:var(--navy-ink);
+}
+.ww-explore__sub{ margin:4px 0 0; font-size:15px; color:var(--ink-muted); }
+.ww-explore__main{ min-width:0; }
+.ww-explore .ww-results{ margin-top:0; }
+.ww-explore .ww-filter-summary{ margin:0 0 14px; }
+.ww-explore .category__grid{ padding-top:0; grid-template-columns:repeat(3, minmax(0, 1fr)); }
+
+/* colonne verticale */
+.ww-ftabs.ftabs--vertical{
+  margin-top:0;
+  flex-direction:column;
+  flex-wrap:nowrap;
+  gap:0;
+  padding-top:8px;
+  border-bottom:0;
+}
+.ftabs--vertical .ftab{
+  display:grid;
+  grid-template-columns:20px minmax(0, 1fr) auto;
+  grid-auto-flow:row;
+  column-gap:14px;
+  width:100%;
+  padding:11px 10px 11px 20px;
+  white-space:normal;
+}
+.ftabs--vertical .ftab::before{
+  left:0; right:auto; top:6px; bottom:6px;
+  width:3px; height:auto;
+  border-radius:0 2px 2px 0;
+  transform:scaleY(0);
+}
+.ftabs--vertical .ftab:hover::before,
+.ftabs--vertical .ftab.is-active::before{ transform:scaleY(1); }
+.ftabs--vertical.ww-skel__tabs{ gap:16px; padding:18px 0 0 20px; }
+
+@media (max-width:1180px){
+  .ww-explore{ grid-template-columns:230px minmax(0, 1fr); }
+  .ww-explore .category__grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width:900px){
+  .ww-explore{ grid-template-columns:minmax(0, 1fr); gap:22px; }
+  .ww-explore__side{ position:static; }
+  .ww-explore__head{ padding:0 0 10px; border-bottom:0; display:flex; align-items:baseline; gap:12px; }
+  .ww-explore__title{ font-size:16px; }
+  .ww-explore__sub{ margin:0; font-size:13.5px; }
+  .ww-ftabs.ftabs--vertical{ flex-direction:row; padding-top:0; border-bottom:1px solid var(--hairline); }
+  .ftabs--vertical .ftab{ display:inline-grid; width:auto; grid-template-columns:none; grid-auto-flow:column; column-gap:9px; padding:12px 11px 13px; white-space:nowrap; }
+  .ftabs--vertical .ftab::before{ left:9px; right:9px; top:auto; bottom:-1px; width:auto; height:3px; border-radius:2px 2px 0 0; transform:scaleX(0); }
+  .ftabs--vertical .ftab:hover::before,
+  .ftabs--vertical .ftab.is-active::before{ transform:scaleX(1); }
+  .ftabs--vertical.ww-skel__tabs{ flex-direction:row; padding:14px 0 16px; }
+}
+@media (max-width:560px){
+  .ww-explore .category__grid{ grid-template-columns:1fr; }
+}
+
+/* -- Where We Work : changement de thématique sans recharger la page (2026-10-19) -- */
+.ww-explore__main,
+.ww-countries-row .reach__map{ transition:opacity .2s ease; }
+.ww-explore__main.is-switching,
+.ww-countries-row .reach__map.is-switching{ opacity:.45; pointer-events:none; }

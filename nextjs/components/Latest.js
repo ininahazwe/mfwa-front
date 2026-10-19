@@ -1,32 +1,19 @@
-"use client";
-
-import { useMemo, useState } from "react";
+import { Fragment } from "react";
 import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
-import { FilterTabs, FilterTab, filterIcon } from "./FilterTabs";
 
-// Ports initTopicsFilter() from assets/js/main.js. The original only moved
-// the "is-active" state around (the real filtering was left as a WordPress
-// extension point — see the comment above initTopicsFilter()); this
-// version genuinely filters .latest__grid by matching each story's tag(s)
-// against the clicked topic's slug, since content.js's stories already
-// carry the same display tags the topics nav uses.
-//
-// Judgment call: "MFWA Now" (the first topic, active by default) has no
-// matching story tag by design — it is the unfiltered/"everything" feed in
-// the static mockup, so it shows every story rather than filtering to a
-// literal "mfwa-now" tag. A topic with no matching story (e.g. "Freedom of
-// Expression", not yet used as a tag on any of the four sample stories)
-// simply renders an empty grid, same as a real WordPress category with no
-// posts yet.
-function slugifyTag(tag) {
-  return tag
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-+|-+$)/g, "");
-}
+// "What's happening" — homepage (reworked 2026-10-19, at Yv's call).
+// - The 3 most recent posts come from WordPress (getLatestStories() →
+//   getWpFilteredPosts), not hand-written sample stories any more.
+// - The topics row no longer filters these 3 cards in place (with so few
+//   cards, most topics showed 0 or 1 story and the grid jumped). Each topic
+//   is now a plain link to the page that holds the full, paginated list —
+//   the Where We Work explorer filtered by that issue — so the row works as
+//   a way into the archive instead of a filter.
+// - The topics row keeps its ORIGINAL design (pill bar, dots between items,
+//   red dot on the first item) — the shared FilterTabs look was reverted
+//   for this one component only.
+// Previous client-side filter version: Latest.js.bak-home.
 
 const ARROW = (
   <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -34,40 +21,26 @@ const ARROW = (
   </svg>
 );
 
-// API: latest.topics[] { label, slug, active }, latest.stories[] { link,
-//      image, tag[], heading, date, readTime } — see getLatestStories()
+// API: latest { eyebrow, title, viewAll { label, href }, topics[] { label, href },
+//      stories[] { link, image { src, alt, isFallback? }, tag[], heading, date, readTime? } }
 export default function Latest({ data }) {
-  const defaultTopic = data.topics[0]?.slug;
-  const [activeTopic, setActiveTopic] = useState(
-    data.topics.find((topic) => topic.active)?.slug ?? defaultTopic
-  );
-
-  // data.visibleCount (retours équipe com #6, 2026-10-16): show 2-3
-  // stories, then the "View all stories" link — slice AFTER the topic
-  // filter so a topic still surfaces its own stories.
-  const visibleStories = useMemo(() => {
-    const matching =
-      !activeTopic || activeTopic === defaultTopic
-        ? data.stories
-        : data.stories.filter((story) => story.tag.some((t) => slugifyTag(t) === activeTopic));
-    return data.visibleCount ? matching.slice(0, data.visibleCount) : matching;
-  }, [activeTopic, defaultTopic, data.stories, data.visibleCount]);
-
   return (
     <section className="latest" id="stories">
-      {/* Filter row restyled 2026-10-18 (shared FilterTabs look, see that file). */}
-      <FilterTabs className="latest__ftabs" label="Filtrer les actualités par thème">
-        {data.topics.map((topic) => (
-          <FilterTab
-            key={topic.slug}
-            active={activeTopic === topic.slug}
-            icon={filterIcon(topic.slug, topic.label)}
-            label={topic.label}
-            data-topic={topic.slug}
-            onClick={() => setActiveTopic(topic.slug)}
-          />
+      <nav className="topics" aria-label="Browse stories by topic" data-topics>
+        {data.topics.map((topic, i) => (
+          <Fragment key={topic.href}>
+            {i > 0 && (
+              <span className="topics__sep" aria-hidden="true">
+                ·
+              </span>
+            )}
+            <a className="topics__item" href={topic.href}>
+              {i === 0 && <span className="topics__dot" aria-hidden="true"></span>}
+              {topic.label}
+            </a>
+          </Fragment>
         ))}
-      </FilterTabs>
+      </nav>
 
       <div className="latest__head">
         <p className="eyebrow">{data.eyebrow}</p>
@@ -77,41 +50,57 @@ export default function Latest({ data }) {
         {data.title}
       </Reveal>
 
-      <Reveal as="div" className="latest__grid" stagger>
-        {visibleStories.map((story) => (
-          <article className="story" key={story.link}>
-            <a className="story__link" href={story.link}>
-              <figure className="story__media">
-                <FadeImg src={story.image.src} alt={story.image.alt} removeOnError />
-              </figure>
-              <div className="story__body">
-                <p className="story__tag">
-                  {story.tag[0]} <span>·</span> {story.tag[1]}
-                </p>
-                <h3 className="story__heading">{story.heading}</h3>
-                <p className="story__meta">
-                  <span>
-                    {story.date} <i>·</i> {story.readTime}
-                  </span>
-                  <svg
-                    className="story__arrow"
-                    width="15"
-                    height="9"
-                    viewBox="0 0 15 9"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
-                  </svg>
-                </p>
-              </div>
-            </a>
-          </article>
-        ))}
-      </Reveal>
+      {data.stories.length > 0 ? (
+        <Reveal as="div" className="latest__grid" stagger>
+          {data.stories.map((story) => (
+            <article className="story" key={story.link}>
+              <a className="story__link" href={story.link}>
+                <figure className={`story__media${story.image.isFallback ? " story__media--fallback" : ""}`}>
+                  <FadeImg src={story.image.src} alt={story.image.alt} removeOnError={!story.image.isFallback} />
+                </figure>
+                <div className="story__body">
+                  {story.tag.length > 0 && (
+                    <p className="story__tag">
+                      {story.tag.map((t, i) => (
+                        <Fragment key={t}>
+                          {i > 0 && <span>·</span>} {t}{" "}
+                        </Fragment>
+                      ))}
+                    </p>
+                  )}
+                  <h3 className="story__heading">{story.heading}</h3>
+                  <p className="story__meta">
+                    <span>
+                      {story.date}
+                      {story.readTime && (
+                        <>
+                          {" "}
+                          <i>·</i> {story.readTime}
+                        </>
+                      )}
+                    </span>
+                    <svg
+                      className="story__arrow"
+                      width="15"
+                      height="9"
+                      viewBox="0 0 15 9"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
+                    </svg>
+                  </p>
+                </div>
+              </a>
+            </article>
+          ))}
+        </Reveal>
+      ) : (
+        <p className="latest__empty">Our latest stories are temporarily unavailable — please check back shortly.</p>
+      )}
 
       <div className="latest__more">
         <a className="latest__all" href={data.viewAll.href}>

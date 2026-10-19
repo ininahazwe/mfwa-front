@@ -25,6 +25,12 @@ import { getFooter } from "@/lib/content";
 // existe dans lib/content.js pour quand elle sera réactivée, mais n'est pas
 // rendue ici.
 
+// The "What's happening" stories now come from WordPress (getLatestStories):
+// regenerate the homepage at most every 5 minutes, like the WordPress
+// fetches themselves — and so a build made while WordPress was down
+// doesn't keep showing "temporarily unavailable" forever (2026-10-19).
+export const revalidate = 300;
+
 export default async function Home() {
   const [
     header,

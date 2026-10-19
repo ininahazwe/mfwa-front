@@ -41,7 +41,7 @@ export function FilterTab({ href, active, icon, label, count, onClick, className
   );
   if (href) {
     return (
-      <a className={cls} href={href} aria-current={active ? "page" : undefined} {...rest}>
+      <a className={cls} href={href} aria-current={active ? "page" : undefined} onClick={onClick} {...rest}>
         {inner}
       </a>
     );

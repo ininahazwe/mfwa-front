@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import Link from "next/link";
 import Reveal from "./Reveal";
@@ -25,8 +25,9 @@ import { FilterTabs, FilterTab, filterIcon } from "./FilterTabs";
 // and the results grid, and both axes filter the same grid. Every
 // country/category href already carries the OTHER axis's current
 // selection (computed server-side in getWhereWeWorkPage()), so switching
-// one filter never drops the other — clicking is a normal navigation
-// (plain <a>, not client-side fetch), and the parent page mounts this
+// one filter never drops the other — clicking a COUNTRY is a normal
+// navigation (plain <a>); issues switch in place since 2026-10-19 (see
+// applyCategory() below). The parent page mounts this
 // with a `key` derived from the active filters, so a filter change
 // remounts this component fresh with the server's new data instead of
 // trying to reconcile local hover/pagination state across an unrelated
@@ -73,8 +74,99 @@ const SEVERITY_LEGEND_LABEL = {
 // original Reach-style behaviour) — it's separate from
 // data.activeCountrySlug/activeCategorySlug, which is the actual applied
 // filter and drives the "is-selected" styling.
-export default function WhereWeWorkList({ data, initialItems, initialTotalPages, initialTotal }) {
+// In-place issue switching (2026-10-19, at Yv's call): clicking an issue
+// in the side column no longer reloads the whole page (map included). The
+// link is intercepted: the URL is updated with history.pushState (so it
+// stays shareable and Back/Forward work), and only two things are fetched
+// — page 1 of the story grid (/api/where-we-work/posts) and the map's
+// per-country coverage for that issue (/api/where-we-work/coverage), which
+// recolours the map in place. Country links, "Clear filters" and
+// modified clicks (new tab…) still do a normal navigation. If a fetch
+// fails, it falls back to a normal navigation to the same URL.
+function buildHref(country, category) {
+  const params = new URLSearchParams();
+  if (country) params.set("country", country);
+  if (category) params.set("category", category);
+  const qs = params.toString();
+  return `/where-we-work${qs ? `?${qs}` : ""}`;
+}
+
+export default function WhereWeWorkList({ data: initialData, initialItems, initialTotalPages, initialTotal }) {
   const [activeCountry, setActiveCountry] = useState(null);
+  const [categorySlug, setCategorySlug] = useState(initialData.activeCategorySlug);
+  const [coverage, setCoverage] = useState(null); // { [countrySlug]: { count, severity, recent } }
+  const [grid, setGrid] = useState({ key: 0, items: initialItems, totalPages: initialTotalPages, total: initialTotal });
+  const [switching, setSwitching] = useState(false);
+  const requestRef = useRef(0);
+  const countrySlug = initialData.activeCountrySlug;
+
+  // Everything below keeps reading `data.*` as before; this view just
+  // overlays the client-side issue + coverage on the server's first render.
+  const data = useMemo(
+    () => ({
+      ...initialData,
+      activeCategorySlug: categorySlug,
+      allIssuesHref: buildHref(countrySlug, null),
+      categories: initialData.categories.map((c) => ({
+        ...c,
+        href: buildHref(countrySlug, c.slug === categorySlug ? null : c.slug),
+      })),
+      countries: initialData.countries.map((c) => ({
+        ...c,
+        ...(coverage?.[c.slug] ?? {}),
+        href: buildHref(c.slug === countrySlug ? null : c.slug, categorySlug),
+      })),
+    }),
+    [initialData, categorySlug, coverage, countrySlug]
+  );
+
+  async function applyCategory(next, { push }) {
+    const href = buildHref(countrySlug, next);
+    const req = ++requestRef.current;
+    setSwitching(true);
+    setCategorySlug(next);
+    if (push) window.history.pushState({ wwCategory: next ?? "" }, "", href);
+    try {
+      const qs = new URLSearchParams({ page: "1", perPage: "12" });
+      if (countrySlug) qs.set("country", countrySlug);
+      if (next) qs.set("category", next);
+      const [postsRes, covRes] = await Promise.all([
+        fetch(`/api/where-we-work/posts?${qs}`),
+        fetch(`/api/where-we-work/coverage${next ? `?category=${encodeURIComponent(next)}` : ""}`),
+      ]);
+      if (!postsRes.ok || !covRes.ok) throw new Error("request-failed");
+      const [posts, cov] = await Promise.all([postsRes.json(), covRes.json()]);
+      if (req !== requestRef.current) return; // a newer click won
+      setGrid((g) => ({ key: g.key + 1, items: posts.items, totalPages: posts.totalPages, total: posts.total }));
+      setCoverage(cov.coverage);
+      setSwitching(false);
+    } catch {
+      if (req === requestRef.current) window.location.assign(href);
+    }
+  }
+
+  function onIssueClick(e, slug) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    const next = slug === categorySlug ? null : slug;
+    if (next === categorySlug) return;
+    applyCategory(next, { push: true });
+  }
+
+  // Back/Forward between issues chosen in place.
+  useEffect(() => {
+    function onPop() {
+      const params = new URLSearchParams(window.location.search);
+      if ((params.get("country") || null) !== (countrySlug || null)) {
+        window.location.reload();
+        return;
+      }
+      applyCategory(params.get("category") || null, { push: false });
+    }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countrySlug]);
 
   const col1 = data.countries.slice(0, 8);
   const col2 = data.countries.slice(8, 16);
@@ -137,7 +229,7 @@ export default function WhereWeWorkList({ data, initialItems, initialTotalPages,
             </ul>
           </Reveal>
 
-          <div className="reach__map" data-reach-map onMouseLeave={clearActive}>
+          <div className={`reach__map${switching ? " is-switching" : ""}`} data-reach-map onMouseLeave={clearActive}>
             <ComposableMap
               width={480}
               height={320}
@@ -287,38 +379,60 @@ export default function WhereWeWorkList({ data, initialItems, initialTotalPages,
 
         </div>
 
-        {/* Issue filters restyled 2026-10-18 (shared FilterTabs look). Still real
-            links (navigation keeps the country filter), hence href. */}
-        <FilterTabs className="ww-ftabs" label="Filtrer par thématique">
-          <FilterTab href={data.allIssuesHref} active={!data.activeCategorySlug} icon="all" label="All issues" />
-          {data.categories.map((category) => (
-            <FilterTab
-              key={category.slug}
-              href={category.href}
-              active={category.slug === data.activeCategorySlug}
-              icon={filterIcon(category.slug, category.name)}
-              label={category.name}
-            />
-          ))}
-        </FilterTabs>
+        {/* Issue filters: vertical side column next to the story grid
+            (2026-10-19, at Yv's call — 14 issues read better as a list than
+            as a wrapping row). Same FilterTabs look (icon + label, red bar
+            on the active one — on the left edge here); still real links, so
+            switching issue keeps the country filter. ≤900px: back to one
+            horizontally scrolling row above the grid. */}
+        <div className="ww-explore">
+          <aside className="ww-explore__side">
+            <div className="ww-explore__head">
+              <p className="ww-explore__title">Issues</p>
+              <p className="ww-explore__sub">{data.categories.length} themes</p>
+            </div>
+            <FilterTabs className="ww-ftabs ftabs--vertical" label="Filtrer par thématique">
+              <FilterTab
+                href={data.allIssuesHref}
+                active={!data.activeCategorySlug}
+                icon="all"
+                label="All issues"
+                onClick={(e) => onIssueClick(e, null)}
+              />
+              {data.categories.map((category) => (
+                <FilterTab
+                  key={category.slug}
+                  href={category.href}
+                  onClick={(e) => onIssueClick(e, category.slug)}
+                  active={category.slug === data.activeCategorySlug}
+                  icon={filterIcon(category.slug, category.name)}
+                  label={category.name}
+                />
+              ))}
+            </FilterTabs>
+          </aside>
 
-        {hasFilter && (
-          <p className="ww-filter-summary">
-            Showing stories{filterLabel ? `: ${filterLabel}` : ""} —{" "}
-            <Link href="/where-we-work">Clear filters</Link>
-          </p>
-        )}
+          <div className={`ww-explore__main${switching ? " is-switching" : ""}`} aria-busy={switching}>
+            {hasFilter && (
+              <p className="ww-filter-summary">
+                Showing stories{filterLabel ? `: ${filterLabel}` : ""} —{" "}
+                <Link href="/where-we-work">Clear filters</Link>
+              </p>
+            )}
 
-        <div className="ww-results">
-          <CategoryGrid
-            apiBase="/api/where-we-work"
-            initialItems={initialItems}
-            initialTotalPages={initialTotalPages}
-            initialTotal={initialTotal}
-            pageSize={12}
-            extraParams={{ country: data.activeCountrySlug, category: data.activeCategorySlug }}
-            endMessage="You've reached the end of these stories."
-          />
+            <div className="ww-results">
+              <CategoryGrid
+                key={grid.key}
+                apiBase="/api/where-we-work"
+                initialItems={grid.items}
+                initialTotalPages={grid.totalPages}
+                initialTotal={grid.total}
+                pageSize={12}
+                extraParams={{ country: data.activeCountrySlug, category: data.activeCategorySlug }}
+                endMessage="You've reached the end of these stories."
+              />
+            </div>
+          </div>
         </div>
       </div>
     </section>

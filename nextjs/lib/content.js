@@ -106,6 +106,16 @@ export async function getUtilityBar() {
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/hero-slides`).then(r => r.json())
 export async function getHero() {
   return {
+    // 2026-10-19 (at Yv's call): ONE carousel in the hero. The left column is
+    // now a fixed statement (official tagline + lede + 2 links) instead of
+    // the 4 auto-rotating `slides` below, which stay here unused: delete
+    // `intro` to bring the rotating slides back (Hero.js falls back to them).
+    intro: {
+      title: "Empowering Media & Voices for Public Good",
+      lede: "Strengthening media, freedom of expression and democratic participation across West Africa.",
+      primary: { label: "Explore our work", href: "#our-work" },
+      secondary: { label: "About MFWA", href: "/about-us" },
+    },
     // eyebrow removed 2026-10-16 (retours équipe com #3): the logo already
     // sits at the top of every page, so the left box no longer repeats
     // "Media Foundation for West Africa". Hero.js renders the eyebrow only
@@ -203,74 +213,40 @@ export async function getHero() {
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/categories?parent=0`).then(r => r.json())
 //         and    fetch(`${process.env.WP_API_BASE}/wp/v2/posts?_embed&per_page=4`).then(r => r.json())
 export async function getLatestStories() {
+  // 2026-10-19 (at Yv's call): the 3 most recent WordPress posts instead of
+  // hand-written sample stories, and topics that LINK to the full archive
+  // of that issue (the Where We Work explorer) instead of filtering these 3
+  // cards in place — see components/Latest.js. If WordPress can't answer,
+  // the section shows a short "temporarily unavailable" line instead of
+  // failing the homepage or showing made-up stories.
+  // Topic choices (Yv left the open questions to me): "MFWA Now" dropped
+  // (the 3 cards ARE the latest), "Democracy" → "Accountability", the
+  // transparency-and-accountability issue (no "democracy" category exists
+  // among the explorer's 13 issues), "Opportunities" → Get Involved
+  // (internships, volunteering), the site's own opportunities page.
+  // Previous version: lib/content.js.bak-home.
+  const { items } = await getWpFilteredPosts({ page: 1, perPage: LATEST_COUNT }).catch((err) => {
+    console.error("getLatestStories: WordPress unavailable —", err);
+    return { items: [] };
+  });
   return {
     eyebrow: "What’s happening",
     title: "The latest from MFWA",
-    viewAll: { label: "View all stories", href: "#stories-archive" },
-    // 2026-10-16 (retours équipe com #6): only 3 stories show before the
-    // "View all stories" link, which now sits under the grid instead of
-    // beside the title. The 4th sample story stays in `stories` (the
-    // topic filter still searches all of them) — Latest.js slices after
-    // filtering. Set back to 4 (or remove) to restore the old row.
-    visibleCount: 3,
+    viewAll: { label: "View all stories", href: "/where-we-work" },
     topics: [
-      { label: "MFWA Now", slug: "mfwa-now", active: true },
-      { label: "Freedom of Expression", slug: "freedom-of-expression" },
-      { label: "Digital Rights", slug: "digital-rights" },
-      { label: "Investigative Journalism", slug: "investigative-journalism" },
-      { label: "Democracy", slug: "democracy" },
-      { label: "Opportunities", slug: "opportunities" },
+      { label: "Free Expression", href: "/where-we-work?category=freedom-of-expression" },
+      { label: "Digital Rights", href: "/where-we-work?category=digital-rights" },
+      { label: "Investigations", href: "/where-we-work?category=investigative-journalism" },
+      { label: "Accountability", href: "/where-we-work?category=transparency-and-accountability" },
+      { label: "Journalist Safety", href: "/where-we-work?category=safety-of-journalists" },
+      { label: "Opportunities", href: "/about-us/get-involved" },
     ],
-    stories: [
-      {
-        link: "/articles/every-dollar-invested-millions-returned",
-        image: {
-          src: "/images/ghana4.jpg",
-          alt: "Image d'illustration : rassemblement public au Black Star Square, à Accra.",
-        },
-        tag: ["Ghana", "Investigative journalism"],
-        heading: "Every Dollar Invested, Millions Returned",
-        date: "12 Sep 2026",
-        readTime: "4 min read",
-      },
-      {
-        link: "#article-digital-rights",
-        image: {
-          src: "/images/ghana3.jpg",
-          alt: "Image d'illustration : vue aérienne de pirogues de pêche alignées sur une plage.",
-        },
-        tag: ["Digital rights", "West Africa"],
-        heading: "The digital rights challenges facing young people in West Africa",
-        date: "10 Sep 2026",
-        readTime: "5 min read",
-      },
-      {
-        link: "#article-young-journalists",
-        image: {
-          src: "/images/ghana2.jpg",
-          alt: "Image d'illustration : danseurs en tenues traditionnelles kente lors d'un festival.",
-        },
-        tag: ["Media", "Sierra Leone"],
-        heading: "Supporting young journalists in Sierra Leone: from training to impact",
-        date: "07 Sep 2026",
-        readTime: "3 min read",
-      },
-      {
-        link: "#article-community-radio",
-        image: {
-          src: "/images/ghana.jpg",
-          alt: "Image d'illustration : une foule dans la rue lors d'un carnaval, avec des plumeaux colorés.",
-        },
-        tag: ["Democracy", "West Africa"],
-        heading: "Why community radio remains vital for democracy in West Africa",
-        date: "04 Sep 2026",
-        readTime: "6 min read",
-      },
-    ],
+    stories: items,
   };
 }
 
-// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/work-areas`).then(r => r.json())
+const LATEST_COUNT = 3;
+
 export async function getWork() {
   return {
     eyebrow: "Our work",
@@ -870,6 +846,45 @@ const WHERE_WE_WORK_HERO = {
   ],
 };
 
+// Per-country coverage for the Where We Work map (count + 2 latest
+// headlines), optionally scoped to one issue. Shared by
+// getWhereWeWorkPage() and getWhereWeWorkCoverage() below. One failing
+// country only greys that country out on the map instead of failing the
+// whole call.
+async function countryCoverage(countries, wpCountryBySlug, categoryId) {
+  return Promise.all(
+    countries.map(async (c) => {
+      const wpCountry = wpCountryBySlug.get(c.slug);
+      if (!wpCountry) return { slug: c.slug, count: 0, recent: [] };
+      const { items: recent, total: count } = await getWpPostTeasers({
+        countryId: wpCountry.id,
+        categoryId,
+        perPage: MAP_RECENT_PER_COUNTRY,
+      }).catch(() => ({ items: [], total: 0 }));
+      return { slug: c.slug, count, recent };
+    })
+  );
+}
+
+// Map coverage only (2026-10-19): what the Where We Work explorer fetches
+// (via /api/where-we-work/coverage) when the reader switches issue in
+// place — the map is recoloured without reloading the page. Returns
+// { [countrySlug]: { count, severity, recent } }.
+export async function getWhereWeWorkCoverage({ categorySlug } = {}) {
+  const [reach, categories, wpCountries] = await Promise.all([
+    getReach(),
+    categorySlug ? getWpCategories(ISSUE_CATEGORY_SLUGS) : [],
+    getReach().then((r) => getWpCountriesBySlug(r.countries.map((c) => c.slug))),
+  ]);
+  const category = categorySlug ? categories.find((c) => c.slug === categorySlug) ?? null : null;
+  const wpCountryBySlug = new Map(wpCountries.map((c) => [c.slug, c]));
+  const stats = await countryCoverage(reach.countries, wpCountryBySlug, category?.id);
+  const maxCount = Math.max(0, ...stats.map((s) => s.count));
+  return Object.fromEntries(
+    stats.map((s) => [s.slug, { count: s.count, severity: severityOf(s.count, maxCount), recent: s.recent }])
+  );
+}
+
 // Static part of /where-we-work (2026-10-18): hero, intro and the 16
 // countries' names/links come from getReach() and this file only — no
 // WordPress request — so app/where-we-work/page.js can render them (and the
@@ -953,20 +968,7 @@ export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
     page: 1,
     perPage: EXPLORE_PAGE_SIZE,
   });
-  const countryStats = await Promise.all(
-    reach.countries.map(async (c) => {
-      const wpCountry = wpCountryBySlug.get(c.slug);
-      if (!wpCountry) return { slug: c.slug, count: 0, recent: [] };
-      // One failing country only greys that country out on the map instead
-      // of failing the whole page.
-      const { items: recent, total: count } = await getWpPostTeasers({
-        countryId: wpCountry.id,
-        categoryId: activeCategory?.id,
-        perPage: MAP_RECENT_PER_COUNTRY,
-      }).catch(() => ({ items: [], total: 0 }));
-      return { slug: c.slug, count, recent };
-    })
-  );
+  const countryStats = await countryCoverage(reach.countries, wpCountryBySlug, activeCategory?.id);
   const statsBySlug = new Map(countryStats.map((s) => [s.slug, s]));
   const maxCount = Math.max(0, ...countryStats.map((s) => s.count));
   const countriesReporting = countryStats.filter((s) => s.count > 0).length;

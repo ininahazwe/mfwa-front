@@ -69,25 +69,32 @@ export default function WhereWeWorkSkeleton({ data, error = false, retryHref = "
         </div>
 
         {!error && (
-          <>
-            <div className="ftabs ww-ftabs ww-skel__tabs" aria-hidden="true">
-              {[92, 150, 110, 170, 140, 120, 160, 100].map((w, i) => (
-                <span key={i} className="skel ww-skel__tab" style={{ width: w }} />
-              ))}
-            </div>
-            <div className="ww-results" aria-hidden="true">
-              <div className="category__grid">
-                {Array.from({ length: 6 }, (_, i) => (
-                  <div className="story ww-skel__card" key={i}>
-                    <div className="skel ww-skel__media" />
-                    <div className="skel ww-skel__line" style={{ width: "35%", marginTop: 18 }} />
-                    <div className="skel ww-skel__line ww-skel__line--lg" style={{ width: "90%" }} />
-                    <div className="skel ww-skel__line ww-skel__line--lg" style={{ width: "65%" }} />
-                  </div>
+          <div className="ww-explore" aria-hidden="true">
+            <aside className="ww-explore__side">
+              <div className="ww-explore__head">
+                <div className="skel ww-skel__line" style={{ width: 70, height: 16 }} />
+              </div>
+              <div className="ftabs ww-ftabs ftabs--vertical ww-skel__tabs">
+                {[90, 140, 110, 160, 130, 120, 150, 100].map((w, i) => (
+                  <span key={i} className="skel ww-skel__tab" style={{ width: w }} />
                 ))}
               </div>
+            </aside>
+            <div className="ww-explore__main">
+              <div className="ww-results">
+                <div className="category__grid">
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <div className="story ww-skel__card" key={i}>
+                      <div className="skel ww-skel__media" />
+                      <div className="skel ww-skel__line" style={{ width: "35%", marginTop: 18 }} />
+                      <div className="skel ww-skel__line ww-skel__line--lg" style={{ width: "90%" }} />
+                      <div className="skel ww-skel__line ww-skel__line--lg" style={{ width: "65%" }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </section>
