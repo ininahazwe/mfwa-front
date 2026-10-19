@@ -9,6 +9,7 @@
 // function needs to change — the shape returned should stay the same so
 // the components that consume it do not need to change.
 
+import { cache } from "react";
 import {
   getWpCategoryBySlug,
   getWpCategoryPosts,
@@ -21,6 +22,7 @@ import {
   getWpCountriesBySlug,
   getWpFilteredPosts,
   getWpPostTeasers,
+  getWpHomePosts,
   searchWp,
 } from "./wp";
 import { STAFF, STAFF_TEAMS } from "./staff";
@@ -104,6 +106,39 @@ export async function getUtilityBar() {
 }
 
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/hero-slides`).then(r => r.json())
+// Homepage news feed (2026-10-19, Yv's choice): the hero carousel shows
+// the stories editors PIN in WordPress ("Stick to the top of the blog"
+// checkbox in the post editor), up to HERO_COUNT; if fewer are pinned it
+// is topped up with the most recent posts that have a featured image.
+// "What's happening" then shows the most recent posts NOT already in the
+// hero, so the two sections never repeat a story. cache() makes getHero()
+// and getLatestStories() share one fetch per page render.
+// Editorial rule for the com team: a pinned post needs a featured image
+// and an excerpt (the carousel shows both); unpin old ones.
+const HERO_COUNT = 4;
+const getHomeFeed = cache(async () => {
+  const pinned = await getWpHomePosts({ perPage: HERO_COUNT, sticky: true }).catch((err) => {
+    console.error("getHomeFeed: pinned posts unavailable —", err);
+    return [];
+  });
+  const pool = await getWpHomePosts({
+    perPage: HERO_COUNT + LATEST_COUNT + 5,
+    sticky: false,
+    exclude: pinned.map((p) => p.id),
+  }).catch((err) => {
+    console.error("getHomeFeed: recent posts unavailable —", err);
+    return [];
+  });
+  const hero = [...pinned];
+  for (const post of pool) {
+    if (hero.length >= HERO_COUNT) break;
+    if (post.hasImage) hero.push(post);
+  }
+  const heroIds = new Set(hero.map((p) => p.id));
+  const latest = pool.filter((p) => !heroIds.has(p.id)).slice(0, LATEST_COUNT);
+  return { hero, latest };
+});
+
 export async function getHero() {
   return {
     // 2026-10-19 (at Yv's call): ONE carousel in the hero. The left column is
@@ -152,60 +187,17 @@ export async function getHero() {
     // API: news.stories[] { image, region, country, title, excerpt, link, linkLabel }
     news: {
       ariaLabel: "Latest stories",
-      stories: [
-        {
-          image: {
-            src: "/images/ghana1.jpg",
-            alt: "Image d'illustration : une femme portant un grand bassin sur la tête sur un marché de rue au Ghana.",
-          },
-          region: "West Africa",
-          country: "Ghana",
-          title: "Journalists in Ghana demand stronger protection for media freedom",
-          excerpt:
-            "Media professionals are calling for urgent measures to ensure the safety and independence of journalists in the country.",
-          link: "#article",
-          linkLabel: "Read more",
-        },
-        {
-          image: {
-            src: "/images/ghana4.jpg",
-            alt: "Image d'illustration : rassemblement public au Black Star Square, à Accra.",
-          },
-          region: "West Africa",
-          country: "Ghana",
-          title: "Every Dollar Invested, Millions Returned",
-          excerpt:
-            "How investigative reporting backed by MFWA helped expose losses and recover public funds.",
-          link: "/articles/every-dollar-invested-millions-returned",
-          linkLabel: "Read more",
-        },
-        {
-          image: {
-            src: "/images/ghana3.jpg",
-            alt: "Image d'illustration : vue aérienne de pirogues de pêche alignées sur une plage.",
-          },
-          region: "West Africa",
-          country: "Regional",
-          title: "The digital rights challenges facing young people in West Africa",
-          excerpt:
-            "From shutdowns to online harassment, what young people say they need to participate safely online.",
-          link: "#article-digital-rights",
-          linkLabel: "Read more",
-        },
-        {
-          image: {
-            src: "/images/ghana2.jpg",
-            alt: "Image d'illustration : danseurs en tenues traditionnelles kente lors d'un festival.",
-          },
-          region: "West Africa",
-          country: "Sierra Leone",
-          title: "Supporting young journalists in Sierra Leone: from training to impact",
-          excerpt:
-            "A new generation of reporters is turning MFWA training into stories that change their communities.",
-          link: "#article-young-journalists",
-          linkLabel: "Read more",
-        },
-      ],
+      // Pinned WordPress stories (see getHomeFeed() above). The hand-written
+      // sample stories that used to be here are in lib/content.js.bak-sticky.
+      stories: (await getHomeFeed()).hero.map((post) => ({
+        image: post.image,
+        region: post.categoryName ?? "West Africa",
+        country: post.countryName ?? "",
+        title: post.heading,
+        excerpt: post.excerpt,
+        link: post.link,
+        linkLabel: "Read more",
+      })),
     },
   };
 }
@@ -225,10 +217,8 @@ export async function getLatestStories() {
   // among the explorer's 13 issues), "Opportunities" → Get Involved
   // (internships, volunteering), the site's own opportunities page.
   // Previous version: lib/content.js.bak-home.
-  const { items } = await getWpFilteredPosts({ page: 1, perPage: LATEST_COUNT }).catch((err) => {
-    console.error("getLatestStories: WordPress unavailable —", err);
-    return { items: [] };
-  });
+  // Most recent posts not already shown in the hero carousel (getHomeFeed()).
+  const items = (await getHomeFeed()).latest;
   return {
     eyebrow: "What’s happening",
     title: "The latest from MFWA",

@@ -171,7 +171,7 @@ export default function Hero({ data }) {
 
   return (
     <section
-      className={`hero${intro ? " hero--static-intro" : ""}`}
+      className={`hero${intro ? " hero--static-intro" : ""}${storyTotal === 0 ? " hero--no-news" : ""}`}
       id="hero"
       data-hero
       aria-label="À la une"
@@ -261,6 +261,10 @@ export default function Hero({ data }) {
         )}
       </div>
 
+      {/* No pinned/recent WordPress story available (e.g. WordPress down):
+          no empty carousel — the intro takes the full width (.hero--no-news). */}
+      {storyTotal > 0 && (
+      <>
       {/* Carrousel d'actualités : 4 articles, défilement par balayage (indépendant du carrousel ci-dessus) */}
       <div
         className="hero__carousel"
@@ -294,7 +298,13 @@ export default function Hero({ data }) {
                   <figure className="hero__shot is-active">
                     <FadeImg src={story.image.src} alt={story.image.alt} removeOnError />
                     <figcaption className="hero__caption">
-                      {story.region} <span></span> {story.country}
+                      {story.region}
+                      {story.country && (
+                        <>
+                          {" "}
+                          <span></span> {story.country}
+                        </>
+                      )}
                     </figcaption>
                   </figure>
                 </div>
@@ -338,6 +348,8 @@ export default function Hero({ data }) {
           </div>
         </div>
       </div>
+      </>
+      )}
     </section>
   );
 }

@@ -304,6 +304,39 @@ export async function getWpPostTeasers({ countryId, categoryId, perPage = 2 } = 
   };
 }
 
+// Homepage news feed (2026-10-19). `sticky` maps to WordPress's own
+// "Stick to the top of the blog" checkbox (REST `sticky=true|false`) — the
+// editors' way of choosing the hero carousel's stories; `exclude` keeps
+// "What's happening" from repeating them. Same card shape as mapPost(),
+// plus `id`, a plain-text `excerpt` and the raw category/country names
+// the hero caption needs.
+function plainExcerpt(html = "", max = 190) {
+  const text = decodeEntities(html.replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+  return text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "")}…` : text;
+}
+
+export async function getWpHomePosts({ perPage = 4, sticky, exclude = [] } = {}) {
+  const params = new URLSearchParams({ page: "1", per_page: String(perPage), orderby: "date", order: "desc" });
+  if (sticky !== undefined) params.set("sticky", sticky ? "true" : "false");
+  if (exclude.length) params.set("exclude", exclude.join(","));
+  const { data } = await fetchJson(
+    `/posts?${params}&_fields=id,date,link,title,excerpt,featured_media,categories,country`
+  );
+  const [mediaMap, categoryMap, countryMap] = await Promise.all([
+    getWpMediaByIds(data.map((p) => p.featured_media)),
+    getWpTermsByIds("categories", data.flatMap((p) => p.categories ?? [])),
+    getWpTermsByIds("country", data.flatMap((p) => p.country ?? [])),
+  ]);
+  return data.map((p) => ({
+    ...mapPost(p, { mediaMap, categoryMap, countryMap }),
+    id: p.id,
+    hasImage: Boolean(p.featured_media && mediaMap?.get(p.featured_media)),
+    excerpt: plainExcerpt(p.excerpt?.rendered),
+    categoryName: categoryMap?.get(p.categories?.[0])?.name ?? null,
+    countryName: countryMap?.get(p.country?.[0])?.name ?? null,
+  }));
+}
+
 // Resolves the 13 "Issues" category slugs (the live site's own menu,
 // merged into the explorer above rather than kept as a separate hub —
 // see getWhereWeWorkPage()'s note) to their WordPress term ids/names in

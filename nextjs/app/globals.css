@@ -4719,3 +4719,6 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .ww-countries-row .reach__map{ transition:opacity .2s ease; }
 .ww-explore__main.is-switching,
 .ww-countries-row .reach__map.is-switching{ opacity:.45; pointer-events:none; }
+
+/* Hero sans actualités (WordPress indisponible) : l'accroche prend toute la largeur (2026-10-19) */
+.hero.hero--no-news{ grid-template-columns:1fr; }
