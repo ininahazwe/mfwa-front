@@ -12,11 +12,11 @@ export default function Header({ data, tone }) {
       <div className="header__inner">
         <Link className="brand" href="/" aria-label={data.homeAriaLabel}>
           <FadeImg className="logo" src={data.logo.src} alt={data.logo.alt} />
-          <span className="brand__name">
+          {/*<span className="brand__name">
             {data.brandNameLines[0]}
             <br />
             {data.brandNameLines[1]}
-          </span>
+          </span>*/}
         </Link>
 
         <nav className="nav" aria-label="Navigation principale">

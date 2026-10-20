@@ -171,17 +171,48 @@ export function articleHref(post) {
   return post?.slug ? `/articles/${post.slug}` : post?.link;
 }
 
-function mapPost(post, { mediaMap, categoryMap, countryMap } = {}) {
+// -- Content types (CONFIRMED 2026-10-20 from /wp-json/wp/v2/types, pasted
+// by Yv) ----------------------------------------------------------------
+// - News stories are the "issues-in-focus" post type (archive
+//   https://mfwa.org/issues-in-focus/, taxonomies category/post_tag/country).
+// - WordPress' regular "posts" are the OPPORTUNITIES (fellowships, calls,
+//   vacancies — taxonomies opportunity-category, staff-position, country).
+// Until then every story feed of this site read /posts, i.e. showed
+// opportunities. STORIES is now the default everywhere; OPPORTUNITIES is
+// only used by /opportunities and by opportunity articles.
+export const STORIES = "issues-in-focus";
+export const OPPORTUNITIES = "posts";
+const CARD_FIELDS = "id,date,slug,link,title,featured_media,categories,country,opportunity-category";
+
+// id → term lookups for one batch of items (never one request per item).
+async function termMaps(data, base) {
+  const [mediaMap, categoryMap, countryMap, opportunityMap] = await Promise.all([
+    getWpMediaByIds(data.map((p) => p.featured_media)),
+    getWpTermsByIds("categories", data.flatMap((p) => p.categories ?? [])),
+    getWpTermsByIds("country", data.flatMap((p) => p.country ?? [])),
+    base === OPPORTUNITIES
+      ? getWpTermsByIds("opportunity-category", data.flatMap((p) => p["opportunity-category"] ?? [])).catch(() => new Map())
+      : new Map(),
+  ]);
+  return { mediaMap, categoryMap, countryMap, opportunityMap, base };
+}
+
+function mapPost(post, { mediaMap, categoryMap, countryMap, opportunityMap, base } = {}) {
   const title = decodeEntities(post.title?.rendered ?? "");
-  const primaryTag = categoryMap?.get(post.categories?.[0])?.name ?? null;
+  const isOpportunity = base === OPPORTUNITIES;
+  const primaryTag = isOpportunity
+    ? opportunityMap?.get(post["opportunity-category"]?.[0])?.name ?? "Opportunity"
+    : categoryMap?.get(post.categories?.[0])?.name ?? null;
   const secondaryTag = countryMap?.get(post.country?.[0])?.name ?? null;
 
   return {
     id: post.id,
+    type: isOpportunity ? "opportunity" : "story",
     link: articleHref(post),
     sourceUrl: post.link,
-    // first category, for the thumbnail watermark (components/CategoryMark.js)
-    categorySlug: categoryMap?.get(post.categories?.[0])?.slug ?? null,
+    // first category, for the thumbnail watermark (components/CategoryMark.js);
+    // every opportunity carries the "opportunities" watermark
+    categorySlug: isOpportunity ? "opportunities" : categoryMap?.get(post.categories?.[0])?.slug ?? null,
     categoryName: primaryTag,
     image: mediaToImage(mediaMap?.get(post.featured_media), title),
     // Filter out the missing half rather than rendering an empty "·" —
@@ -198,16 +229,10 @@ function mapPost(post, { mediaMap, categoryMap, countryMap } = {}) {
 // Fetches a page of /posts plus everything mapPost() needs to resolve
 // each card's image/tags, in one batch (1 posts request + up to 3 lookup
 // requests run in parallel, never one lookup per post).
-async function fetchPostsWithTerms(query) {
-  const { data, totalPages, total } = await fetchJson(
-    `/posts?${query}&_fields=id,date,slug,link,title,featured_media,categories,country`
-  );
-  const [mediaMap, categoryMap, countryMap] = await Promise.all([
-    getWpMediaByIds(data.map((p) => p.featured_media)),
-    getWpTermsByIds("categories", data.flatMap((p) => p.categories ?? [])),
-    getWpTermsByIds("country", data.flatMap((p) => p.country ?? [])),
-  ]);
-  const items = data.map((p) => mapPost(p, { mediaMap, categoryMap, countryMap }));
+async function fetchPostsWithTerms(query, base = STORIES) {
+  const { data, totalPages, total } = await fetchJson(`/${base}?${query}&_fields=${CARD_FIELDS}`);
+  const maps = await termMaps(data, base);
+  const items = data.map((p) => mapPost(p, maps));
   return { items, totalPages, total };
 }
 
@@ -237,6 +262,33 @@ export async function getWpCategoryPosts(categoryId, { page = 1, perPage = 10 } 
 // /wp-json/wp/v2/taxonomies), not the "category" one — same shape as
 // getWpCategoryBySlug/Posts above, just a different taxonomy and the
 // matching /posts?country=<id> filter param.
+// A category AND its sub-categories (2026-10-20). WordPress' REST
+// `categories=<id>` filter does NOT include posts filed only under a child
+// category, so a parent like "Issues in Focus" can look empty through the
+// API while its archive on the site is full. Returns the ids of the
+// category + its children and grandchildren (null if the slug is unknown;
+// if the slug is not found, falls back to a name search built from it,
+// e.g. "issues-in-focus" → "issues in focus").
+export async function getWpCategoryTree(slug) {
+  let category = await getWpCategoryBySlug(slug);
+  if (!category) {
+    const { data } = await fetchJson(
+      `/categories?search=${encodeURIComponent(slug.replace(/-/g, " "))}&per_page=5&_fields=id,name,slug,count`
+    );
+    const hit = data[0];
+    if (!hit) return null;
+    category = { id: hit.id, name: decodeEntities(hit.name), slug: hit.slug, count: hit.count };
+  }
+  const ids = [category.id];
+  let level = [category.id];
+  for (let depth = 0; depth < 2 && level.length; depth++) {
+    const { data } = await fetchJson(`/categories?parent=${level.join(",")}&per_page=100&_fields=id`).catch(() => ({ data: [] }));
+    level = data.map((c) => c.id).filter((id) => !ids.includes(id));
+    ids.push(...level);
+  }
+  return { ...category, ids };
+}
+
 export async function getWpCountryBySlug(slug) {
   const { data } = await fetchJson(
     `/country?slug=${encodeURIComponent(slug)}&_fields=id,name,slug,description,count`
@@ -307,7 +359,7 @@ export async function getWpPostTeasers({ countryId, categoryId, perPage = 2 } = 
   const params = new URLSearchParams({ page: "1", per_page: String(perPage), orderby: "date", order: "desc" });
   if (countryId) params.set("country", String(countryId));
   if (categoryId) params.set("categories", String(categoryId));
-  const { data, total } = await fetchJson(`/posts?${params}&_fields=id,date,slug,link,title`);
+  const { data, total } = await fetchJson(`/${STORIES}?${params}&_fields=id,date,slug,link,title`);
   return {
     total,
     items: data.map((p) => ({
@@ -318,7 +370,7 @@ export async function getWpPostTeasers({ countryId, categoryId, perPage = 2 } = 
   };
 }
 
-// Homepage news feed (2026-10-19). `sticky` maps to WordPress's own
+// Homepage news feed (2026-10-19; hero by tag since 2026-10-20 — below). Was: `sticky` maps to WordPress's own
 // "Stick to the top of the blog" checkbox (REST `sticky=true|false`) — the
 // editors' way of choosing the hero carousel's stories; `exclude` keeps
 // "What's happening" from repeating them. Same card shape as mapPost(),
@@ -329,20 +381,19 @@ function plainExcerpt(html = "", max = 190) {
   return text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "")}…` : text;
 }
 
-export async function getWpHomePosts({ perPage = 4, sticky, exclude = [] } = {}) {
+// 2026-10-20: stories now come from the Issues in Focus type, which has no
+// "sticky" flag (WordPress only offers it on regular posts) — the hero is
+// chosen with a TAG instead (`tagId`, see getHomeFeed() in lib/content.js).
+export async function getWpHomePosts({ perPage = 4, tagId, exclude = [], categoryId, base = STORIES } = {}) {
   const params = new URLSearchParams({ page: "1", per_page: String(perPage), orderby: "date", order: "desc" });
-  if (sticky !== undefined) params.set("sticky", sticky ? "true" : "false");
+  if (tagId) params.set("tags", String(tagId));
+  if (categoryId) params.set("categories", [categoryId].flat().join(","));
   if (exclude.length) params.set("exclude", exclude.join(","));
-  const { data } = await fetchJson(
-    `/posts?${params}&_fields=id,date,slug,link,title,excerpt,featured_media,categories,country`
-  );
-  const [mediaMap, categoryMap, countryMap] = await Promise.all([
-    getWpMediaByIds(data.map((p) => p.featured_media)),
-    getWpTermsByIds("categories", data.flatMap((p) => p.categories ?? [])),
-    getWpTermsByIds("country", data.flatMap((p) => p.country ?? [])),
-  ]);
+  const { data } = await fetchJson(`/${base}?${params}&_fields=${CARD_FIELDS},excerpt`);
+  const maps = await termMaps(data, base);
+  const { mediaMap, categoryMap, countryMap } = maps;
   return data.map((p) => ({
-    ...mapPost(p, { mediaMap, categoryMap, countryMap }),
+    ...mapPost(p, maps),
     id: p.id,
     hasImage: Boolean(p.featured_media && mediaMap?.get(p.featured_media)),
     excerpt: plainExcerpt(p.excerpt?.rendered),
@@ -358,6 +409,12 @@ export async function getWpHomePosts({ perPage = 4, sticky, exclude = [] } = {})
 // list, but doesn't guarantee it echoes results back in that order, so
 // this re-sorts to match the order `slugs` was given in (the live site's
 // own Issues submenu order) rather than trusting the API's order.
+// A tag by slug (e.g. "featured", the hero carousel's editorial pick).
+export async function getWpTagBySlug(slug) {
+  const { data } = await fetchJson(`/tags?slug=${encodeURIComponent(slug)}&_fields=id,name,slug,count`);
+  return data[0] ? { id: data[0].id, name: decodeEntities(data[0].name), slug: data[0].slug, count: data[0].count } : null;
+}
+
 export async function getWpCategories(slugs) {
   const { data } = await fetchJson(
     `/categories?slug=${slugs.map(encodeURIComponent).join(",")}&per_page=100` +
@@ -586,21 +643,28 @@ function heroFromMedia(media, alt) {
   return src ? { src, alt: media.alt_text || alt } : null;
 }
 
+// Looks in the stories (Issues in Focus) first, then in the opportunities
+// (regular posts); `type` tells which, so related items match.
 export async function getWpPostBySlug(slug) {
-  const { data } = await fetchJson(
-    `/posts?slug=${encodeURIComponent(slug)}` +
-      `&_fields=id,date,modified,slug,link,title,content,excerpt,featured_media,categories,country`
-  );
-  const post = data[0];
+  const fields = `&_fields=${CARD_FIELDS},modified,content,excerpt`;
+  let post = null;
+  let base = STORIES;
+  for (const b of [STORIES, OPPORTUNITIES]) {
+    const { data } = await fetchJson(`/${b}?slug=${encodeURIComponent(slug)}${fields}`);
+    if (data[0]) {
+      post = data[0];
+      base = b;
+      break;
+    }
+  }
   if (!post) return null;
-  const [mediaMap, categoryMap, countryMap] = await Promise.all([
-    getWpMediaByIds([post.featured_media]),
-    getWpTermsByIds("categories", post.categories ?? []),
-    getWpTermsByIds("country", post.country ?? []),
-  ]);
-  const card = mapPost(post, { mediaMap, categoryMap, countryMap });
+  const maps = await termMaps([post], base);
+  const { mediaMap, categoryMap, countryMap } = maps;
+  const card = mapPost(post, maps);
   return {
     id: post.id,
+    type: card.type,
+    base,
     slug: post.slug,
     sourceUrl: post.link,
     title: card.heading,
@@ -619,8 +683,8 @@ export async function getWpPostBySlug(slug) {
 // "You may also like": latest posts sharing the article's first category,
 // topped up with the latest posts overall when the category is too small.
 // The current post is excluded (in the query AND defensively afterwards).
-export async function getWpRelatedPosts({ excludeId, categoryId, perPage = 3 } = {}) {
-  const base = `per_page=${perPage + 1}&orderby=date&order=desc${excludeId ? `&exclude=${excludeId}` : ""}`;
+export async function getWpRelatedPosts({ excludeId, categoryId, perPage = 3, base = STORIES } = {}) {
+  const query = `per_page=${perPage + 1}&orderby=date&order=desc${excludeId ? `&exclude=${excludeId}` : ""}`;
   const seen = new Set([excludeId]);
   const out = [];
   const take = (items) => {
@@ -631,7 +695,23 @@ export async function getWpRelatedPosts({ excludeId, categoryId, perPage = 3 } =
       out.push(it);
     }
   };
-  if (categoryId) take((await fetchPostsWithTerms(`categories=${categoryId}&${base}`)).items);
-  if (out.length < perPage) take((await fetchPostsWithTerms(base)).items);
+  if (categoryId) take((await fetchPostsWithTerms(`categories=${categoryId}&${query}`, base)).items);
+  if (out.length < perPage) take((await fetchPostsWithTerms(query, base)).items);
   return out;
+}
+
+// -- Issues in Focus & Opportunities archives (2026-10-20) -----------------
+// Pages /issues-in-focus (« View all stories ») and /opportunities.
+function archiveQuery({ page, perPage, exclude = [] }) {
+  return [`page=${page}`, `per_page=${perPage}`, "orderby=date", "order=desc", exclude.length ? `exclude=${exclude.join(",")}` : ""]
+    .filter(Boolean)
+    .join("&");
+}
+
+export async function getIssuesInFocusPosts({ page = 1, perPage = 12, exclude = [] } = {}) {
+  return fetchPostsWithTerms(archiveQuery({ page, perPage, exclude }), STORIES);
+}
+
+export async function getOpportunityPosts({ page = 1, perPage = 12 } = {}) {
+  return fetchPostsWithTerms(archiveQuery({ page, perPage }), OPPORTUNITIES);
 }

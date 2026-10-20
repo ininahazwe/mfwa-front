@@ -5,11 +5,8 @@ import { getWpCategoryBySlug, getWpCategoryPosts } from "@/lib/wp";
 // Kept as a route (rather than calling lib/wp.js straight from the
 // client) so the WordPress API base URL and query shape stay server-side.
 //
-// Currently unused: /category/[slug] redirects to the merged Where We
-// Work × Issues explorer (/api/where-we-work/posts) instead. Left in
-// place rather than deleted (no file-delete access this session) — still
-// correct if a single-category archive without the map is ever wanted
-// again.
+// Used again since 2026-10-20 by the category page of categories that are
+// not one of the 13 explorer "Issues" (e.g. /category/opportunities).
 export async function GET(request, { params }) {
   const { slug } = await params;
   const { searchParams } = new URL(request.url);

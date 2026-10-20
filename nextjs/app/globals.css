@@ -1233,7 +1233,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    ========================================================= */
 .reach{
   background:#f9fafa;
-  padding:clamp(56px, 8vh, 96px) var(--gutter);
+  /*padding:clamp(56px, 8vh, 96px) var(--gutter);*/
+  padding:clamp(0px, 0vh, 96px) var(--gutter);
 }
 
 .reach__inner{
@@ -1294,12 +1295,16 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    marker dots only, not a fill difference), but clickable/hoverable. */
 .reach__geo.is-covered{
   cursor:pointer;
+  fill:var(--geo-soft, #e9edf1);
   transition:fill var(--dur-fast) var(--ease);
 }
 .reach__geo.is-covered:hover,
 .reach__geo.is-active{
-  fill:#d7e0e8;
+  fill:var(--geo-strong, #d7e0e8);
 }
+/* 2026-10-20 (Yv) : pastel semi-transparent par pays — couleur du drapeau,
+   voir components/Reach.js et lib/content.js getReach(). */
+.reach__marker-halo{ pointer-events:none; transition:r var(--dur-fast) var(--ease), fill var(--dur-fast) var(--ease); }
 
 .reach__marker{ cursor:pointer; outline:none; }
 .reach__marker-ring{
@@ -5011,4 +5016,16 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .story__link:hover .cmark__line,
   .story__link:focus-visible .cmark__line{ animation:none; transform:none; }
   .cmark__line, .cmark__marker{ transition:none; }
+}
+
+/* -- Our reach : grands écrans (2026-10-20, retour de Yv) ----------------
+   Au-delà de ~1500px, intro (max 420) + carte (max 480) + liste restaient
+   groupées au centre et la section paraissait plus étroite que les autres
+   (ex. Impact stories, alignée sur les marges). On l'étale sur toute la
+   largeur : intro collée à la marge gauche, liste à la marge droite, carte
+   plus grande au milieu. Sous 1500px, rien ne change. */
+@media (min-width:1500px){
+  .reach .reach__inner{ justify-content:space-between; }
+  .reach .reach__intro{ max-width:460px; }
+  .reach .reach__map{ max-width:640px; flex-grow:1.6; }
 }

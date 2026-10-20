@@ -26,6 +26,9 @@ import {
   searchWp,
   getWpPostBySlug,
   getWpRelatedPosts,
+  getIssuesInFocusPosts,
+  getOpportunityPosts,
+  getWpTagBySlug,
 } from "./wp";
 import { prepareArticleHtml } from "./articleHtml";
 import { STAFF, STAFF_TEAMS } from "./staff";
@@ -99,7 +102,7 @@ export async function getUtilityBar() {
       label: "NGOsource",
       badgeMark: { prefix: "NGO", emphasis: "source" },
       caption: "Equivalency Determination on File",
-      url: "#ngosource",
+      url: "https://www.ngosource.org/",
     },
     languages: [
       { code: "en", label: "EN", href: "#lang-en", active: true },
@@ -109,30 +112,40 @@ export async function getUtilityBar() {
 }
 
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/hero-slides`).then(r => r.json())
-// Homepage news feed (2026-10-19, Yv's choice): the hero carousel shows
-// the stories editors PIN in WordPress ("Stick to the top of the blog"
-// checkbox in the post editor), up to HERO_COUNT; if fewer are pinned it
-// is topped up with the most recent posts that have a featured image.
-// "What's happening" then shows the most recent posts NOT already in the
-// hero, so the two sections never repeat a story. cache() makes getHero()
-// and getLatestStories() share one fetch per page render.
-// Editorial rule for the com team: a pinned post needs a featured image
-// and an excerpt (the carousel shows both); unpin old ones.
+// Homepage news feed — reworked 2026-10-20 (Yv's choices) once
+// /wp-json/wp/v2/types showed that the site's news stories are the
+// "Issues in Focus" post type (https://mfwa.org/issues-in-focus/) and that
+// regular WordPress posts are the opportunities (see STORIES/OPPORTUNITIES
+// in lib/wp.js). Both sections now show Issues in Focus:
+// - hero carousel: the stories the com team tags « featured »
+//   (FEATURED_TAG_SLUG — Issues in Focus have no "sticky" checkbox),
+//   up to HERO_COUNT, topped up with the most recent stories that have a
+//   featured image;
+// - « What's happening »: the most recent stories NOT already in the hero.
+// cache() makes getHero() and getLatestStories() share one fetch per render.
+// Editorial rule for the com team: a « featured » story needs a featured
+// image and an excerpt (the carousel shows both); remove the tag from old ones.
 const HERO_COUNT = 4;
+const FEATURED_TAG_SLUG = "featured";
 const getHomeFeed = cache(async () => {
-  const pinned = await getWpHomePosts({ perPage: HERO_COUNT, sticky: true }).catch((err) => {
-    console.error("getHomeFeed: pinned posts unavailable —", err);
-    return [];
+  const featuredTag = await getWpTagBySlug(FEATURED_TAG_SLUG).catch((err) => {
+    console.error(`getHomeFeed: tag "${FEATURED_TAG_SLUG}" unavailable —`, err);
+    return null;
   });
+  const featured = featuredTag
+    ? await getWpHomePosts({ perPage: HERO_COUNT, tagId: featuredTag.id }).catch((err) => {
+        console.error("getHomeFeed: featured stories unavailable —", err);
+        return [];
+      })
+    : [];
   const pool = await getWpHomePosts({
     perPage: HERO_COUNT + LATEST_COUNT + 5,
-    sticky: false,
-    exclude: pinned.map((p) => p.id),
+    exclude: featured.map((p) => p.id),
   }).catch((err) => {
-    console.error("getHomeFeed: recent posts unavailable —", err);
+    console.error("getHomeFeed: recent stories unavailable —", err);
     return [];
   });
-  const hero = [...pinned];
+  const hero = featured.filter((p) => p.hasImage);
   for (const post of pool) {
     if (hero.length >= HERO_COUNT) break;
     if (post.hasImage) hero.push(post);
@@ -225,14 +238,17 @@ export async function getLatestStories() {
   return {
     eyebrow: "What’s happening",
     title: "The latest from MFWA",
-    viewAll: { label: "View all stories", href: "/where-we-work" },
+    // 2026-10-20: the Issues in Focus archive (app/issues-in-focus/page.js)
+    viewAll: { label: "View all stories", href: "/issues-in-focus" },
     topics: [
       { label: "Free Expression", href: "/where-we-work?category=freedom-of-expression" },
       { label: "Digital Rights", href: "/where-we-work?category=digital-rights" },
       { label: "Investigations", href: "/where-we-work?category=investigative-journalism" },
       { label: "Accountability", href: "/where-we-work?category=transparency-and-accountability" },
       { label: "Journalist Safety", href: "/where-we-work?category=safety-of-journalists" },
-      { label: "Opportunities", href: "/about-us/get-involved" },
+      // 2026-10-20 (at Yv's call): its own category page (not an "Issue" of
+      // the Where We Work explorer) — see app/category/[slug]/page.js.
+      { label: "Opportunities", href: "/opportunities" },
     ],
     stories: items,
   };
@@ -292,7 +308,7 @@ export async function getImpactStats() {
       title: "Partners Highlights",
       count: funderLogos.length,
       countLabel: "funding partners",
-      link: { label: "Meet our funding partners", href: "/about-us/our-partners/funding-partners" },
+      link: { label: "Meet our funding partners", href: "/about-us/our-partners/" },
       items: funderLogos,
     },
     media: { src: "/images/ghana5.jpg", alt: "" },
@@ -312,7 +328,7 @@ export async function getImpactStats() {
 export async function getImpactHighlights() {
   return {
     eyebrow: "Impact",
-    title: "Stories of impact",
+    title: "Impact stories",
     viewAll: { label: "View all stories", href: "/impact-stories" },
     featured: {
       link: "#article-advocacy-training",
@@ -371,7 +387,7 @@ export async function getReach() {
     // 2026-10-16 (retours équipe com #4): was ["16 countries.", "One
     // region."]. (#20 asks for "Mediascape" under "Our Reach" — the same
     // heading; see the hand-off note, not applied twice.)
-    titleLines: ["Country", "Highlights."],
+    titleLines: ["Mediascape"],
     text: "We work across West Africa, supporting independent media and protecting press freedom in some of the region\u2019s most challenging environments.",
     link: { label: "Explore our countries", href: "/where-we-work" },
     map: {
@@ -398,22 +414,22 @@ export async function getReach() {
     // merged Where We Work \u00d7 Issues explorer (see getWhereWeWorkPage())
     // rather than a dedicated per-country page.
     countries: [
-      { name: "Benin", id: "204", slug: "benin", link: "/where-we-work?country=benin", coordinates: [2.3912, 6.3703] },
-      { name: "Burkina Faso", id: "854", slug: "burkina-faso", link: "/where-we-work?country=burkina-faso", coordinates: [-1.5197, 12.3714] },
-      { name: "Cabo Verde", id: "132", slug: "cape-verde", link: "/where-we-work?country=cape-verde", coordinates: [-23.5133, 14.9330] },
-      { name: "C\u00f4te d\u2019Ivoire", id: "384", slug: "cote-divoire", link: "/where-we-work?country=cote-divoire", coordinates: [-4.0083, 5.3599] },
-      { name: "The Gambia", id: "270", slug: "gambia", link: "/where-we-work?country=gambia", coordinates: [-16.5790, 13.4549] },
-      { name: "Ghana", id: "288", slug: "ghana", link: "/where-we-work?country=ghana", coordinates: [-0.1870, 5.6037] },
-      { name: "Guinea", id: "324", slug: "guinea", link: "/where-we-work?country=guinea", coordinates: [-13.5784, 9.6412] },
-      { name: "Guinea-Bissau", id: "624", slug: "guinea-bissau", link: "/where-we-work?country=guinea-bissau", coordinates: [-15.5977, 11.8636] },
-      { name: "Liberia", id: "430", slug: "liberia", link: "/where-we-work?country=liberia", coordinates: [-10.7605, 6.2907] },
-      { name: "Mali", id: "466", slug: "mali", link: "/where-we-work?country=mali", coordinates: [-8.0029, 12.6392] },
-      { name: "Mauritania", id: "478", slug: "mauritania", link: "/where-we-work?country=mauritania", coordinates: [-15.9582, 18.0735] },
-      { name: "Niger", id: "562", slug: "niger", link: "/where-we-work?country=niger", coordinates: [2.1128, 13.5127] },
-      { name: "Nigeria", id: "566", slug: "nigeria", link: "/where-we-work?country=nigeria", coordinates: [7.3986, 9.0765] },
-      { name: "Senegal", id: "686", slug: "senegal", link: "/where-we-work?country=senegal", coordinates: [-17.4677, 14.7167] },
-      { name: "Sierra Leone", id: "694", slug: "sierra-leone", link: "/where-we-work?country=sierra-leone", coordinates: [-13.2317, 8.4657] },
-      { name: "Togo", id: "768", slug: "togo", link: "/where-we-work?country=togo", coordinates: [1.2314, 6.1725] },
+      { name: "Benin", color: "#C5E08A", id: "204", slug: "benin", link: "/where-we-work?country=benin", coordinates: [2.3912, 6.3703] },
+      { name: "Burkina Faso", color: "#F08A84", id: "854", slug: "burkina-faso", link: "/where-we-work?country=burkina-faso", coordinates: [-1.5197, 12.3714] },
+      { name: "Cabo Verde", color: "#5C84D8", id: "132", slug: "cape-verde", link: "/where-we-work?country=cape-verde", coordinates: [-23.5133, 14.9330] },
+      { name: "C\u00f4te d\u2019Ivoire", color: "#F28F4F", id: "384", slug: "cote-divoire", link: "/where-we-work?country=cote-divoire", coordinates: [-4.0083, 5.3599] },
+      { name: "The Gambia", color: "#A39BE6", id: "270", slug: "gambia", link: "/where-we-work?country=gambia", coordinates: [-16.5790, 13.4549] },
+      { name: "Ghana", color: "#F7E27A", id: "288", slug: "ghana", link: "/where-we-work?country=ghana", coordinates: [-0.1870, 5.6037] },
+      { name: "Guinea", color: "#E39A7E", id: "324", slug: "guinea", link: "/where-we-work?country=guinea", coordinates: [-13.5784, 9.6412] },
+      { name: "Guinea-Bissau", color: "#D9687A", id: "624", slug: "guinea-bissau", link: "/where-we-work?country=guinea-bissau", coordinates: [-15.5977, 11.8636] },
+      { name: "Liberia", color: "#E88AA6", id: "430", slug: "liberia", link: "/where-we-work?country=liberia", coordinates: [-10.7605, 6.2907] },
+      { name: "Mali", color: "#F2C94C", id: "466", slug: "mali", link: "/where-we-work?country=mali", coordinates: [-8.0029, 12.6392] },
+      { name: "Mauritania", color: "#7FD6B0", id: "478", slug: "mauritania", link: "/where-we-work?country=mauritania", coordinates: [-15.9582, 18.0735] },
+      { name: "Niger", color: "#F7C08A", id: "562", slug: "niger", link: "/where-we-work?country=niger", coordinates: [2.1128, 13.5127] },
+      { name: "Nigeria", color: "#3FA97C", id: "566", slug: "nigeria", link: "/where-we-work?country=nigeria", coordinates: [7.3986, 9.0765] },
+      { name: "Senegal", color: "#FBF0A8", id: "686", slug: "senegal", link: "/where-we-work?country=senegal", coordinates: [-17.4677, 14.7167] },
+      { name: "Sierra Leone", color: "#A9D8F5", id: "694", slug: "sierra-leone", link: "/where-we-work?country=sierra-leone", coordinates: [-13.2317, 8.4657] },
+      { name: "Togo", color: "#B8E3C8", id: "768", slug: "togo", link: "/where-we-work?country=togo", coordinates: [1.2314, 6.1725] },
     ],
   };
 }
@@ -424,7 +440,8 @@ export async function getExpertise() {
     eyebrow: "Our expertise",
     title: "Knowledge. Analysis. Impact.",
     text: "We generate evidence and share insights to inform better policies, stronger media and more resilient democracies.",
-    link: { label: "Explore our expertise", href: "#expertise-detail" },
+    // 2026-10-20 (at Yv's call): leads to the reports archive.
+    link: { label: "Explore our expertise", href: "/reports" },
     items: [
       {
         icon: "research",
@@ -596,7 +613,12 @@ export const getArticle = cache(async (slug) => {
   if (!post) return slug === DEMO_ARTICLE_SLUG ? getDemoArticle(slug) : null;
 
   const { html, readTime } = prepareArticleHtml(post.html);
-  const related = await getWpRelatedPosts({ excludeId: post.id, categoryId: post.category?.id }).catch(() => []);
+  const isOpportunity = post.type === "opportunity";
+  const related = await getWpRelatedPosts({
+    excludeId: post.id,
+    categoryId: isOpportunity ? undefined : post.category?.id,
+    base: post.base,
+  }).catch(() => []);
   // Until the new site is live, the public URL of a story is still its
   // mfwa.org permalink; set NEXT_PUBLIC_SITE_URL at launch to share
   // /articles/<slug> on the new domain instead.
@@ -606,10 +628,12 @@ export const getArticle = cache(async (slug) => {
     slug: post.slug,
     source: "wordpress",
     tag: post.tag,
-    tagLinks: [
-      post.category && { label: post.category.name, href: `/where-we-work?category=${post.category.slug}` },
-      post.country && { label: post.country.name, href: `/where-we-work?country=${post.country.slug}` },
-    ].filter(Boolean),
+    tagLinks: isOpportunity
+      ? [{ label: post.tag[0] ?? "Opportunity", href: "/opportunities" }, post.country && { label: post.country.name }].filter(Boolean)
+      : [
+          post.category && { label: post.category.name, href: `/where-we-work?category=${post.category.slug}` },
+          post.country && { label: post.country.name, href: `/where-we-work?country=${post.country.slug}` },
+        ].filter(Boolean),
     title: post.title,
     excerpt: post.excerpt,
     date: post.date,
@@ -754,20 +778,41 @@ const CATEGORY_PAGE_SIZE = 10;
 
 // Returns null when the slug doesn't match a real WordPress category, so
 // the page can call notFound() instead of rendering an empty archive.
-export async function getCategoryPage(slug) {
+// Back in use 2026-10-20 (at Yv's call) for categories that are NOT one of
+// the 13 "Issues" of the Where We Work explorer — first of all
+// "opportunities" (calls, fellowships, vacancies), which has nothing to do
+// with a country map. Issue slugs still redirect to the explorer (see
+// next.config.mjs and app/category/[slug]/page.js). CATEGORY_INTROS gives a
+// category its own eyebrow/description; otherwise the WordPress category
+// description is used.
+const CATEGORY_INTROS = {
+  opportunities: {
+    eyebrow: "Get involved",
+    description:
+      "Calls for applications, fellowships, grants, trainings and vacancies from the MFWA and its partners across West Africa.",
+  },
+};
+
+export function isIssueCategory(slug) {
+  return ISSUE_CATEGORY_SLUGS.includes(slug);
+}
+
+export async function getCategoryPage(slug, perPage = CATEGORY_PAGE_SIZE) {
   const category = await getWpCategoryBySlug(slug);
   if (!category) return null;
+  const intro = CATEGORY_INTROS[category.slug];
 
   const { items, totalPages, total } = await getWpCategoryPosts(category.id, {
     page: 1,
-    perPage: CATEGORY_PAGE_SIZE,
+    perPage,
   });
 
   return {
     slug: category.slug,
     label: category.name,
-    eyebrow: "Category",
-    description: category.description || `Reporting, updates and impact stories tagged ${category.name}.`,
+    eyebrow: intro?.eyebrow ?? "Category",
+    description:
+      intro?.description || category.description || `Reporting, updates and impact stories tagged ${category.name}.`,
     articles: items,
     totalPages,
     total,
@@ -869,7 +914,7 @@ const ISSUE_CATEGORY_SLUGS = [
 const WHERE_WE_WORK_HERO = {
   crumbs: [{ label: "Where we work" }],
   eyebrow: "Where we work",
-  titleLines: ["16 countries.", "One region."],
+  titleLines: ["Country", "hightlights."],
   lede: "The MFWA works to promote freedom of expression, press freedom, access to information, internet freedom and media development throughout the 16 countries of West Africa — the 15 member states of ECOWAS, and Mauritania.",
   primary: { label: "About MFWA", href: "/about-us" },
   secondary: { label: "Our programmes", href: "/programmes" },
@@ -1096,6 +1141,44 @@ export async function getWhereWeWorkPage({ countrySlug, categorySlug } = {}) {
 // inventing page-specific copy.
 const IMPACT_STORIES_PAGE_SIZE = 12;
 
+// Issues in Focus archive (app/issues-in-focus/page.js, 2026-10-20) — the
+// « View all stories » target of the homepage « What's happening ».
+export const ISSUES_IN_FOCUS_PAGE_SIZE = 12;
+export async function getIssuesInFocusPage() {
+  const res = await getIssuesInFocusPosts({ page: 1, perPage: ISSUES_IN_FOCUS_PAGE_SIZE }).catch((err) => {
+    console.error("getIssuesInFocusPosts failed —", err);
+    return null;
+  });
+  return {
+    eyebrow: "What’s happening",
+    label: "Issues in Focus",
+    description:
+      "News, statements and analysis from the MFWA on freedom of expression, press freedom, digital rights and democratic governance across West Africa.",
+    articles: res?.items ?? [],
+    totalPages: res?.totalPages ?? 0,
+    total: res?.total ?? 0,
+  };
+}
+
+// Opportunities archive (app/opportunities/page.js, 2026-10-20): every
+// regular WordPress post — on this site, the opportunities.
+export const OPPORTUNITIES_PAGE_SIZE = 12;
+export async function getOpportunitiesPage() {
+  const res = await getOpportunityPosts({ page: 1, perPage: OPPORTUNITIES_PAGE_SIZE }).catch((err) => {
+    console.error("getOpportunityPosts failed —", err);
+    return null;
+  });
+  return {
+    eyebrow: "Get involved",
+    label: "Opportunities",
+    description:
+      "Calls for applications, fellowships, grants, trainings and vacancies from the MFWA and its partners across West Africa.",
+    articles: res?.items ?? [],
+    totalPages: res?.totalPages ?? 0,
+    total: res?.total ?? 0,
+  };
+}
+
 export async function getImpactStoriesPage() {
   const { items, totalPages, total } = await getWpImpactStories({
     page: 1,
@@ -1301,7 +1384,10 @@ export async function getAboutUs() {
         {
           icon: "team",
           label: "Staff", // #16: was "Team members"
-          count: 36,
+          // 2026-10-20: derived from the directory (lib/staff.js) so this figure
+          // and the "Everyone" count on /about-us/our-staff can never drift apart
+          // (it was hard-coded at 36 while the directory lists 37).
+          count: STAFF.length,
           text: "Full-time staff, fellows and interns at our Accra headquarters, plus correspondents, researchers and a network of lawyers across West Africa who provide legal assistance.",
           href: "/about-us/our-staff",
           linkLabel: "Meet the team",

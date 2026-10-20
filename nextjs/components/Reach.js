@@ -10,6 +10,23 @@ const ARROW = (
   </svg>
 );
 
+// Pastel, semi-transparent fill per covered country (2026-10-20, Yv): each
+// country takes the colour most representative of its flag, no two the same
+// (palette checked for uniqueness / distance in lib/content.js getReach()).
+// Hover or focus raises the opacity (CSS: .reach__geo.is-covered in
+// globals.css reads --geo-soft / --geo-strong). Where We Work keeps its own severity
+// fills (WhereWeWorkList.js), untouched.
+const SOFT = 0.55;
+const STRONG = 0.9;
+// Cabo Verde's islands are too small to exist in the 110m geometry: its
+// colour is shown as a halo behind its marker instead.
+const NO_POLYGON = new Set(["132"]);
+function tint(hex, alpha) {
+  if (!hex) return undefined;
+  const a = Math.round(alpha * 255).toString(16).padStart(2, "0");
+  return `${hex}${a}`;
+}
+
 // API: reach.eyebrow, reach.titleLines[], reach.text, reach.link,
 //      reach.map { ariaLabel, geographyUrl, projection, projectionConfig },
 //      reach.countries[] { name, id, link, coordinates } — see getReach()
@@ -73,11 +90,11 @@ export default function Reach({ data }) {
                       tabIndex={-1}
                       onMouseEnter={() => country && setActiveCountry(country.name)}
                       onClick={() => country && setActiveCountry(country.name)}
-                      style={{
-                        default: { outline: "none" },
-                        hover: { outline: "none" },
-                        pressed: { outline: "none" },
-                      }}
+                      style={
+                        country?.color
+                          ? { "--geo-soft": tint(country.color, SOFT), "--geo-strong": tint(country.color, STRONG) }
+                          : undefined
+                      }
                     />
                   );
 
@@ -108,6 +125,9 @@ export default function Reach({ data }) {
                     onFocus={() => setActiveCountry(country.name)}
                     onClick={() => setActiveCountry(country.name)}
                   >
+                    {NO_POLYGON.has(country.id) && country.color && (
+                      <circle className="reach__marker-halo" r={active ? 11 : 9} fill={tint(country.color, active ? STRONG : SOFT)} />
+                    )}
                     <circle className="reach__marker-ring" r={active ? 8 : 6} />
                     <circle className="reach__marker-dot" r={active ? 4.5 : 3} />
                     <title>{country.name}</title>

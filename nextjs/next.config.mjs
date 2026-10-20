@@ -15,8 +15,19 @@ const nextConfig = {
         destination: "/where-we-work?country=:slug",
         permanent: true,
       },
+      // Opportunities are WordPress' regular posts, listed at /opportunities
+      // (2026-10-20) — not a category.
       {
-        source: "/category/:slug",
+        source: "/category/opportunities",
+        destination: "/opportunities",
+        permanent: true,
+      },
+      // Only the 13 "Issues" categories (same list as ISSUE_CATEGORY_SLUGS
+      // in lib/content.js) — any other category, e.g. /category/opportunities,
+      // now has its own page (app/category/[slug]/page.js, 2026-10-20).
+      {
+        source:
+          "/category/:slug(access-to-information|digital-rights|free-expression-and-the-law|free-expression-violations|freedom-of-assembly|freedom-of-expression|general-news|impunity|investigative-journalism|media-development|regional-development|transparency-and-accountability|safety-of-journalists)",
         destination: "/where-we-work?category=:slug",
         permanent: true,
       },
