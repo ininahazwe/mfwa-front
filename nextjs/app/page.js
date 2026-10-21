@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Latest from "@/components/Latest";
 import Expertise from "@/components/Expertise";
-import ImpactStats from "@/components/ImpactStats";
+import ImpactStats, { FundersSection } from "@/components/ImpactStats";
 import ImpactHighlights from "@/components/ImpactHighlights";
 import Reach from "@/components/Reach";
 import Work from "@/components/Work";
@@ -18,6 +18,7 @@ import { getImpactHighlights } from "@/lib/content";
 import { getReach } from "@/lib/content";
 import { getWork } from "@/lib/content";
 import { getCta } from "@/lib/content";
+import { getNewsletter } from "@/lib/content";
 import { getFooter } from "@/lib/content";
 
 // Note : la barre utilitaire (.utility-bar — badge NGOsource + switch EN/FR)
@@ -42,6 +43,7 @@ export default async function Home() {
     reach,
     work,
     cta,
+    newsletter,
     footer,
   ] = await Promise.all([
     getHeader(),
@@ -53,6 +55,7 @@ export default async function Home() {
     getReach(),
     getWork(),
     getCta(),
+    getNewsletter(),
     getFooter(),
   ]);
 
@@ -60,20 +63,27 @@ export default async function Home() {
     <>
       <div className="page-shell">
         <a className="skip-link" href="#main">
-          Aller au contenu principal
+          Skip to main content
         </a>
 
         <Header data={header} />
 
         <main id="main">
+          {/* Order revised 2026-10-21 (homepage UX review, at Yv's call): news
+              first, then what we do (programmes) and how (expertise) side by
+              side, then impact as one block (figures → stories), then reach,
+              funders, and the call to action. Previous order: Hero, Latest,
+              Expertise, ImpactStats (+ funders), ImpactHighlights, Reach,
+              Work, Cta. */}
           <Hero data={hero} />
           <Latest data={latest} />
+          <Work data={work} />
           <Expertise data={expertise} />
-          <ImpactStats data={impactStats} />
+          <ImpactStats data={impactStats} showFunders={false} />
           <ImpactHighlights data={impactHighlights} />
           <Reach data={reach} />
-          <Work data={work} />
-          <Cta data={cta} />
+          <FundersSection data={impactStats} />
+          <Cta data={cta} newsletter={newsletter} />
         </main>
       </div>
 

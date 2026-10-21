@@ -378,7 +378,7 @@ export async function getWpPostTeasers({ countryId, categoryId, perPage = 2 } = 
 // the hero caption needs.
 function plainExcerpt(html = "", max = 190) {
   const text = decodeEntities(html.replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
-  return text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "")}…` : text;
+  return text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "").replace(/[\s.,;:–—-]+$/, "")}…` : text;
 }
 
 // 2026-10-20: stories now come from the Issues in Focus type, which has no
@@ -396,10 +396,38 @@ export async function getWpHomePosts({ perPage = 4, tagId, exclude = [], categor
     ...mapPost(p, maps),
     id: p.id,
     hasImage: Boolean(p.featured_media && mediaMap?.get(p.featured_media)),
-    excerpt: plainExcerpt(p.excerpt?.rendered),
+    // 420 chars (2026-10-21): the hero panel fits as many lines as its title
+    // leaves room for (components/Hero.js), so it needs enough text to fill.
+    excerpt: plainExcerpt(p.excerpt?.rendered, 420),
     categoryName: categoryMap?.get(p.categories?.[0])?.name ?? null,
     countryName: countryMap?.get(p.country?.[0])?.name ?? null,
   }));
+}
+
+// Hero excerpt fallback (2026-10-21, at Yv's call). The Issues in Focus
+// type doesn't fill `excerpt` on the live site, so the hero panel showed a
+// title and "Read more" over an empty block. For the (at most 4) hero
+// stories without an excerpt, one request fetches their body and keeps the
+// text of the first paragraphs — never captions, headings or embeds.
+// Returns Map(id → plain text, ≤ max chars).
+export async function getWpBodyExcerpts(ids, { base = STORIES, max = 420 } = {}) {
+  const list = [...new Set(ids)].filter(Boolean);
+  if (!list.length) return new Map();
+  const { data } = await fetchJson(`/${base}?include=${list.join(",")}&per_page=${list.length}&_fields=id,content`);
+  const out = new Map();
+  for (const post of data) {
+    const html = (post.content?.rendered ?? "").replace(/<figure\b[\s\S]*?<\/figure>/gi, "");
+    const paras = [...html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)]
+      .map((m) =>
+        decodeEntities(m[1].replace(/<\/?(a|strong|em|b|i|span|sup|sub|mark|abbr|code)\b[^>]*>/gi, "").replace(/<[^>]*>/g, " "))
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter((t) => t.length > 1);
+    const text = paras.join(" ");
+    if (text) out.set(post.id, text.length > max ? `${text.slice(0, max).replace(/\s+\S*$/, "").replace(/[\s.,;:–—-]+$/, "")}…` : text);
+  }
+  return out;
 }
 
 // Resolves the 13 "Issues" category slugs (the live site's own menu,

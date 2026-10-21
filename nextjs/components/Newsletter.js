@@ -9,7 +9,9 @@ import Reveal from "./Reveal";
 // Future: onSubmit should POST { email } to the real subscribe endpoint
 // (e.g. `${process.env.WP_API_BASE}/mfwa/v1/newsletter`) instead of the
 // simulated delay below.
-export default function Newsletter({ data }) {
+// `variant="inline"` (2026-10-21): the compact strip used inside the homepage's
+// « Take action » band (components/Cta.js) — same form, no section padding.
+export default function Newsletter({ data, variant }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
 
@@ -27,7 +29,7 @@ export default function Newsletter({ data }) {
   }
 
   return (
-    <section className="newsletter" id="newsletter">
+    <section className={`newsletter${variant === "inline" ? " newsletter--inline" : ""}`} id="newsletter">
       <Reveal as="div" className="newsletter__inner">
         <p className="eyebrow newsletter__eyebrow">{data.eyebrow}</p>
         <h2 className="newsletter__title">

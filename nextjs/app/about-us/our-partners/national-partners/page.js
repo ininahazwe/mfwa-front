@@ -21,7 +21,7 @@ export default async function NationalPartnersPage() {
     <>
       <div className="page-shell">
         <a className="skip-link" href="#main">
-          Aller au contenu principal
+          Skip to main content
         </a>
 
         <Header data={header} />

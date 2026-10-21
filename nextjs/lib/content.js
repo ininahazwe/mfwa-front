@@ -23,6 +23,7 @@ import {
   getWpFilteredPosts,
   getWpPostTeasers,
   getWpHomePosts,
+  getWpBodyExcerpts,
   searchWp,
   getWpPostBySlug,
   getWpRelatedPosts,
@@ -33,12 +34,23 @@ import {
 import { prepareArticleHtml } from "./articleHtml";
 import { STAFF, STAFF_TEAMS } from "./staff";
 import { BOARD, BOARD_ROLES } from "./board";
+import {
+  PROGRAMMES,
+  SECTIONS,
+  LEGAL_SUPPORT,
+  STAFF_BY_PROGRAMME,
+  programmeBySlug,
+  sectionBySlug,
+  programmeTiles,
+  subpageTiles,
+  programmeHref,
+} from "./programmeSections";
 
 // Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/menu?slug=primary`).then(r => r.json())
 export async function getHeader() {
   return {
     logo: { src: "/images/mfwa-logo-01.png", alt: "" },
-    homeAriaLabel: "Media Foundation for West Africa — accueil",
+    homeAriaLabel: "Media Foundation for West Africa — home",
     brandNameLines: ["Media Foundation", "for West Africa"],
     // "Our Work" points at its own hub (/programmes), "Where We Work" and
     // "Our Impact" (the live site's own label for this item) are real
@@ -150,6 +162,16 @@ const getHomeFeed = cache(async () => {
     if (hero.length >= HERO_COUNT) break;
     if (post.hasImage) hero.push(post);
   }
+  // 2026-10-21: hero stories without an excerpt get one from their body
+  // (see getWpBodyExcerpts in lib/wp.js) — the panel never stays empty.
+  const missing = hero.filter((p) => !p.excerpt).map((p) => p.id);
+  if (missing.length) {
+    const bodies = await getWpBodyExcerpts(missing).catch((err) => {
+      console.error("getHomeFeed: body excerpts unavailable —", err);
+      return new Map();
+    });
+    for (const post of hero) if (!post.excerpt && bodies.has(post.id)) post.excerpt = bodies.get(post.id);
+  }
   const heroIds = new Set(hero.map((p) => p.id));
   const latest = pool.filter((p) => !heroIds.has(p.id)).slice(0, LATEST_COUNT);
   return { hero, latest };
@@ -246,10 +268,11 @@ export async function getLatestStories() {
       { label: "Investigations", href: "/where-we-work?category=investigative-journalism" },
       { label: "Accountability", href: "/where-we-work?category=transparency-and-accountability" },
       { label: "Journalist Safety", href: "/where-we-work?category=safety-of-journalists" },
-      // 2026-10-20 (at Yv's call): its own category page (not an "Issue" of
-      // the Where We Work explorer) — see app/category/[slug]/page.js.
-      { label: "Opportunities", href: "/opportunities" },
     ],
+    // 2026-10-21 (homepage UX review, point 5): "Opportunities" (calls,
+    // fellowships, vacancies) is not an editorial topic — it left the topics
+    // row and sits as its own link next to "View all stories".
+    opportunities: { label: "Opportunities", href: "/opportunities" },
     stories: items,
   };
 }
@@ -304,11 +327,14 @@ export async function getImpactStats() {
   const { logos: funderLogos } = await getFundingPartnersPage();
   return {
     funders: {
-      eyebrow: "Our funders",
+      // 2026-10-21 (homepage UX review, point 4): eyebrow was "Our funders"
+      // under the title "Partners Highlights" (com team #17); the link now
+      // opens the funding partners page itself (was /about-us/our-partners/).
+      eyebrow: "Funding partners",
       title: "Partners Highlights",
       count: funderLogos.length,
       countLabel: "funding partners",
-      link: { label: "Meet our funding partners", href: "/about-us/our-partners/" },
+      link: { label: "Meet our funding partners", href: "/about-us/our-partners/funding-partners" },
       items: funderLogos,
     },
     media: { src: "/images/ghana5.jpg", alt: "" },
@@ -390,8 +416,10 @@ export async function getReach() {
     titleLines: ["Mediascape"],
     text: "We work across West Africa, supporting independent media and protecting press freedom in some of the region\u2019s most challenging environments.",
     link: { label: "Explore our countries", href: "/where-we-work" },
+    // 2026-10-21 (homepage UX review, point 4): see Reach.js.
+    secondaryLink: { label: "Open the Mediascape data platform", href: "https://mediascape.mfwa.org" },
     map: {
-      ariaLabel: "Carte des 16 pays d'Afrique de l'Ouest o\u00f9 intervient la MFWA",
+      ariaLabel: "Map of the 16 West African countries where MFWA works",
       // Base country geometries (Natural Earth 1:110m via world-atlas),
       // self-hosted so the map never depends on a third-party CDN at runtime.
       geographyUrl: "/data/countries-110m.json",
@@ -476,8 +504,33 @@ export async function getCta() {
     // Stronger voices". "Empowering Media & Voices for Public Good" is the
     // slogan the live mfwa.org footer carries — confirm it is the one the
     // com team means by "our official tagline".
-    titleLines: ["Empowering Media &", "Voices for Public Good"],
+    // 2026-10-21 (homepage UX review): the slogan above is already the
+    // hero's headline — repeating it here wasted the closing call to action.
+    // Previous titleLines: ["Empowering Media &", "Voices for Public Good"].
+    titleLines: ["Stand with free expression", "in West Africa."],
     text: "Support our work and help build a future where media, rights and democracy thrive.",
+    // `cards` (same review): one card per way to act, replacing the three
+    // text links (which also pointed to dead #partner / #engage anchors).
+    // Remove `cards` to get the previous text + links layout back.
+    cards: [
+      {
+        label: "Donate",
+        text: "Support investigations, legal aid for journalists and press-freedom advocacy across West Africa.",
+        href: "https://mfwa.org/donate",
+        primary: true,
+      },
+      {
+        label: "Partner",
+        text: "Meet the funders, national partners and networks we work with — and join them.",
+        href: "/about-us/our-partners",
+      },
+      {
+        label: "Engage",
+        text: "Volunteer, intern or join our team at our Accra headquarters.",
+        href: "/about-us/get-involved",
+      },
+    ],
+    contact: { label: "Contact us", href: "/contact" },
     // The "Support MFWA" button above the footer was removed (#7) — Donate
     // already lives in the header — and the standalone sites below take
     // its place as a banner. Restore `button: { label, href }` to bring
@@ -504,7 +557,7 @@ export async function getCta() {
 export async function getFooter() {
   return {
     logo: { src: "/images/mfwa-logo-01.png", alt: "MFWA" },
-    homeAriaLabel: "Media Foundation for West Africa — accueil",
+    homeAriaLabel: "Media Foundation for West Africa — home",
     brandNameLines: ["Media Foundation", "for West Africa"],
     // Mirrors getHeader()'s nav — see the note there. 2026-10-16 (retours
     // équipe com #10/#9): "Reports" → "Publications" and "Data" is back;
@@ -2073,7 +2126,12 @@ export async function getFreedomOfExpressionPage() {
       lede: "Freedom of Expression is a fundamental human right — yet violations continue to be a major challenge to participatory and accountable governance in West Africa.",
       primary: { label: "Donate", href: "https://mfwa.org/donate" },
       secondary: { label: "All programmes", href: "/programmes" },
-      tiles: PROGRAMME_TILES.filter((t) => t.id !== "foe"),
+      // 2026-10-21 (Yv): the four tiles open this programme's own content
+      // (Projects / Meet the team / Legal support / Success stories — see
+      // lib/programmeSections.js) instead of the other programmes.
+      // Revert: tiles: PROGRAMME_TILES.filter((t) => t.id !== "foe"),
+      tiles: programmeTiles("freedom-of-expression"),
+      tilesLabel: "Explore this programme",
     },
     overview: { eyebrow: "Overview", title: "Why this programme matters" },
     intro: [
@@ -2133,7 +2191,12 @@ export async function getDigitalRightsPage() {
       lede: "As internet access spreads across West Africa, governments are increasingly exploiting existing laws — and introducing new ones — to limit expression online, while gender inequality keeps many women offline.",
       primary: { label: "Donate", href: "https://mfwa.org/donate" },
       secondary: { label: "All programmes", href: "/programmes" },
-      tiles: PROGRAMME_TILES.filter((t) => t.id !== "digital"),
+      // 2026-10-21 (Yv): the four tiles open this programme's own content
+      // (Projects / Meet the team / Legal support / Success stories — see
+      // lib/programmeSections.js) instead of the other programmes.
+      // Revert: tiles: PROGRAMME_TILES.filter((t) => t.id !== "digital"),
+      tiles: programmeTiles("digital-rights"),
+      tilesLabel: "Explore this programme",
     },
     overview: { eyebrow: "Overview", title: "Why this programme matters" },
     intro: [
@@ -2189,7 +2252,12 @@ export async function getMediaGovernancePage() {
       lede: "Gains in the region's democratic consolidation have been dissipating amid coups, weak public-service delivery and corruption — a vibrant, professional and critical media can help rebuild them.",
       primary: { label: "Donate", href: "https://mfwa.org/donate" },
       secondary: { label: "All programmes", href: "/programmes" },
-      tiles: PROGRAMME_TILES.filter((t) => t.id !== "governance"),
+      // 2026-10-21 (Yv): the four tiles open this programme's own content
+      // (Projects / Meet the team / Legal support / Success stories — see
+      // lib/programmeSections.js) instead of the other programmes.
+      // Revert: tiles: PROGRAMME_TILES.filter((t) => t.id !== "governance"),
+      tiles: programmeTiles("media-democracy-governance"),
+      tilesLabel: "Explore this programme",
     },
     overview: { eyebrow: "Overview", title: "Why this programme matters" },
     intro: [
@@ -2251,7 +2319,12 @@ export async function getMediaPeacePage() {
       lede: "Political instability, violent extremism and the rapid spread of mis/disinformation are increasingly transnational — and the media can either mitigate or exacerbate the tensions they cause.",
       primary: { label: "Donate", href: "https://mfwa.org/donate" },
       secondary: { label: "All programmes", href: "/programmes" },
-      tiles: PROGRAMME_TILES.filter((t) => t.id !== "peace"),
+      // 2026-10-21 (Yv): the four tiles open this programme's own content
+      // (Projects / Meet the team / Legal support / Success stories — see
+      // lib/programmeSections.js) instead of the other programmes.
+      // Revert: tiles: PROGRAMME_TILES.filter((t) => t.id !== "peace"),
+      tiles: programmeTiles("media-peace-social-cohesion"),
+      tilesLabel: "Explore this programme",
     },
     overview: { eyebrow: "Overview", title: "Why this programme matters" },
     intro: [
@@ -2297,7 +2370,12 @@ export async function getInstitutionalDevelopmentPage() {
       lede: "Alongside delivering impactful projects, we are committed to building an efficient, nimble and resilient institution that is highly professional in the delivery of its mandate.",
       primary: { label: "Donate", href: "https://mfwa.org/donate" },
       secondary: { label: "All programmes", href: "/programmes" },
-      tiles: PROGRAMME_TILES.filter((t) => t.id !== "institutional"),
+      // 2026-10-21 (Yv): the four tiles open this programme's own content
+      // (Projects / Meet the team / Legal support / Success stories — see
+      // lib/programmeSections.js) instead of the other programmes.
+      // Revert: tiles: PROGRAMME_TILES.filter((t) => t.id !== "institutional"),
+      tiles: programmeTiles("institutional-development"),
+      tilesLabel: "Explore this programme",
     },
     overview: { eyebrow: "Overview", title: "Why this programme matters" },
     intro: [
@@ -2329,6 +2407,118 @@ export async function getInstitutionalDevelopmentPage() {
           href: "https://mfwa.org/donate",
         },
       ],
+    },
+  };
+}
+
+
+// -- Programmes › content sub-pages (2026-10-21) ------------------------------
+//
+// /programmes/<programme>/projects | team | legal-support | success-stories
+// (app/programmes/[programme]/[section]/page.js). Built from the programme's
+// own page data (hero lede, areas of work, reports, "get involved" band) and
+// from lib/programmeSections.js. Returns null for an unknown pair → 404.
+const PROGRAMME_GETTERS = {
+  "freedom-of-expression": () => getFreedomOfExpressionPage(),
+  "digital-rights": () => getDigitalRightsPage(),
+  "media-democracy-governance": () => getMediaGovernancePage(),
+  "media-peace-social-cohesion": () => getMediaPeacePage(),
+  "institutional-development": () => getInstitutionalDevelopmentPage(),
+};
+
+export function getProgrammeSectionParams() {
+  return PROGRAMMES.flatMap((p) => SECTIONS.map((s) => ({ programme: p.slug, section: s.slug })));
+}
+
+export async function getProgrammeSection(programmeSlug, sectionSlug) {
+  const meta = programmeBySlug(programmeSlug);
+  const section = sectionBySlug(sectionSlug);
+  const getter = PROGRAMME_GETTERS[programmeSlug];
+  if (!meta || !section || !getter) return null;
+
+  const programme = await getter();
+  const hero = {
+    crumbs: [
+      { label: "Programmes", href: "/programmes" },
+      { label: meta.short, href: programmeHref(meta) },
+      { label: section.label },
+    ],
+    eyebrow: meta.short,
+    titleLines: section.titleLines,
+    lede: section.lede(meta),
+    primary: { label: "Donate", href: "https://mfwa.org/donate" },
+    secondary: { label: meta.short, href: programmeHref(meta) },
+    tiles: subpageTiles(programmeSlug, section.key),
+    tilesLabel: `${meta.short}: more about this programme`,
+  };
+
+  const base = {
+    key: section.key,
+    programme: meta,
+    section,
+    hero,
+    tone: programme.focus.tone,
+    involve: programme.involve,
+    title: `${section.label} — ${meta.short}`,
+    description: hero.lede,
+  };
+
+  if (section.key === "projects") {
+    return {
+      ...base,
+      overview: {
+        eyebrow: "Projects",
+        title: `Our work in ${meta.short}`,
+        text: "Each programme is pursued through impact-oriented advocacy, strategic partnerships, research and documentation, and stronger institutional systems.",
+      },
+      focus: { ...programme.focus, eyebrow: "Areas of work", title: "What we are working on" },
+      reports: programme.reports ?? null,
+    };
+  }
+
+  if (section.key === "team") {
+    const order = STAFF_BY_PROGRAMME[programmeSlug] ?? [];
+    const people = order.map((slug) => STAFF.find((p) => p.slug === slug)).filter(Boolean);
+    const teams = STAFF_TEAMS.filter((t) => t.id === "all" || people.some((p) => p.team === t.id)).map((t) => ({
+      ...t,
+      count: t.id === "all" ? people.length : people.filter((p) => p.team === t.id).length,
+    }));
+    return {
+      ...base,
+      teams,
+      directory: {
+        eyebrow: "Meet the team",
+        title: `The ${meta.short} team`,
+        text: "Select a portrait to read a colleague’s profile.",
+        people,
+      },
+      directoryLink: { label: "See the whole MFWA team", href: "/about-us/our-staff" },
+    };
+  }
+
+  if (section.key === "legal") {
+    return {
+      ...base,
+      overview: { eyebrow: "Legal support", title: "Defending those whose rights are violated", text: LEGAL_SUPPORT.intro },
+      focus: { ...LEGAL_SUPPORT.focus, tone: programme.focus.tone, contact: { label: meta.short, href: programmeHref(meta) } },
+      contact: LEGAL_SUPPORT.contact,
+    };
+  }
+
+  // stories
+  const stories = await getImpactStoriesPage();
+  return {
+    ...base,
+    overview: {
+      eyebrow: "Success stories",
+      title: "Change we have helped bring about",
+      text: stories.description,
+    },
+    stories: {
+      articles: stories.articles,
+      totalPages: stories.totalPages,
+      total: stories.total,
+      all: { label: "All impact stories", href: "/impact-stories" },
     },
   };
 }

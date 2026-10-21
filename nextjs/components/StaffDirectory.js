@@ -14,7 +14,10 @@ import StaffSheet from "./StaffSheet";
 import Portrait from "./Portrait";
 import { FilterTabs, FilterTab, filterIcon } from "./FilterTabs";
 
-export default function StaffDirectory({ data, teams }) {
+// `showFilters` (2026-10-21): the per-programme team pages
+// (/programmes/<programme>/team) hide the team tabs when only a handful of
+// people are listed.
+export default function StaffDirectory({ data, teams, showFilters = true }) {
   const teamLabel = useMemo(() => Object.fromEntries(teams.map((t) => [t.id, t.label])), [teams]);
 
   const [team, setTeam] = useState("all");
@@ -82,18 +85,20 @@ export default function StaffDirectory({ data, teams }) {
         </Reveal>
 
         {/* Team filter restyled 2026-10-18 (shared FilterTabs look). */}
-        <FilterTabs className="st-ftabs" label="Filter staff by team">
-          {teams.map((t) => (
-            <FilterTab
-              key={t.id}
-              active={team === t.id}
-              icon={t.id === "all" ? "people" : filterIcon(t.id, t.label)}
-              label={t.label}
-              count={t.count}
-              onClick={() => setTeam(t.id)}
-            />
-          ))}
-        </FilterTabs>
+        {showFilters && (
+          <FilterTabs className="st-ftabs" label="Filter staff by team">
+            {teams.map((t) => (
+              <FilterTab
+                key={t.id}
+                active={team === t.id}
+                icon={t.id === "all" ? "people" : filterIcon(t.id, t.label)}
+                label={t.label}
+                count={t.count}
+                onClick={() => setTeam(t.id)}
+              />
+            ))}
+          </FilterTabs>
+        )}
 
         <ul className="st-grid" key={team}>
           {people.map((person, i) => (

@@ -39,7 +39,7 @@ export default function Footer({ data }) {
           </span>
         </div>
 
-        <nav className="footer-nav" aria-label="Navigation du pied de page">
+        <nav className="footer-nav" aria-label="Footer navigation">
           {data.nav.map((item) => (
             <a key={item.href} href={item.href}>
               {item.label}
@@ -81,7 +81,7 @@ export default function Footer({ data }) {
 
       <div className="footer-bottom">
         <p className="footer-copy">{data.copy}</p>
-        <nav className="footer-legal" aria-label="Mentions légales">
+        <nav className="footer-legal" aria-label="Legal">
           {data.legal.map((item) => (
             <a key={item.href} href={item.href}>
               {item.label}

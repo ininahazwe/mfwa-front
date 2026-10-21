@@ -1,0 +1,24 @@
+// Barely-visible topographic background for the homepage hero (2026-10-21,
+// at Yv's call — "hero relooking"). Same contour lines as the « Impact »
+// section (lib/topoPaths.js), mirrored so the two don't look identical,
+// drawn in navy at a few percent opacity on white. The two halves of the
+// relief (even / odd levels) drift very slowly in opposite directions
+// (CSS, .hero-topo in globals.css); static under prefers-reduced-motion.
+// Purely decorative: aria-hidden, no pointer events, no JavaScript.
+import { TOPO_PATHS, TOPO_VIEWBOX } from "../lib/topoPaths";
+
+export default function HeroTopo() {
+  return (
+    <svg className="hero-topo" viewBox={TOPO_VIEWBOX} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+      <g transform="translate(1650 0) scale(-1 1)">
+        {[0, 1].map((parity) => (
+          <g key={parity} className={`hero-topo__layer hero-topo__layer--${parity ? "b" : "a"}`}>
+            {TOPO_PATHS.filter(([lvl]) => lvl % 2 === parity).map(([lvl, d], i) => (
+              <path key={i} d={d} className={lvl % 4 === 0 ? "is-index" : undefined} />
+            ))}
+          </g>
+        ))}
+      </g>
+    </svg>
+  );
+}

@@ -21,26 +21,12 @@ const ARROW = (
   </svg>
 );
 
-// API: latest { eyebrow, title, viewAll { label, href }, topics[] { label, href },
+// API: latest { eyebrow, title, viewAll { label, href }, opportunities? { label, href },
+//      topics[] { label, href },
 //      stories[] { link, image { src, alt, isFallback? }, tag[], heading, date, readTime? } }
 export default function Latest({ data }) {
   return (
     <section className="latest" id="stories">
-      <nav className="topics" aria-label="Browse stories by topic" data-topics>
-        {data.topics.map((topic, i) => (
-          <Fragment key={topic.href}>
-            {i > 0 && (
-              <span className="topics__sep" aria-hidden="true">
-                ·
-              </span>
-            )}
-            <a className="topics__item" href={topic.href}>
-              {i === 0 && <span className="topics__dot" aria-hidden="true"></span>}
-              {topic.label}
-            </a>
-          </Fragment>
-        ))}
-      </nav>
 
       <div className="latest__head">
         <p className="eyebrow">{data.eyebrow}</p>
@@ -49,6 +35,26 @@ export default function Latest({ data }) {
       <Reveal as="h2" className="latest__title">
         {data.title}
       </Reveal>
+
+      {/* 2026-10-21 (homepage UX review, point 5): same pill look, but under
+          the title, introduced by a label, and without the red dot on the
+          first topic (it read as "Free Expression is selected"). The row is
+          links into the archive, not a filter of the 3 cards below. */}
+      <nav className="topics topics--labelled" aria-label="Browse stories by topic" data-topics>
+        <span className="topics__label">Browse by topic</span>
+        {data.topics.map((topic, i) => (
+          <Fragment key={topic.href}>
+            {i > 0 && (
+              <span className="topics__sep" aria-hidden="true">
+                ·
+              </span>
+            )}
+            <a className="topics__item" href={topic.href}>
+              {topic.label}
+            </a>
+          </Fragment>
+        ))}
+      </nav>
 
       {data.stories.length > 0 ? (
         <Reveal as="div" className="latest__grid" stagger>
@@ -101,6 +107,12 @@ export default function Latest({ data }) {
       )}
 
       <div className="latest__more">
+        {data.opportunities && (
+          <a className="latest__all latest__all--secondary" href={data.opportunities.href}>
+            <span>{data.opportunities.label}</span>
+            {ARROW}
+          </a>
+        )}
         <a className="latest__all" href={data.viewAll.href}>
           <span>{data.viewAll.label}</span>
           {ARROW}

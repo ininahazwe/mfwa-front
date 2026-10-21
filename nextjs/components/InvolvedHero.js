@@ -13,14 +13,14 @@ import Motif from "./Motif";
 import { ARROW_RIGHT } from "./AboutIcons";
 import { useParallax } from "@/lib/hooks";
 
-export default function InvolvedHero({ data, tiles, tone, art }) {
+export default function InvolvedHero({ data, tiles, tone, art, tilesLabel = "Ways to get involved" }) {
   const blobRef = useParallax(0.15);
   return (
     <section className="ab-hero">
       {/*<section className={`ab-hero${tone ? ` ab-hero--${tone}` : ""}`}>*/}
       <div className="ab-wrap ab-hero__grid">
         <div className={`ab-hero__copy${tiles || art ? "" : " ab-hero__copy--wide"}`}>
-          <nav className="ab-crumbs" aria-label="Fil d’Ariane">
+          <nav className="ab-crumbs" aria-label="Breadcrumb">
             {data.crumbs.map((crumb, i) =>
               crumb.href ? (
                 <a key={crumb.label} href={crumb.href}>
@@ -81,7 +81,7 @@ export default function InvolvedHero({ data, tiles, tone, art }) {
                 .ab-hero__tiles-slot / .ab-hero__blob* rules in
                 globals.css. */}
             {tone && <div ref={blobRef} className={`ab-hero__blob ab-hero__blob--${tone}`} aria-hidden="true" />}
-            <Reveal as="ul" className="ab-tiles st-tiles ab-stagger" stagger aria-label="Ways to get involved">
+            <Reveal as="ul" className="ab-tiles st-tiles ab-stagger" stagger aria-label={data.tilesLabel ?? tilesLabel}>
               {tiles.map((tile) => (
                 <li key={tile.id}>
                   <a className={`ab-tile ab-tile--${tile.tone} st-tile ab-tile--link`} href={tile.href}>

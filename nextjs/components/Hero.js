@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import FadeImg from "./FadeImg";
+import HeroTopo from "./HeroTopo";
 
 // Ports initHeroCarousel() (the editorial hero__intro slides) from
 // assets/js/main.js. It is plain React state + effects instead of DOM
@@ -83,6 +84,52 @@ function getTabHiddenServerSnapshot() {
 // API: hero.eyebrow? (omitted — see getHero()), hero.slides[] { title, lede,
 //      cta }, hero.news { ariaLabel, stories[] { image, region, country,
 //      title, excerpt, link, linkLabel } } — see getHero()
+
+// Hero excerpt fitting (2026-10-21, at Yv's call). On wide screens the news
+// panel has a fixed height (the hero row); each story's excerpt gets exactly
+// the number of lines its title leaves free — a long title means a shorter
+// excerpt — so the hero never grows or jumps from one story to the next.
+// Below 901px the panel is stacked and sized by its content: the excerpt
+// keeps the CSS default (4 lines).
+const FIT_QUERY = "(min-width: 901px)";
+function fitExcerpts(root) {
+  if (!root) return;
+  const wide = window.matchMedia(FIT_QUERY).matches;
+  root.querySelectorAll(".hero__news").forEach((panel) => {
+    const text = panel.querySelector(".news__text");
+    if (!text) return;
+    if (!wide) {
+      text.style.removeProperty("--news-lines");
+      text.hidden = false;
+      return;
+    }
+    // Measure with the excerpt reduced to one line so it can't push the
+    // panel taller than the row while we measure.
+    text.hidden = false;
+    text.style.setProperty("--news-lines", "1");
+    const cs = getComputedStyle(panel);
+    const inner = panel.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    let used = 0;
+    for (const child of panel.children) {
+      if (child === text) continue;
+      const m = getComputedStyle(child);
+      used += child.getBoundingClientRect().height + parseFloat(m.marginTop) + parseFloat(m.marginBottom);
+    }
+    const tm = getComputedStyle(text);
+    const lineHeight = parseFloat(tm.lineHeight) || 24;
+    const avail = inner - used - parseFloat(tm.marginTop) - parseFloat(tm.marginBottom);
+    const lines = Math.max(0, Math.floor(avail / lineHeight));
+    if (lines < 1) text.hidden = true;
+    else text.style.setProperty("--news-lines", String(lines));
+  });
+}
+
+// Hero relooking (2026-10-21, at Yv's call): white background with
+// barely-visible contour lines (HeroTopo) and the news carousel as a
+// floating card that no longer touches the right edge of the page.
+// Revert: FLOAT = false (CSS: .hero--float block in globals.css).
+const FLOAT = true;
+
 export default function Hero({ data }) {
   // 2026-10-19 (at Yv's call): one carousel only in the hero. With
   // `data.intro` (see getHero()) the left column is a fixed statement —
@@ -132,6 +179,18 @@ export default function Hero({ data }) {
   // News carousel: the scroll position is the source of truth (so a
   // finger swipe, trackpad or keyboard scroll all just work); storyIndex
   // only mirrors it for the dots/counter/aria state.
+  // Fit each story's excerpt to the room its title leaves (see fitExcerpts).
+  useLayoutEffect(() => {
+    const root = storiesRef.current;
+    if (!root) return undefined;
+    const run = () => fitExcerpts(root);
+    run();
+    document.fonts?.ready?.then(run);
+    const ro = new ResizeObserver(run);
+    ro.observe(root);
+    return () => ro.disconnect();
+  }, [storyTotal]);
+
   function onStoriesScroll() {
     const el = storiesRef.current;
     if (!el || !el.clientWidth) return;
@@ -171,10 +230,10 @@ export default function Hero({ data }) {
 
   return (
     <section
-      className={`hero${intro ? " hero--static-intro" : ""}${storyTotal === 0 ? " hero--no-news" : ""}`}
+      className={`hero${intro ? " hero--static-intro" : ""}${storyTotal === 0 ? " hero--no-news" : ""}${FLOAT ? " hero--float" : ""}`}
       id="hero"
       data-hero
-      aria-label="À la une"
+      aria-label="Featured"
       {...(intro
         ? {}
         : {
@@ -193,6 +252,8 @@ export default function Hero({ data }) {
             },
           })}
     >
+      {FLOAT && <HeroTopo />}
+
       {/* Colonne 1 : accroche */}
       <div className="hero__intro">
         {data.eyebrow && <p className="eyebrow">{data.eyebrow}</p>}
@@ -226,8 +287,8 @@ export default function Hero({ data }) {
                 <article
                   className={`hero-slide${active ? " is-active" : ""}`}
                   key={slide.title}
-                  aria-roledescription="diapositive"
-                  aria-label={`${i + 1} sur ${total}`}
+                  aria-roledescription="slide"
+                  aria-label={`${i + 1} of ${total}`}
                   aria-hidden={active ? "false" : "true"}
                   inert={!active}
                 >
@@ -249,10 +310,10 @@ export default function Hero({ data }) {
               <span data-hero-total>{pad(total)}</span>
             </p>
             <div className="slider__nav">
-              <button className="slider__btn" type="button" onClick={prev} data-hero-prev aria-label="Diapositive précédente">
+              <button className="slider__btn" type="button" onClick={prev} data-hero-prev aria-label="Previous slide">
                 {CHEVRON_PREV}
               </button>
-              <button className="slider__btn" type="button" onClick={next} data-hero-next aria-label="Diapositive suivante">
+              <button className="slider__btn" type="button" onClick={next} data-hero-next aria-label="Next slide">
                 {CHEVRON_NEXT}
               </button>
             </div>
@@ -269,7 +330,7 @@ export default function Hero({ data }) {
       <div
         className="hero__carousel"
         role="group"
-        aria-roledescription="carrousel"
+        aria-roledescription="carousel"
         aria-label={data.news.ariaLabel}
       >
         <div
@@ -289,8 +350,8 @@ export default function Hero({ data }) {
               <article
                 className="hero__feature hero__story"
                 key={story.title}
-                aria-roledescription="diapositive"
-                aria-label={`${i + 1} sur ${storyTotal}`}
+                aria-roledescription="slide"
+                aria-label={`${i + 1} of ${storyTotal}`}
                 aria-hidden={active ? "false" : "true"}
                 inert={!active}
               >
@@ -311,7 +372,7 @@ export default function Hero({ data }) {
 
                 <div className="hero__news">
                   <h2 className="news__title">{story.title}</h2>
-                  <p className="news__text">{story.excerpt}</p>
+                  {story.excerpt && <p className="news__text">{story.excerpt}</p>}
                   <a className="news__link" href={story.link}>
                     {story.linkLabel}
                     {NEWS_ARROW}
@@ -326,23 +387,23 @@ export default function Hero({ data }) {
           <p className="news-controls__count" aria-live="polite">
             <b>{pad(storyIndex + 1)}</b> / {pad(storyTotal)}
           </p>
-          <div className="news-controls__dots" role="group" aria-label="Choisir un article">
+          <div className="news-controls__dots" role="group" aria-label="Choose a story">
             {stories.map((story, i) => (
               <button
                 key={story.title}
                 type="button"
                 className={`news-controls__dot${i === storyIndex ? " is-active" : ""}`}
-                aria-label={`Article ${i + 1}`}
+                aria-label={`Story ${i + 1}`}
                 aria-current={i === storyIndex ? "true" : "false"}
                 onClick={() => goToStory(i)}
               />
             ))}
           </div>
           <div className="news-controls__nav">
-            <button className="news-controls__btn" type="button" onClick={() => goToStory(storyIndex - 1)} aria-label="Article précédent">
+            <button className="news-controls__btn" type="button" onClick={() => goToStory(storyIndex - 1)} aria-label="Previous story">
               {CHEVRON_PREV}
             </button>
-            <button className="news-controls__btn" type="button" onClick={() => goToStory(storyIndex + 1)} aria-label="Article suivant">
+            <button className="news-controls__btn" type="button" onClick={() => goToStory(storyIndex + 1)} aria-label="Next story">
               {CHEVRON_NEXT}
             </button>
           </div>

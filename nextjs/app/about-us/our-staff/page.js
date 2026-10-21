@@ -29,7 +29,7 @@ export default async function OurStaffPage() {
     <>
       <div className="page-shell">
         <a className="skip-link" href="#main">
-          Aller au contenu principal
+          Skip to main content
         </a>
 
         <Header data={header} />

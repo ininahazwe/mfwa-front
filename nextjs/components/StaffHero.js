@@ -16,7 +16,7 @@ export default function StaffHero({ data }) {
     <section className="ab-hero">
       <div className="ab-wrap ab-hero__grid">
         <div className="ab-hero__copy">
-          <nav className="ab-crumbs" aria-label="Fil d’Ariane">
+          <nav className="ab-crumbs" aria-label="Breadcrumb">
             {data.crumbs.map((crumb, i) =>
               crumb.href ? (
                 <a key={crumb.label} href={crumb.href}>

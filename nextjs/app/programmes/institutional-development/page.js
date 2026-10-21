@@ -22,7 +22,7 @@ export default async function InstitutionalDevelopmentPage() {
     <>
       <div className="page-shell">
         <a className="skip-link" href="#main">
-          Aller au contenu principal
+          Skip to main content
         </a>
 
         <Header data={header} tone={programme.focus.tone} />

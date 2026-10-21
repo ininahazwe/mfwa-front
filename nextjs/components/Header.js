@@ -19,7 +19,7 @@ export default function Header({ data, tone }) {
           </span>*/}
         </Link>
 
-        <nav className="nav" aria-label="Navigation principale">
+        <nav className="nav" aria-label="Main navigation">
           {data.nav.map((item) =>
             item.children ? (
               <NavDropdown key={item.label} item={item} />

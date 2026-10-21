@@ -75,7 +75,7 @@ export default function MobileNav({ nav, donate, credential }) {
         </svg>
       </button>
 
-      <nav className="mobile-nav__panel" id="mobile-nav-panel" aria-label="Menu principal (mobile)" hidden={!open}>
+      <nav className="mobile-nav__panel" id="mobile-nav-panel" aria-label="Main menu (mobile)" hidden={!open}>
         <ul className="mobile-nav__list">
           {nav.map((item) => {
             if (!item.children) {

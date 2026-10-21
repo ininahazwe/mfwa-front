@@ -27,6 +27,14 @@ function tint(hex, alpha) {
   return `${hex}${a}`;
 }
 
+// Colour swatch before each country in the list (2026-10-21, homepage UX
+// review, point 6): ties the list to the map's pastel fills — and shows Cabo
+// Verde's colour, whose islands are outside the map frame.
+function Swatch({ color }) {
+  if (!color) return null;
+  return <span className="reach__swatch" style={{ "--swatch": color }} aria-hidden="true" />;
+}
+
 // API: reach.eyebrow, reach.titleLines[], reach.text, reach.link,
 //      reach.map { ariaLabel, geographyUrl, projection, projectionConfig },
 //      reach.countries[] { name, id, link, coordinates } — see getReach()
@@ -61,10 +69,23 @@ export default function Reach({ data }) {
             {data.titleLines[1]}
           </h2>
           <p className="reach__text">{data.text}</p>
-          <a className="reach__link" href={data.link.href}>
-            {data.link.label}
-            {ARROW}
-          </a>
+          <div className="reach__links">
+            <a className="reach__link" href={data.link.href}>
+              {data.link.label}
+              {ARROW}
+            </a>
+            {/* 2026-10-21 (homepage UX review, point 4): the heading
+                "Mediascape" (com team #20) is also the name of MFWA's media
+                data platform — the section now leads there too. */}
+            {data.secondaryLink && (
+              <a className="reach__link reach__link--ext" href={data.secondaryLink.href} target="_blank" rel="noopener noreferrer">
+                {data.secondaryLink.label}
+                <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 1h6v6M9 1 1 9" />
+                </svg>
+              </a>
+            )}
+          </div>
         </Reveal>
 
         <div className="reach__map" data-reach-map onMouseLeave={clearActive}>
@@ -148,6 +169,7 @@ export default function Reach({ data }) {
                 onMouseEnter={() => setActiveCountry(country.name)}
               >
                 <a href={country.link} onFocus={() => setActiveCountry(country.name)}>
+                  <Swatch color={country.color} />
                   {country.name}
                 </a>
               </li>
@@ -162,6 +184,7 @@ export default function Reach({ data }) {
                 onMouseEnter={() => setActiveCountry(country.name)}
               >
                 <a href={country.link} onFocus={() => setActiveCountry(country.name)}>
+                  <Swatch color={country.color} />
                   {country.name}
                 </a>
               </li>

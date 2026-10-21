@@ -11,7 +11,7 @@
   --red-dark:        #c4141b;
   --cream:           #f2f0eb;   /* fond colonne gauche */
   --white:           #ffffff;
-  --ink-muted:       #63758a;
+  --ink-muted:       #586a7e;   /* 2026-10-21 (a11y) : était #63758a — 4,2:1 seulement sur les fonds pâles, ≥4,7:1 désormais */
   --panel-muted:     #a6b6c6;
   --hairline:        #cfcac1;
 
@@ -5028,4 +5028,286 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .reach .reach__inner{ justify-content:space-between; }
   .reach .reach__intro{ max-width:460px; }
   .reach .reach__map{ max-width:640px; flex-grow:1.6; }
+}
+
+/* =========================================================
+   Accueil — revue UX (2026-10-21, à la demande de Yv)
+   1. Haut de page : l'actualité domine. La colonne d'accroche passe à
+      ~27 % (slogan compact), la photo et le panneau d'actualité gagnent de
+      la place, le titre de l'article grandit. Réservé aux écrans ≥1181px ;
+      en dessous, les règles existantes continuent de s'appliquer.
+      Revert : supprimer ce bloc.
+   2. « Take action » : cartes Donate / Partner / Engage + newsletter.
+   ========================================================= */
+@media (min-width:1181px){
+  .hero{
+    grid-template-columns:minmax(340px, 1fr) 2.7fr;
+    min-height:clamp(520px, 66vh, 720px);
+  }
+  .hero__feature{ grid-template-columns:3fr 2fr; }
+  .news-controls{ width:40%; }
+
+  /* slogan compact */
+  .hero__intro{ padding-right:clamp(20px, 2vw, 36px); }
+  .hero__intro .hero__title{ font-size:clamp(25px, 1.9vw, 30px); }
+  .hero__intro .hero__lede{ font-size:15px; max-width:30ch; }
+  .hero__intro .hero__actions{ gap:12px 22px; }
+
+  /* article à la une */
+  .hero__news .news__title{
+    font-size:clamp(26px, 1.5vw + 8px, 34px);
+    line-height:1.2;
+  }
+  .hero__news .news__text{ font-size:15px; max-width:38ch; }
+  .hero__news .news__link{
+    font-size:12.5px;
+    padding-bottom:6px;
+    /*border-bottom:2px solid var(--red);*/
+  }
+}
+
+/* -- Take action : cartes ----------------------------------------------- */
+.cta--cards .cta__inner{
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:flex-start;
+  gap:clamp(24px, 4vh, 36px);
+}
+.cta__head{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:clamp(20px, 4vw, 64px);
+}
+.cta__head-aside{ max-width:46ch; }
+.cta__text--head{ margin:0 0 12px; font-size:15px; }
+.cta__cards{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:grid;
+  grid-template-columns:1.35fr 1fr 1fr;
+  gap:16px;
+}
+.cta-card{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  height:100%;
+  padding:clamp(20px, 2.4vw, 28px);
+  padding-bottom:clamp(48px, 5vw, 56px);
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:var(--radius-sm);
+  background:rgba(255,255,255,.06);
+  color:var(--white);
+  transition:background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.cta-card:hover{ background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.6); transform:translateY(-2px); }
+.cta-card--primary{ background:var(--red); border-color:var(--red); }
+.cta-card--primary:hover{ background:var(--red-dark); border-color:var(--red-dark); }
+.cta-card__title{
+  font-family:var(--font-serif);
+  font-weight:600;
+  font-size:clamp(22px, 2vw, 28px);
+  line-height:1.15;
+}
+.cta-card__text{
+  font-size:14px;
+  line-height:1.55;
+  color:rgba(255,255,255,.86);
+  max-width:40ch;
+}
+.cta-card__go{
+  position:absolute;
+  left:clamp(20px, 2.4vw, 28px);
+  bottom:clamp(18px, 2vw, 24px);
+  display:inline-flex;
+}
+.cta-card__go svg{ transition:transform var(--dur-fast) var(--ease); }
+.cta-card:hover .cta-card__go svg{ transform:translateX(6px); }
+.cta__contact{
+  margin:0;
+  font-size:13px;
+  color:rgba(255,255,255,.7);
+}
+.cta__contact a{ color:var(--white); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+
+/* newsletter en bande, sous les cartes */
+.newsletter--inline{ padding:0; background:none; }
+.newsletter--inline .newsletter__inner{
+  max-width:none;
+  margin:0;
+  display:grid;
+  grid-template-columns:1fr 1.15fr;
+  column-gap:clamp(24px, 4vw, 64px);
+  align-items:center;
+  text-align:left;
+  padding-top:clamp(24px, 4vh, 34px);
+  border-top:1px solid rgba(255,255,255,.18);
+}
+.newsletter--inline .newsletter__eyebrow{ justify-content:flex-start; grid-column:1; }
+.newsletter--inline .newsletter__title{ grid-column:1; margin-top:10px; font-size:clamp(22px, 2.2vw, 28px); }
+.newsletter--inline .newsletter__text{ grid-column:1; font-size:14px; margin-top:8px; }
+.newsletter--inline .newsletter__form,
+.newsletter--inline .newsletter__success{ grid-column:2; grid-row:1 / span 3; margin-top:0; }
+
+@media (max-width:900px){
+  .cta__head{ flex-direction:column; align-items:flex-start; }
+  .cta__cards{ grid-template-columns:1fr; }
+  .newsletter--inline .newsletter__inner{ grid-template-columns:1fr; }
+  .newsletter--inline .newsletter__form,
+  .newsletter--inline .newsletter__success{ grid-column:1; grid-row:auto; margin-top:20px; }
+}
+@media (max-width:560px){
+  .newsletter--inline .newsletter__field{ flex-direction:column; }
+  .newsletter--inline .newsletter__submit{ width:100%; }
+}
+
+/* Mobile / tablette étroite : l'actualité passe avant l'accroche de marque. */
+@media (max-width:900px){
+  .hero__carousel{ order:-1; }
+}
+
+/* =========================================================
+   Accueil — revue UX, points 4 à 7 (2026-10-21)
+   ========================================================= */
+/* 5. Barre de thèmes : sous le titre, avec un libellé, sans point rouge */
+.latest > .topics--labelled{ margin:clamp(18px, 2.4vh, 26px) 0 0; }
+.topics__label{
+  flex:none;
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--ink-muted);
+  white-space:nowrap;
+  padding-right:4px;
+}
+.latest__more{ gap:clamp(20px, 3vw, 36px); align-items:center; }
+.latest__all--secondary{ color:var(--blue); }
+
+/* 4. Our reach : second lien vers la plateforme Mediascape */
+.reach__links{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 28px; }
+.reach__link--ext svg{ transition:transform var(--dur-fast) var(--ease); }
+.reach__link--ext:hover svg{ transform:translate(2px, -2px); }
+
+/* 6. Pastille de couleur devant chaque pays (même teinte que la carte) */
+.reach .reach__col a{ display:flex; align-items:center; gap:10px; }
+.reach__swatch{
+  flex:none;
+  width:10px; height:10px;
+  border-radius:3px;
+  background:var(--swatch);
+  opacity:.6;
+  transition:opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.reach__col li.is-active .reach__swatch{ opacity:1; transform:scale(1.2); }
+
+/* -- Hero : extrait de l'article, ajusté à la place laissée par le titre
+   (2026-10-21, à la demande de Yv). Le nombre de lignes (--news-lines) est
+   calculé par components/Hero.js (fitExcerpts) sur les écrans ≥901px, où
+   le panneau a une hauteur fixe ; en dessous, 4 lignes au plus. */
+.hero__news .news__text{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:var(--news-lines, 4);
+  line-clamp:var(--news-lines, 4);
+  overflow:hidden;
+  flex:none;
+}
+.hero__news .news__text[hidden]{ display:none; }
+
+/* =========================================================
+   Hero — relooking « institutionnel + éditorial » (2026-10-21, Yv)
+   Fond blanc (plus de beige), courbes de niveau presque invisibles en
+   arrière-plan (components/HeroTopo.js), carrousel d'actualités en carte
+   « flottante » : marges autour, coins arrondis, ombre portée, ne touche
+   plus le bord droit. Revert : FLOAT = false dans components/Hero.js.
+   ========================================================= */
+.hero--float{
+  position:relative;
+  isolation:isolate;
+  background:var(--white);
+  overflow:hidden;
+}
+.hero--float > *:not(.hero-topo){ position:relative; z-index:1; }
+
+.hero-topo{
+  /* 2026-10-21 (révision) : plus en plein fond — une bande à cheval sur la
+     limite entre l'accroche et la carte. Un enfant absolu d'une grille se
+     positionne dans la zone de grille indiquée : ici la colonne de la
+     carte, dont on déborde vers la gauche. */
+  position:absolute;
+  grid-column:2;
+  grid-row:1;
+  top:calc(-1 * clamp(28px, 4.5vh, 52px));
+  left:-34%;
+  width:68%;
+  /* un SVG absolu garde son ratio si la hauteur n'est pas explicite */
+  height:calc(100% + clamp(28px, 4.5vh, 52px) + clamp(32px, 5vh, 60px));
+  z-index:0;
+  pointer-events:none;
+  -webkit-mask-image:radial-gradient(ellipse 50% 52% at 50% 50%, #000 35%, rgba(0,0,0,.55) 62%, transparent 100%);
+          mask-image:radial-gradient(ellipse 50% 52% at 50% 50%, #000 35%, rgba(0,0,0,.55) 62%, transparent 100%);
+}
+.hero-topo path{
+  fill:none;
+  stroke:var(--navy);
+  stroke-opacity:.09;
+  stroke-width:1;
+  vector-effect:non-scaling-stroke;
+  stroke-linecap:round;
+}
+.hero-topo path.is-index{ stroke-opacity:.15; }
+.hero-topo__layer{ will-change:transform; }
+.hero-topo__layer--a{ animation:hero-topo-a 48s ease-in-out infinite alternate; }
+.hero-topo__layer--b{ animation:hero-topo-b 56s ease-in-out infinite alternate; }
+@keyframes hero-topo-a{ from{ transform:translate(0, 0); } to{ transform:translate(-26px, 10px); } }
+@keyframes hero-topo-b{ from{ transform:translate(0, 0); } to{ transform:translate(22px, -8px); } }
+@media (prefers-reduced-motion: reduce){
+  .hero-topo__layer{ animation:none; }
+}
+
+/* colonne d'accroche : sans fond */
+.hero--float .hero__intro{ background:transparent; }
+
+/* carte flottante */
+.hero--float .hero__carousel{
+  border-radius:8px;
+  overflow:hidden;
+  /*box-shadow:
+    0 2px 6px rgba(12,33,55,.06),
+    0 18px 40px -12px rgba(12,33,55,.28),
+    0 40px 80px -30px rgba(12,33,55,.30);
+  animation:hero-card-in .8s var(--ease) both;*/
+}
+@keyframes hero-card-in{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce){
+  .hero--float .hero__carousel{ animation:none; }
+}
+
+@media (min-width:901px){
+  .hero--float{
+    padding:clamp(28px, 4.5vh, 52px) var(--gutter) clamp(32px, 5vh, 60px) 0;
+    column-gap:clamp(8px, 1.5vw, 24px);
+  }
+  .hero--float .hero__intro{ padding-top:0; padding-bottom:0; }
+  /* la carte garde la hauteur qu'avait le hero, marges en plus */
+  .hero--float{ min-height:clamp(560px, 72vh, 760px); }
+}
+.news-controls__count{ white-space:nowrap; }
+@media (min-width:1181px){
+  /* 2026-10-21 (révision) : carte un peu moins large, accroche plus large
+     (était minmax(340px, 1fr) 2.6fr) */
+  .hero--float{ grid-template-columns:minmax(400px, 1.2fr) 2fr; }
+}
+@media (max-width:900px){
+  .hero--float{ padding-bottom:clamp(28px, 6vw, 40px); }
+  .hero--float .hero__carousel{ margin:clamp(16px, 4vw, 24px) var(--gutter) 0; }
+  /* les articles d'une même piste ont la hauteur du plus long : c'est le
+     panneau qui absorbe l'écart, pas l'espace entre photo et texte */
+  .hero--float .hero__feature{ grid-template-rows:auto 1fr; }
+  /* empilé : la bande de courbes chevauche la limite carte / accroche */
+  .hero-topo{ grid-column:1; grid-row:2; left:-10%; width:120%; top:-30%; bottom:auto; height:70%; }
+  .hero--float .hero__carousel{ background:var(--navy-panel); }
+  .hero--float .hero__intro{ padding-top:36px; padding-bottom:8px; }
 }
