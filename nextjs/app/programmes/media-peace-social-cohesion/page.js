@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import InvolvedHero from "@/components/InvolvedHero";
+import ProgrammeTopo from "@/components/ProgrammeTopo";
 import SectionHead from "@/components/SectionHead";
 import ProgrammeFocus from "@/components/ProgrammeFocus";
 import AboutGetInvolved from "@/components/AboutGetInvolved";
@@ -28,7 +29,12 @@ export default async function MediaPeacePage() {
         <Header data={header} tone={programme.focus.tone} />
 
         <main id="main" className="about">
-          <InvolvedHero data={programme.hero} tiles={programme.hero.tiles} tone={programme.focus.tone} />
+          <InvolvedHero
+            data={programme.hero}
+            tiles={programme.hero.tiles}
+            tone={programme.focus.tone}
+            topo={<ProgrammeTopo tone={programme.focus.tone} />}
+          />
 
           <section className="ab-section" id="overview">
             <div className="ab-wrap">

@@ -1,5 +1,6 @@
-// API: cta.titleLines, cta.text, cta.button? {label,href} (omitted since 2026-10-16), cta.links[], cta.sites { title, items[] { name, host, href } }
+// API: cta.titleLines, cta.text, cta.button? {label,href} (omitted since 2026-10-16), cta.links[], cta.sites { title, items[] { name, host, href, logo? } }
 import FadeImg from "./FadeImg";
+import SiteLogo from "./SiteLogo";
 import Newsletter from "./Newsletter";
 
 const ARROW = (
@@ -69,6 +70,7 @@ export default function Cta({ data, newsletter }) {
                   <a href={site.href} target="_blank" rel="noopener noreferrer">
                     <span className="cta__site-name">{site.name}</span>
                     <span className="cta__site-host">{site.host}</span>
+                    <SiteLogo src={site.logo} name={site.name} />
                     <svg className="cta__site-arrow" width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M3 1h6v6M9 1 1 9" />
                     </svg>
@@ -129,6 +131,7 @@ export default function Cta({ data, newsletter }) {
                 <a href={site.href} target="_blank" rel="noopener noreferrer">
                   <span className="cta__site-name">{site.name}</span>
                   <span className="cta__site-host">{site.host}</span>
+                  <SiteLogo src={site.logo} name={site.name} />
                   <svg className="cta__site-arrow" width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M3 1h6v6M9 1 1 9" />
                   </svg>

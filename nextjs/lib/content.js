@@ -541,13 +541,15 @@ export async function getCta() {
       { label: "Contact", href: "/contact" },
     ],
     // Other websites banner (#7) — the live site's footer "Quick Links".
+    // `logo`: optional file in public/images/sites/ (PNG/SVG/WebP, any ratio,
+    // shown in a 32px-high white tile after the link; no file = no tile).
     sites: {
       title: "Our other websites",
       items: [
-        { name: "WAMECA", host: "wameca.mfwa.org", href: "https://wameca.mfwa.org" },
-        { name: "The Fourth Estate", host: "thefourthestategh.com", href: "https://thefourthestategh.com/" },
-        { name: "Fact-Check Ghana", host: "fact-checkghana.com", href: "https://fact-checkghana.com/" },
-        { name: "MediaGB", host: "mediagb.org", href: "https://mediagb.org" },
+        { name: "WAMECA", host: "wameca.mfwa.org", href: "https://wameca.mfwa.org", logo: "/images/sites/wameca.png" },
+        { name: "The Fourth Estate", host: "thefourthestategh.com", href: "https://thefourthestategh.com/", logo: "/images/sites/the-fourth-estate.svg" },
+        { name: "Fact-Check Ghana", host: "fact-checkghana.com", href: "https://fact-checkghana.com/", logo: "/images/sites/fact-check-ghana.png" },
+        { name: "MediaGB", host: "mediagb.org", href: "https://mediagb.org", logo: "/images/sites/mediagb.png" },
       ],
     },
   };
@@ -967,7 +969,7 @@ const ISSUE_CATEGORY_SLUGS = [
 const WHERE_WE_WORK_HERO = {
   crumbs: [{ label: "Where we work" }],
   eyebrow: "Where we work",
-  titleLines: ["Country", "hightlights."],
+  titleLines: ["Country", "highlights."],
   lede: "The MFWA works to promote freedom of expression, press freedom, access to information, internet freedom and media development throughout the 16 countries of West Africa — the 15 member states of ECOWAS, and Mauritania.",
   primary: { label: "About MFWA", href: "/about-us" },
   secondary: { label: "Our programmes", href: "/programmes" },

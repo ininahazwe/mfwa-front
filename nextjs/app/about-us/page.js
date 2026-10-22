@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AboutHero from "@/components/AboutHero";
+import HeroTopo from "@/components/HeroTopo";
+import { PAGE_TOPO } from "@/lib/pageTopo";
 import AboutStats from "@/components/AboutStats";
 import AboutPillars from "@/components/AboutPillars";
 import AboutStrategy from "@/components/AboutStrategy";
@@ -32,7 +34,7 @@ export default async function AboutUsPage() {
         <Header data={header} />
 
         <main id="main" className="about">
-          <AboutHero data={about.hero} />
+          <AboutHero data={about.hero} topo={<HeroTopo {...PAGE_TOPO["about-us"]} host=".ab-hero" className="hero-topo--page" />} />
           <AboutStats data={about.glance} />
           <AboutPillars data={about.drives} />
           <AboutStrategy data={about.strategy} />

@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import InvolvedHero from "@/components/InvolvedHero";
+import HeroTopo from "@/components/HeroTopo";
+import { PAGE_TOPO } from "@/lib/pageTopo";
 import ProgrammesFlat from "@/components/ProgrammesFlat";
 import CardNav from "@/components/CardNav";
 import AboutGetInvolved from "@/components/AboutGetInvolved";
@@ -36,6 +38,7 @@ export default async function ProgrammesPage() {
             data={programmes.hero}
             tiles={programmes.hero.tiles}
             /*art={<ProgrammesIso tiles={programmes.hero.tiles} />}*/
+            topo={<HeroTopo {...PAGE_TOPO.programmes} host=".ab-hero" className="hero-topo--page" />}
           />
           <CardNav data={programmes.nav} />
           <AboutGetInvolved data={programmes.involve} />

@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import InvolvedHero from "@/components/InvolvedHero";
+import ProgrammeTopo from "@/components/ProgrammeTopo";
 import SectionHead from "@/components/SectionHead";
 import ProgrammeFocus from "@/components/ProgrammeFocus";
 import ProgrammeReports from "@/components/ProgrammeReports";
@@ -48,7 +49,7 @@ export default async function ProgrammeSectionPage({ params }) {
         <Header data={header} tone={page.tone} />
 
         <main id="main" className="about">
-          <InvolvedHero data={page.hero} tiles={page.hero.tiles} tone={page.tone} />
+          <InvolvedHero data={page.hero} tiles={page.hero.tiles} tone={page.tone} topo={<ProgrammeTopo tone={page.tone} />} />
 
           {page.key === "projects" && (
             <>

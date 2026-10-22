@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import InvolvedHero from "@/components/InvolvedHero";
+import HeroTopo from "@/components/HeroTopo";
+import { PAGE_TOPO } from "@/lib/pageTopo";
 import WhereWeWorkList from "@/components/WhereWeWorkList";
 import WhereWeWorkSkeleton from "@/components/WhereWeWorkSkeleton";
 import { Suspense } from "react";
@@ -53,7 +55,11 @@ export default async function WhereWeWorkPage({ searchParams }) {
         <Header data={header} />
 
         <main id="main" className="about">
-          <InvolvedHero data={base.hero} tiles={base.hero.tiles} />
+          <InvolvedHero
+            data={base.hero}
+            tiles={base.hero.tiles}
+            topo={<HeroTopo {...PAGE_TOPO["where-we-work"]} host=".ab-hero" className="hero-topo--page" />}
+          />
           <Suspense key={query || "all"} fallback={<WhereWeWorkSkeleton data={skeletonData} />}>
             <WhereWeWorkExplorer
               countrySlug={countrySlug}

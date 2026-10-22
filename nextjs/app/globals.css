@@ -3817,6 +3817,40 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .cta__site-name{ font-size:14px; font-weight:700; }
 .cta__site-host{ grid-column:1; font-size:11.5px; color:rgba(255,255,255,.62); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cta__site-arrow{ grid-column:2; grid-row:1 / span 2; opacity:.7; }
+/* Logo du site, après le lien : tuile blanche de 32px de haut, donc plus basse
+   que le bloc nom + adresse — la hauteur du bandeau ne change pas. La place
+   qu'il peut prendre dépend de la largeur de SA carte (container query sur le
+   <li>) : on garde toujours de quoi écrire « Fact-Check Ghana » (~142px) sur
+   une ligne. Carte trop étroite = pas de logo, la flèche reste. */
+.cta__sites-list li{ container-type:inline-size; }
+.cta__site-logo{
+  grid-column:2;
+  grid-row:1 / span 2;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  height:32px;
+  min-width:32px;
+  max-width:var(--site-logo-max, 32px);
+  padding:4px 6px;
+  border-radius:6px;
+  background:#fff;
+  overflow:hidden;
+}
+.cta__site-logo img{ display:block; height:100%; width:auto; max-width:100%; object-fit:contain; }
+@container (min-width:216px){
+  .cta__site-logo{ display:flex; --site-logo-max:32px; }
+  .cta__sites-list a:has(.cta__site-logo) .cta__site-arrow{ display:none; }
+}
+@container (min-width:232px){ .cta__site-logo{ --site-logo-max:48px; } }
+@container (min-width:250px){ .cta__site-logo{ --site-logo-max:66px; } }
+@container (min-width:290px){ .cta__site-logo{ --site-logo-max:96px; } }
+/* 901–1439px : quatre cartes côte à côte sont étroites ; le titre du bandeau
+   passe sur deux lignes (plus bas que les cartes) pour leur laisser la place. */
+@media (min-width:901px) and (max-width:1439px){
+  .cta__sites-title{ max-width:86px; line-height:1.5; }
+}
+
 @media (max-width:900px){
   .cta__sites{ flex-direction:column; align-items:flex-start; gap:14px; }
   .cta__sites-list{ width:100%; grid-template-columns:repeat(2, minmax(0, 1fr)); }
@@ -4098,11 +4132,12 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .mobile-nav__credential{ display:none; }
 }
 
-@media (min-width:561px){
+@media (min-width:621px){
   /* la barre montre déjà Donate (et le badge) : pas de doublon dans le panneau */
   .mobile-nav__foot{ display:none; }
 }
-@media (max-width:560px){
+@media (max-width:620px){
+  /* (2026-10-22 : 560 → 620px, la barre débordait de ~45px entre 561 et ~615px) */
   /* le bouton Donate quitte la barre (il est dans le panneau) pour laisser la place au burger */
   .header__actions > .btn--donate{ display:none; }
   .mobile-nav__credential{
@@ -5310,4 +5345,81 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .hero-topo{ grid-column:1; grid-row:2; left:-10%; width:120%; top:-30%; bottom:auto; height:70%; }
   .hero--float .hero__carousel{ background:var(--navy-panel); }
   .hero--float .hero__intro{ padding-top:36px; padding-bottom:8px; }
+}
+
+/* =========================================================
+   Courbes de niveau des heros de page (2026-10-22, demande de Yv)
+   /programmes (cinq sommets), /where-we-work (une côte), /about-us (un grand
+   sommet) : même composant que l'accueil (components/HeroTopo.js, mêmes
+   traits et même déformation au survol), relief propre à chaque page
+   (lib/pageTopo.js). Bande à cheval sur la limite entre le texte et
+   l'illustration/les tuiles. Retrait : supprimer la prop `topo=` de la page.
+   ========================================================= */
+.ab-hero__grid{ position:relative; isolation:isolate; }
+.ab-hero__grid > *:not(.hero-topo){ z-index:1; }
+.hero-topo.hero-topo--page{
+  grid-column:4 / 9;
+  grid-row:1;
+  left:0;
+  top:calc(-1 * clamp(48px, 8vh, 96px));
+  width:100%;
+  height:calc(100% + clamp(48px, 8vh, 96px) + clamp(56px, 8vh, 96px));
+  bottom:auto;
+}
+@media (max-width:1100px){
+  .hero-topo.hero-topo--page{ grid-column:3 / 9; }
+}
+@media (max-width:900px){
+  .hero-topo.hero-topo--page{ grid-column:1 / -1; grid-row:1 / -1; }
+}
+
+/* =========================================================
+   Heros des pages programme (2026-10-22, choix de Yv)
+   - Grille de tuiles 2×2 quand il y en a quatre (programmes, sous-pages,
+     /where-we-work) : plus de case vide.
+   - Aplat net décalé derrière les tuiles (.ab-hero__plate) à la place du blob.
+   - Courbes de niveau teintées, un relief par programme
+     (components/ProgrammeTopo.js, lib/pageTopo.js).
+   - Correctif mobile : le conteneur des tuiles n'avait pas de règle ≤900px,
+     il restait à droite de la grille et recouvrait le texte.
+   Retour au blob : BLOB = true dans InvolvedHero.js ; sans courbes : retirer
+   la prop `topo=` des pages.
+   ========================================================= */
+.ab-hero__plate--red,    .hero-topo--red{    --tone-fill:#fbdcd8; --tone-ink:#d6342b; }
+.ab-hero__plate--lavender, .hero-topo--lavender{ --tone-fill:#e6e0f9; --tone-ink:#6a5bc2; }
+.ab-hero__plate--navy,   .hero-topo--navy{   --tone-fill:#dce8f7; --tone-ink:#24508f; }
+.ab-hero__plate--green,  .hero-topo--green{  --tone-fill:#d6eee1; --tone-ink:#2f8a63; }
+.ab-hero__plate--amber,  .hero-topo--amber{  --tone-fill:#fbeac2; --tone-ink:#b9811a; }
+
+.ab-hero__plate{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:var(--tone-fill, #e9edf1);
+  transform:translate(clamp(10px, 1.3vw, 18px), clamp(10px, 1.3vw, 18px));
+}
+.ab-hero__tiles-slot--quad,
+.ab-tiles--quad{ max-width:380px; }
+.ab-tiles--quad{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+
+/* une tuile blanche sur fond blanc disparaîtrait : filet léger */
+.ab-tiles--quad .ab-tile--white{ box-shadow:inset 0 0 0 1px rgba(19, 34, 52, .1); }
+
+.hero-topo.hero-topo--tone path{ stroke:var(--tone-ink); stroke-opacity:.2; }
+.hero-topo.hero-topo--tone path.is-index{ stroke-opacity:.36; }
+
+@media (max-width:1100px){
+  .ab-hero__tiles-slot{ grid-column:7 / -1; }
+}
+@media (max-width:900px){
+  .ab-hero__tiles-slot{
+    grid-column:1 / -1;
+    grid-row:2;
+    justify-self:start;
+    margin-top:44px;
+    /* de la place pour l'aplat décalé à droite */
+    width:calc(100% - 18px);
+  }
+  .ab-hero__tiles-slot .ab-tiles{ margin-top:0; }
 }

@@ -23,14 +23,19 @@ const VIEWBOX = "300 0 500 500";
 const MAX_SCALE = 16; // displacement, in viewBox units
 const EASE = 0.018; // per frame — ≈2 s to reach full strength
 
-export default function HeroTopo() {
+// Props (all optional — the homepage calls <HeroTopo /> with none):
+//   paths / viewBox / mirror : another terrain (lib/pageTopo.js, 2026-10-22: the
+//     /programmes, /where-we-work and /about-us heroes each get their own)
+//   host : selector of the element whose hover drives the morph
+//   className : extra classes on the <svg> (positioning, see .hero-topo--page)
+export default function HeroTopo({ paths = TOPO_PATHS, viewBox = VIEWBOX, mirror = true, host = ".hero", className = "" }) {
   const svgRef = useRef(null);
   const turbRef = useRef(null);
   const dispRef = useRef(null);
 
   useEffect(() => {
     const svg = svgRef.current;
-    const hero = svg?.closest(".hero");
+    const hero = svg?.closest(host);
     if (!svg || !hero) return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
     if (!window.matchMedia("(hover: hover)").matches) return undefined;
@@ -70,10 +75,10 @@ export default function HeroTopo() {
       hero.removeEventListener("pointerleave", leave);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [host]);
 
   return (
-    <svg ref={svgRef} className="hero-topo" viewBox={VIEWBOX} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <svg ref={svgRef} className={`hero-topo${className ? ` ${className}` : ""}`} viewBox={viewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
       <defs>
         <filter id="hero-topo-morph" x="-5%" y="-10%" width="110%" height="120%" filterUnits="objectBoundingBox">
           <feTurbulence ref={turbRef} type="fractalNoise" baseFrequency="0.0042 0.0068" numOctaves="2" seed="7" result="noise" />
@@ -81,10 +86,10 @@ export default function HeroTopo() {
         </filter>
       </defs>
       <g filter="url(#hero-topo-morph)">
-        <g transform="translate(1650 0) scale(-1 1)">
+        <g transform={mirror ? "translate(1650 0) scale(-1 1)" : undefined}>
           {[0, 1].map((parity) => (
             <g key={parity} className={`hero-topo__layer hero-topo__layer--${parity ? "b" : "a"}`}>
-              {TOPO_PATHS.filter(([lvl]) => lvl % 2 === parity).map(([lvl, d], i) => (
+              {paths.filter(([lvl]) => lvl % 2 === parity).map(([lvl, d], i) => (
                 <path key={i} d={d} className={lvl % 4 === 0 ? "is-index" : undefined} />
               ))}
             </g>

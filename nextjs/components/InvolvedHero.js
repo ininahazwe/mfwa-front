@@ -13,12 +13,20 @@ import Motif from "./Motif";
 import { ARROW_RIGHT } from "./AboutIcons";
 import { useParallax } from "@/lib/hooks";
 
-export default function InvolvedHero({ data, tiles, tone, art, tilesLabel = "Ways to get involved" }) {
+// 2026-10-22 (hero des pages programme, choix de Yv) : le « blob » flou derrière
+// les tuiles est remplacé par un aplat net décalé dans la couleur du
+// programme (.ab-hero__plate) + des courbes de niveau teintées (prop `topo`).
+// Remettre le blob : BLOB = true.
+const BLOB = false;
+
+export default function InvolvedHero({ data, tiles, tone, art, topo, tilesLabel = "Ways to get involved" }) {
   const blobRef = useParallax(0.15);
   return (
     <section className="ab-hero">
       {/*<section className={`ab-hero${tone ? ` ab-hero--${tone}` : ""}`}>*/}
       <div className="ab-wrap ab-hero__grid">
+        {/* `topo` (2026-10-22): optional <HeroTopo> — faint contour lines between the text and the art/tiles. */}
+        {topo}
         <div className={`ab-hero__copy${tiles || art ? "" : " ab-hero__copy--wide"}`}>
           <nav className="ab-crumbs" aria-label="Breadcrumb">
             {data.crumbs.map((crumb, i) =>
@@ -65,7 +73,7 @@ export default function InvolvedHero({ data, tiles, tone, art, tilesLabel = "Way
             the tiles exactly as before — that is the whole revert. */}
         {art && <div className="ab-hero__art">{art}</div>}
         {!art && tiles && (
-          <div className="ab-hero__tiles-slot">
+          <div className={`ab-hero__tiles-slot${tiles.length === 4 ? " ab-hero__tiles-slot--quad" : ""}`}>
             {/* Decorative colour-blob behind the tiles (2026-09-30, at
                 Yv's call): only on programme pages that pass a "tone"
                 (the hub itself represents all 5 programmes at once, so it
@@ -80,8 +88,9 @@ export default function InvolvedHero({ data, tiles, tone, art, tilesLabel = "Way
                 drop useParallax()/blobRef above, and the three
                 .ab-hero__tiles-slot / .ab-hero__blob* rules in
                 globals.css. */}
-            {tone && <div ref={blobRef} className={`ab-hero__blob ab-hero__blob--${tone}`} aria-hidden="true" />}
-            <Reveal as="ul" className="ab-tiles st-tiles ab-stagger" stagger aria-label={data.tilesLabel ?? tilesLabel}>
+            {tone && BLOB && <div ref={blobRef} className={`ab-hero__blob ab-hero__blob--${tone}`} aria-hidden="true" />}
+            {tone && !BLOB && <div className={`ab-hero__plate ab-hero__plate--${tone}`} aria-hidden="true" />}
+            <Reveal as="ul" className={`ab-tiles st-tiles ab-stagger${tiles.length === 4 ? " ab-tiles--quad" : ""}`} stagger aria-label={data.tilesLabel ?? tilesLabel}>
               {tiles.map((tile) => (
                 <li key={tile.id}>
                   <a className={`ab-tile ab-tile--${tile.tone} st-tile ab-tile--link`} href={tile.href}>

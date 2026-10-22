@@ -18,10 +18,12 @@ const TILES = [
   { variant: "video", tone: "red" },
 ];
 
-export default function AboutHero({ data }) {
+export default function AboutHero({ data, topo }) {
   return (
     <section className="ab-hero">
       <div className="ab-wrap ab-hero__grid">
+        {/* `topo` (2026-10-22): optional <HeroTopo> — faint contour lines between the text and the tiles. */}
+        {topo}
         <div className="ab-hero__copy">
           <p className="eyebrow">{data.eyebrow}</p>
 
