@@ -5200,9 +5200,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 
 /* Mobile / tablette étroite : l'actualité passe avant l'accroche de marque. */
-@media (max-width:900px){
-  .hero__carousel{ order:-1; }
-}
+/* (2026-10-22 : à la demande de Yv, l'accroche repasse AVANT le carrousel
+   sur mobile — l'ancienne règle `.hero__carousel{ order:-1 }` est retirée.) */
 
 /* =========================================================
    Accueil — revue UX, points 4 à 7 (2026-10-21)
@@ -5327,7 +5326,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   }
   .hero--float .hero__intro{ padding-top:0; padding-bottom:0; }
   /* la carte garde la hauteur qu'avait le hero, marges en plus */
-  .hero--float{ min-height:clamp(560px, 72vh, 760px); }
+  /* 2026-10-22 : hero 10 % moins haut (était clamp(560px, 72vh, 760px)) */
+  .hero--float{ min-height:clamp(456px, 64.8vh, 684px); }
 }
 .news-controls__count{ white-space:nowrap; }
 @media (min-width:1181px){
@@ -5344,7 +5344,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   /* empilé : la bande de courbes chevauche la limite carte / accroche */
   .hero-topo{ grid-column:1; grid-row:2; left:-10%; width:120%; top:-30%; bottom:auto; height:70%; }
   .hero--float .hero__carousel{ background:var(--navy-panel); }
-  .hero--float .hero__intro{ padding-top:36px; padding-bottom:8px; }
+  .hero--float .hero__intro{ padding-top:28px; padding-bottom:12px; }
+  /* 2026-10-22 : photo 10 % moins haute une fois empilé (16/10 → 16/9) */
+  .hero--float .hero__media{ aspect-ratio:16/9; }
 }
 
 /* =========================================================
@@ -5422,4 +5424,85 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
     width:calc(100% - 18px);
   }
   .ab-hero__tiles-slot .ab-tiles{ margin-top:0; }
+}
+
+/* =========================================================
+   Carrousel d'actualités : transition « pile » (2026-10-22, demande de Yv)
+   Inspirée du CodePen veronicadev/yjgjvL : les articles sont empilés dans la
+   même cellule ; à l'arrivée d'un article la photo glisse depuis la droite
+   (0,6 s ease-in-out) pendant que titre, extrait et lien remontent en fondu.
+   Le défilement natif (scroll-snap) est remplacé par l'état React
+   (components/Hero.js ; l'ancienne version : Hero.js.bak-carousel).
+   ========================================================= */
+.hero__stories{
+  display:grid;
+  overflow:hidden;
+  scroll-snap-type:none;
+  touch-action:pan-y;
+}
+.hero__stories > .hero__story{
+  grid-area:1 / 1;
+  position:relative;
+  z-index:0;
+  visibility:hidden;
+  transition:visibility 0s linear .6s;
+}
+.hero__stories > .hero__story.is-active{
+  z-index:1;
+  visibility:visible;
+  transition-delay:0s;
+}
+/* photo : arrive de la droite */
+.hero__story .hero__shot{
+  opacity:1;
+  visibility:visible;
+  transform:translateX(100%);
+  transition:transform .6s ease-in-out;
+}
+.hero__story.is-active .hero__shot{ transform:translateX(0); }
+/* textes : remontent en fondu */
+.hero__story .news__title,
+.hero__story .news__text,
+.hero__story .news__link{
+  opacity:0;
+  transform:translateY(25%);
+  transition:opacity .6s ease-in-out, transform .6s ease-in-out;
+}
+.hero__story.is-active .news__title,
+.hero__story.is-active .news__text,
+.hero__story.is-active .news__link{
+  opacity:1;
+  transform:translateY(0);
+}
+@media (prefers-reduced-motion: reduce){
+  .hero__story .hero__shot,
+  .hero__story .news__title,
+  .hero__story .news__text,
+  .hero__story .news__link,
+  .hero__stories > .hero__story{ transition:none; }
+}
+
+/* Empilé (≤900px) : la carte a la hauteur de l'article affiché (Hero.js pose
+   la hauteur, qui s'anime d'un article à l'autre) et les contrôles passent
+   sous le texte au lieu d'être posés en bas d'un panneau trop haut — plus de
+   vide entre « Read more » et les points. */
+@media (max-width:900px){
+  .hero__stories{ position:relative; transition:height .5s var(--ease); }
+  /* hauteur = celle du contenu (et non étirée à celle de la carte) : Hero.js la mesure */
+  .hero__stories > .hero__story{ align-self:start; }
+  .hero__stories > .hero__story:not(.is-active){
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+  }
+  .hero__carousel .hero__news{ padding-bottom:clamp(20px, 5vw, 28px); }
+  .news-controls{
+    position:static;
+    width:100%;
+    padding:6px var(--gutter) 24px;
+  }
+}
+@media (max-width:900px) and (prefers-reduced-motion: reduce){
+  .hero__stories{ transition:none; }
 }

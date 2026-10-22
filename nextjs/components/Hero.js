@@ -21,6 +21,14 @@ import HeroTopo from "./HeroTopo";
 // label. Its original single-article/gallery version is in git history
 // (and components/Hero.js.bak-com-feedback).
 
+// 2026-10-22 (at Yv's call): the news carousel now uses the transition of
+// the CodePen "veronicadev/yjgjvL" — slides are stacked in the same cell, the
+// photo sweeps in from the right while the title, excerpt and link rise and
+// fade in (CSS: "Carrousel d'actualités : transition « pile »" in
+// globals.css). The active slide is React state (storyIndex); touch swipe
+// (≥45px), the arrows, the dots and the arrow keys all just change it. The
+// previous scroll-snap version is in components/Hero.js.bak-carousel.
+
 const AUTOPLAY_DELAY = 7000; // ms — matches main.js (0 disables autoplay)
 const SWIPE_THRESHOLD = 45; // px — matches main.js
 
@@ -176,9 +184,7 @@ export default function Hero({ data }) {
     return () => window.clearTimeout(timer);
   }, [index, paused, tabHidden, reducedMotion, total]);
 
-  // News carousel: the scroll position is the source of truth (so a
-  // finger swipe, trackpad or keyboard scroll all just work); storyIndex
-  // only mirrors it for the dots/counter/aria state.
+  // News carousel: storyIndex is the source of truth.
   // Fit each story's excerpt to the room its title leaves (see fitExcerpts).
   useLayoutEffect(() => {
     const root = storiesRef.current;
@@ -191,25 +197,68 @@ export default function Hero({ data }) {
     return () => ro.disconnect();
   }, [storyTotal]);
 
-  function onStoriesScroll() {
+  // Stacked layout (≤900px): the carousel is as tall as the story on screen
+  // — no empty band under "Read more" when a shorter story follows a longer
+  // one. The height eases from one story to the next. On wide screens the
+  // stack is as tall as its tallest story (CSS), so the hero never jumps.
+  const storyHeightRef = useRef(null);
+  useLayoutEffect(() => {
     const el = storiesRef.current;
-    if (!el || !el.clientWidth) return;
-    const i = Math.round(el.scrollLeft / el.clientWidth);
-    if (i !== storyIndex && i >= 0 && i < storyTotal) setStoryIndex(i);
-  }
+    if (!el) return undefined;
+    const slide = el.children[storyIndex];
+    const mq = window.matchMedia("(max-width: 900px)");
+    const apply = (animate) => {
+      if (!mq.matches || !slide) {
+        el.style.removeProperty("height");
+        storyHeightRef.current = null;
+        return;
+      }
+      const h = slide.offsetHeight;
+      if (!h) return;
+      if (animate && !reducedMotion && storyHeightRef.current != null) {
+        el.style.height = `${storyHeightRef.current}px`;
+        el.getBoundingClientRect(); // commit the starting height before easing to the new one
+      }
+      el.style.height = `${h}px`;
+      storyHeightRef.current = h;
+    };
+    apply(true);
+    const ro = new ResizeObserver(() => apply(false));
+    if (slide) ro.observe(slide);
+    const onMq = () => apply(false);
+    mq.addEventListener("change", onMq);
+    return () => {
+      ro.disconnect();
+      mq.removeEventListener("change", onMq);
+    };
+  }, [storyIndex, storyTotal, reducedMotion]);
+
   function goToStory(i) {
-    const el = storiesRef.current;
-    if (!el) return;
-    const target = (i + storyTotal) % storyTotal;
-    el.scrollTo({ left: target * el.clientWidth, behavior: reducedMotion ? "auto" : "smooth" });
-    setStoryIndex(target);
+    if (!storyTotal) return;
+    setStoryIndex(((i % storyTotal) + storyTotal) % storyTotal);
   }
-  // The section-level pointer handlers below drive the left-hand hero
-  // slides on touch swipes; a swipe that starts on the news carousel must
-  // scroll that carousel only, not also advance the headline slides.
-  function stopSwipePropagation(e) {
+  // Swipe on the news carousel (touch / pen), arrow keys when it has focus.
+  // These stop propagation so they never also drive the left-hand slides.
+  const storySwipeX = useRef(null);
+  function onStoriesPointerDown(e) {
     e.stopPropagation();
+    if (e.pointerType === "mouse") return;
+    storySwipeX.current = e.clientX;
   }
+  function onStoriesPointerUp(e) {
+    e.stopPropagation();
+    if (storySwipeX.current === null) return;
+    const dx = e.clientX - storySwipeX.current;
+    storySwipeX.current = null;
+    if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+    goToStory(storyIndex + (dx < 0 ? 1 : -1));
+  }
+  function onStoriesKeyDown(e) {
+    e.stopPropagation();
+    if (e.key === "ArrowLeft") goToStory(storyIndex - 1);
+    else if (e.key === "ArrowRight") goToStory(storyIndex + 1);
+  }
+  // The section-level pointer handlers below drive the left-hand hero slides on touch swipes.
 
   function handlePointerDown(e) {
     if (e.pointerType === "mouse") return;
@@ -326,7 +375,7 @@ export default function Hero({ data }) {
           no empty carousel — the intro takes the full width (.hero--no-news). */}
       {storyTotal > 0 && (
       <>
-      {/* Carrousel d'actualités : 4 articles, défilement par balayage (indépendant du carrousel ci-dessus) */}
+      {/* Carrousel d actualités : 4 articles empilés, transition photo/texte (voir globals.css) ; balayage tactile, flèches, points */}
       <div
         className="hero__carousel"
         role="group"
@@ -336,10 +385,12 @@ export default function Hero({ data }) {
         <div
           className="hero__stories"
           ref={storiesRef}
-          onScroll={onStoriesScroll}
-          onPointerDown={stopSwipePropagation}
-          onPointerUp={stopSwipePropagation}
-          onKeyDown={stopSwipePropagation}
+          onPointerDown={onStoriesPointerDown}
+          onPointerUp={onStoriesPointerUp}
+          onPointerCancel={() => {
+            storySwipeX.current = null;
+          }}
+          onKeyDown={onStoriesKeyDown}
           tabIndex={0}
           aria-label={data.news.ariaLabel}
           data-news-track
@@ -348,7 +399,7 @@ export default function Hero({ data }) {
             const active = i === storyIndex;
             return (
               <article
-                className="hero__feature hero__story"
+                className={`hero__feature hero__story${active ? " is-active" : ""}`}
                 key={story.title}
                 aria-roledescription="slide"
                 aria-label={`${i + 1} of ${storyTotal}`}
