@@ -5506,3 +5506,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 @media (max-width:900px) and (prefers-reduced-motion: reduce){
   .hero__stories{ transition:none; }
 }
+
+/* Ancre « country-info » : /where-we-work?country=<slug>#country-info (liens
+   de la section Our reach de l'accueil). Le bloc .ww-countries-row se cale
+   sous le haut de l'écran avec un peu d'air, sans masquer son contenu. */
+#country-info{ scroll-margin-top:clamp(16px,3vh,32px); }

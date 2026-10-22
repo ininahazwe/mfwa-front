@@ -50,7 +50,7 @@ export default function WhereWeWorkSkeleton({ data, error = false, retryHref = "
           </p>
         )}
 
-        <div className="reach__inner ww-countries-row">
+        <div className="reach__inner ww-countries-row" id="country-info">
           <div className="reach__list ww-list">
             {col(col1)}
             {col(col2)}

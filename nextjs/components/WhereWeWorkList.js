@@ -205,7 +205,7 @@ export default function WhereWeWorkList({ data: initialData, initialItems, initi
       <div className="ab-wrap">
         <SectionHead eyebrow={data.eyebrow} title={data.title} text={data.text} />
 
-        <div className="reach__inner ww-countries-row">
+        <div className="reach__inner ww-countries-row" id="country-info">
           <Reveal as="div" className="reach__list ww-list ab-stagger" stagger>
             <ul className="reach__col" onMouseLeave={clearActive}>
               {col1.map((country) => (
