@@ -1233,8 +1233,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    ========================================================= */
 .reach{
   background:#f9fafa;
-  /*padding:clamp(56px, 8vh, 96px) var(--gutter);*/
-  padding:clamp(0px, 0vh, 96px) var(--gutter);
+  padding:clamp(56px, 8vh, 96px) var(--gutter);
+  /*padding:clamp(0px, 0vh, 96px) var(--gutter);*/
 }
 
 .reach__inner{
