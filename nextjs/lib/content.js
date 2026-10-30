@@ -30,6 +30,7 @@ import {
   getIssuesInFocusPosts,
   getOpportunityPosts,
   getWpTagBySlug,
+  getWpContentTotals,
 } from "./wp";
 import { prepareArticleHtml } from "./articleHtml";
 import { STAFF, STAFF_TEAMS } from "./staff";
@@ -277,6 +278,36 @@ export async function getLatestStories() {
   };
 }
 
+// "Stats" band — homepage, right after "The latest from MFWA" (2026-10-30,
+// at Yv's call): 3 or 4 key figures in a row, depending on what is
+// available. Candidates in priority order; a null figure (WordPress down,
+// project count not confirmed yet…) is skipped, the first 4 available are
+// kept, and the band is hidden altogether below 3. The live WordPress
+// totals come first so the band doesn't repeat the impact figures further
+// down (16 countries, 100+ partners…) unless it has to fall back on them.
+const KEY_STATS_MAX = 4;
+const KEY_STATS_MIN = 3;
+
+export async function getKeyStats() {
+  const [{ stories, reports }, { logos: funderLogos }] = await Promise.all([
+    getWpContentTotals(),
+    getFundingPartnersPage(),
+  ]);
+  const candidates = [
+    { count: stories, label: "articles published", href: "/issues-in-focus" },
+    { count: reports, label: "reports & publications", href: "/reports" },
+    { count: funderLogos.length || null, label: "funding partners", href: "/about-us/our-partners/funding-partners" },
+    { count: ABOUT_PROJECTS_COUNT, label: "projects", href: "/programmes" },
+    { count: 16, label: "countries covered", href: "/where-we-work" },
+    { count: 6, label: "regional & global networks", href: "/about-us/our-partners/our-networks" },
+  ];
+  const stats = candidates.filter((s) => Number.isFinite(s.count) && s.count > 0).slice(0, KEY_STATS_MAX);
+  return {
+    label: "MFWA in figures",
+    stats: stats.length >= KEY_STATS_MIN ? stats : [],
+  };
+}
+
 const LATEST_COUNT = 3;
 
 export async function getWork() {
@@ -285,6 +316,10 @@ export async function getWork() {
     title: "What we do",
     text: "MFWA works to promote press freedom, strengthen independent media, and protect journalists through advocacy, capacity building and research.",
     link: { label: "Discover our work", href: "/programmes" },
+    // 2026-10-30 (at Yv's call): each card opens on a 4:3 photo instead of
+    // the number + icon row. Placeholder photos from /public/images until
+    // the programmes' own pictures are supplied; `position` = object-position
+    // (focal point of the crop). The icons stay in components/Work.js.
     items: [
       {
         num: "01",
@@ -292,6 +327,7 @@ export async function getWork() {
         heading: "Freedom of Expression",
         desc: "Protecting journalists and media rights.",
         href: "/programmes/freedom-of-expression",
+        image: { src: "/images/ghana.jpg", alt: "", position: "50% 40%" },
       },
       {
         num: "02",
@@ -299,6 +335,7 @@ export async function getWork() {
         heading: "Digital Rights",
         desc: "Safer digital spaces for everyone.",
         href: "/programmes/digital-rights",
+        image: { src: "/images/ghana1.jpg", alt: "", position: "50% 30%" },
       },
       {
         num: "03",
@@ -306,6 +343,7 @@ export async function getWork() {
         heading: "Media & Democracy",
         desc: "Stronger media for informed societies.",
         href: "/programmes/media-democracy-governance",
+        image: { src: "/images/ghana4.jpg", alt: "", position: "50% 55%" },
       },
       {
         num: "04",
@@ -313,8 +351,31 @@ export async function getWork() {
         heading: "Peace & Social Cohesion",
         desc: "Media for more inclusive and resilient communities.",
         href: "/programmes/media-peace-social-cohesion",
+        image: { src: "/images/ghana2.jpg", alt: "", position: "60% 35%" },
       },
     ],
+  };
+}
+
+// "Opportunities" band — homepage, between "What we do" and "Our expertise"
+// (2026-10-30, at Yv's call): the 4 most recent opportunities (WordPress'
+// regular posts = calls, fellowships, grants, vacancies — see OPPORTUNITIES
+// in lib/wp.js), shown as a dated list on a navy band rather than as image
+// cards, to vary from "What's happening" and "Impact stories". If WordPress
+// can't answer, or there is nothing to show, the band is simply not rendered.
+const HOME_OPPORTUNITIES_COUNT = 4;
+
+export async function getHomeOpportunities() {
+  const res = await getOpportunityPosts({ page: 1, perPage: HOME_OPPORTUNITIES_COUNT }).catch((err) => {
+    console.error("getHomeOpportunities failed —", err);
+    return null;
+  });
+  return {
+    eyebrow: "Get involved",
+    title: "Latest opportunities",
+    text: "Calls for applications, fellowships, grants, trainings and vacancies from the MFWA and its partners across West Africa.",
+    viewAll: { label: "All opportunities", href: "/opportunities" },
+    items: (res?.items ?? []).slice(0, HOME_OPPORTUNITIES_COUNT),
   };
 }
 
@@ -336,6 +397,14 @@ export async function getImpactStats() {
       countLabel: "funding partners",
       link: { label: "Meet our funding partners", href: "/about-us/our-partners/funding-partners" },
       items: funderLogos,
+      // 2026-10-30: logos in a draggable horizontal rail + 3 entries below
+      // to the partner pages (components/ImpactStats.js FundersSection).
+      railLabel: "Funding partners' logos — drag or scroll sideways",
+      nav: [
+        { label: "Funding partners", desc: "The organisations that support our work", href: "/about-us/our-partners/funding-partners" },
+        { label: "National partners", desc: "Our partner organisations in all 16 countries", href: "/about-us/our-partners/national-partners" },
+        { label: "Our networks", desc: "The regional and global networks we belong to", href: "/about-us/our-partners/our-networks" },
+      ],
     },
     media: { src: "/images/ghana5.jpg", alt: "" },
     titleLines: ["From story", "to change."],
@@ -442,22 +511,22 @@ export async function getReach() {
     // merged Where We Work \u00d7 Issues explorer (see getWhereWeWorkPage())
     // rather than a dedicated per-country page.
     countries: [
-      { name: "Benin", color: "#C5E08A", id: "204", slug: "benin", link: "/where-we-work?country=benin#country-info", coordinates: [2.3912, 6.3703] },
-      { name: "Burkina Faso", color: "#F08A84", id: "854", slug: "burkina-faso", link: "/where-we-work?country=burkina-faso#country-info", coordinates: [-1.5197, 12.3714] },
-      { name: "Cabo Verde", color: "#5C84D8", id: "132", slug: "cape-verde", link: "/where-we-work?country=cape-verde#country-info", coordinates: [-23.5133, 14.9330] },
-      { name: "C\u00f4te d\u2019Ivoire", color: "#F28F4F", id: "384", slug: "cote-divoire", link: "/where-we-work?country=cote-divoire#country-info", coordinates: [-4.0083, 5.3599] },
-      { name: "The Gambia", color: "#A39BE6", id: "270", slug: "gambia", link: "/where-we-work?country=gambia#country-info", coordinates: [-16.5790, 13.4549] },
-      { name: "Ghana", color: "#F7E27A", id: "288", slug: "ghana", link: "/where-we-work?country=ghana#country-info", coordinates: [-0.1870, 5.6037] },
-      { name: "Guinea", color: "#E39A7E", id: "324", slug: "guinea", link: "/where-we-work?country=guinea#country-info", coordinates: [-13.5784, 9.6412] },
-      { name: "Guinea-Bissau", color: "#D9687A", id: "624", slug: "guinea-bissau", link: "/where-we-work?country=guinea-bissau#country-info", coordinates: [-15.5977, 11.8636] },
-      { name: "Liberia", color: "#E88AA6", id: "430", slug: "liberia", link: "/where-we-work?country=liberia#country-info", coordinates: [-10.7605, 6.2907] },
-      { name: "Mali", color: "#F2C94C", id: "466", slug: "mali", link: "/where-we-work?country=mali#country-info", coordinates: [-8.0029, 12.6392] },
-      { name: "Mauritania", color: "#7FD6B0", id: "478", slug: "mauritania", link: "/where-we-work?country=mauritania#country-info", coordinates: [-15.9582, 18.0735] },
-      { name: "Niger", color: "#F7C08A", id: "562", slug: "niger", link: "/where-we-work?country=niger#country-info", coordinates: [2.1128, 13.5127] },
-      { name: "Nigeria", color: "#3FA97C", id: "566", slug: "nigeria", link: "/where-we-work?country=nigeria#country-info", coordinates: [7.3986, 9.0765] },
-      { name: "Senegal", color: "#FBF0A8", id: "686", slug: "senegal", link: "/where-we-work?country=senegal#country-info", coordinates: [-17.4677, 14.7167] },
-      { name: "Sierra Leone", color: "#A9D8F5", id: "694", slug: "sierra-leone", link: "/where-we-work?country=sierra-leone#country-info", coordinates: [-13.2317, 8.4657] },
-      { name: "Togo", color: "#B8E3C8", id: "768", slug: "togo", link: "/where-we-work?country=togo#country-info", coordinates: [1.2314, 6.1725] },
+      { name: "Benin", color: "#C5E08A", id: "204", slug: "benin", link: "https://mediascape.mfwa.org/country/benin", coordinates: [2.3912, 6.3703] },
+      { name: "Burkina Faso", color: "#F08A84", id: "854", slug: "burkina-faso", link: "https://mediascape.mfwa.org/country/burkina-faso", coordinates: [-1.5197, 12.3714] },
+      { name: "Cabo Verde", color: "#5C84D8", id: "132", slug: "cape-verde", link: "https://mediascape.mfwa.org/country/cape-verde", coordinates: [-23.5133, 14.9330] },
+      { name: "C\u00f4te d\u2019Ivoire", color: "#F28F4F", id: "384", slug: "cote-divoire", link: "https://mediascape.mfwa.org/country/cote-divoire", coordinates: [-4.0083, 5.3599] },
+      { name: "The Gambia", color: "#A39BE6", id: "270", slug: "gambia", link: "https://mediascape.mfwa.org/country/gambia", coordinates: [-16.5790, 13.4549] },
+      { name: "Ghana", color: "#F7E27A", id: "288", slug: "ghana", link: "https://mediascape.mfwa.org/country/ghana", coordinates: [-0.1870, 5.6037] },
+      { name: "Guinea", color: "#E39A7E", id: "324", slug: "guinea", link: "https://mediascape.mfwa.org/country/guinea", coordinates: [-13.5784, 9.6412] },
+      { name: "Guinea-Bissau", color: "#D9687A", id: "624", slug: "guinea-bissau", link: "https://mediascape.mfwa.org/country/guinea-bissau", coordinates: [-15.5977, 11.8636] },
+      { name: "Liberia", color: "#E88AA6", id: "430", slug: "liberia", link: "https://mediascape.mfwa.org/country/liberia", coordinates: [-10.7605, 6.2907] },
+      { name: "Mali", color: "#F2C94C", id: "466", slug: "mali", link: "https://mediascape.mfwa.org/country/mali", coordinates: [-8.0029, 12.6392] },
+      { name: "Mauritania", color: "#7FD6B0", id: "478", slug: "mauritania", link: "https://mediascape.mfwa.org/country/mauritania", coordinates: [-15.9582, 18.0735] },
+      { name: "Niger", color: "#F7C08A", id: "562", slug: "niger", link: "https://mediascape.mfwa.org/country/niger", coordinates: [2.1128, 13.5127] },
+      { name: "Nigeria", color: "#3FA97C", id: "566", slug: "nigeria", link: "https://mediascape.mfwa.org/country/nigeria", coordinates: [7.3986, 9.0765] },
+      { name: "Senegal", color: "#FBF0A8", id: "686", slug: "senegal", link: "https://mediascape.mfwa.org/country/senegal", coordinates: [-17.4677, 14.7167] },
+      { name: "Sierra Leone", color: "#A9D8F5", id: "694", slug: "sierra-leone", link: "https://mediascape.mfwa.org/country/sierra-leone", coordinates: [-13.2317, 8.4657] },
+      { name: "Togo", color: "#B8E3C8", id: "768", slug: "togo", link: "https://mediascape.mfwa.org/country/togo", coordinates: [1.2314, 6.1725] },
     ],
   };
 }

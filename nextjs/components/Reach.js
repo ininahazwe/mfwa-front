@@ -45,7 +45,8 @@ function Swatch({ color }) {
 // synced three ways: the country's map polygon, its marker dot, and its
 // entry in the two-column list, same idea as the original initReachMap().
 // Each of those three now also doubles as a real link (country.link) to
-// that country's archive on mfwa.org — the map polygon and marker are
+// that country's page on Mediascape (mediascape.mfwa.org/country/<slug>,
+// opened in a new tab — 2026-10-30, Yv) — the map polygon and marker are
 // wrapped in an <a>, hover/focus still drives the shared active state.
 export default function Reach({ data }) {
   const [activeCountry, setActiveCountry] = useState(null);
@@ -122,7 +123,7 @@ export default function Reach({ data }) {
                   if (!country) return geoNode;
 
                   return (
-                    <a key={geo.rsmKey} href={country.link} aria-label={`${country.name}: read our latest coverage`}>
+                    <a key={geo.rsmKey} href={country.link} target="_blank" rel="noopener noreferrer" aria-label={`${country.name}: open its Mediascape profile (new tab)`}>
                       {geoNode}
                     </a>
                   );
@@ -141,8 +142,8 @@ export default function Reach({ data }) {
                   onMouseEnter={() => setActiveCountry(country.name)}
                 >
                   <a
-                    href={country.link}
-                    aria-label={`${country.name}: read our latest coverage`}
+                    href={country.link} target="_blank" rel="noopener noreferrer"
+                    aria-label={`${country.name}: open its Mediascape profile (new tab)`}
                     onFocus={() => setActiveCountry(country.name)}
                     onClick={() => setActiveCountry(country.name)}
                   >
@@ -168,7 +169,7 @@ export default function Reach({ data }) {
                 className={activeCountry === country.name ? "is-active" : undefined}
                 onMouseEnter={() => setActiveCountry(country.name)}
               >
-                <a href={country.link} onFocus={() => setActiveCountry(country.name)}>
+                <a href={country.link} target="_blank" rel="noopener noreferrer" onFocus={() => setActiveCountry(country.name)}>
                   <Swatch color={country.color} />
                   {country.name}
                 </a>
@@ -183,7 +184,7 @@ export default function Reach({ data }) {
                 className={activeCountry === country.name ? "is-active" : undefined}
                 onMouseEnter={() => setActiveCountry(country.name)}
               >
-                <a href={country.link} onFocus={() => setActiveCountry(country.name)}>
+                <a href={country.link} target="_blank" rel="noopener noreferrer" onFocus={() => setActiveCountry(country.name)}>
                   <Swatch color={country.color} />
                   {country.name}
                 </a>

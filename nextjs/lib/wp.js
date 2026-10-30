@@ -743,3 +743,26 @@ export async function getIssuesInFocusPosts({ page = 1, perPage = 12, exclude = 
 export async function getOpportunityPosts({ page = 1, perPage = 12 } = {}) {
   return fetchPostsWithTerms(archiveQuery({ page, perPage }), OPPORTUNITIES);
 }
+
+
+// -- Content totals for the homepage key figures (2026-10-30) -------------
+//
+// One tiny request per content type (per_page=1, only the id) just to read
+// WordPress' X-WP-Total header. Each figure is independent and returns null
+// when unavailable (request failed, or the CDN stripped the header → 0), so
+// getKeyStats() simply leaves that figure out instead of showing "0".
+export async function getWpContentTotals() {
+  async function total(path) {
+    try {
+      const { total: n } = await fetchJson(path);
+      return n > 0 ? n : null;
+    } catch {
+      return null;
+    }
+  }
+  const [stories, reports] = await Promise.all([
+    total(`/${STORIES}?per_page=1&_fields=id`),
+    total(`/report?per_page=1&_fields=id`),
+  ]);
+  return { stories, reports };
+}

@@ -1,22 +1,26 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Latest from "@/components/Latest";
+import KeyStats from "@/components/KeyStats";
 import Expertise from "@/components/Expertise";
 import ImpactStats, { FundersSection } from "@/components/ImpactStats";
 import ImpactHighlights from "@/components/ImpactHighlights";
 import Reach from "@/components/Reach";
 import Work from "@/components/Work";
+import HomeOpportunities from "@/components/HomeOpportunities";
 import Cta from "@/components/Cta";
 import Footer from "@/components/Footer";
 
 import { getHeader } from "@/lib/content";
 import { getHero } from "@/lib/content";
 import { getLatestStories } from "@/lib/content";
+import { getKeyStats } from "@/lib/content";
 import { getExpertise } from "@/lib/content";
 import { getImpactStats } from "@/lib/content";
 import { getImpactHighlights } from "@/lib/content";
 import { getReach } from "@/lib/content";
 import { getWork } from "@/lib/content";
+import { getHomeOpportunities } from "@/lib/content";
 import { getCta } from "@/lib/content";
 import { getNewsletter } from "@/lib/content";
 import { getFooter } from "@/lib/content";
@@ -37,11 +41,13 @@ export default async function Home() {
     header,
     hero,
     latest,
+    keyStats,
     expertise,
     impactStats,
     impactHighlights,
     reach,
     work,
+    opportunities,
     cta,
     newsletter,
     footer,
@@ -49,11 +55,13 @@ export default async function Home() {
     getHeader(),
     getHero(),
     getLatestStories(),
+    getKeyStats(),
     getExpertise(),
     getImpactStats(),
     getImpactHighlights(),
     getReach(),
     getWork(),
+    getHomeOpportunities(),
     getCta(),
     getNewsletter(),
     getFooter(),
@@ -77,9 +85,13 @@ export default async function Home() {
               Work, Cta. */}
           <Hero data={hero} />
           <Latest data={latest} />
+          {/* 2026-10-30: key figures band (3–4, whatever is available) */}
+          <KeyStats data={keyStats} />
           <Work data={work} />
+          {/* 2026-10-30: 4 latest opportunities (dated list on a navy band) */}
+          <HomeOpportunities data={opportunities} />
           <Expertise data={expertise} />
-          <ImpactStats data={impactStats} showFunders={false} />
+          {/*<ImpactStats data={impactStats} showFunders={false} />*/}
           <ImpactHighlights data={impactHighlights} />
           <Reach data={reach} />
           <FundersSection data={impactStats} />

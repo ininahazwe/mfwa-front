@@ -1,5 +1,6 @@
 // API: work_areas[] (custom post type WordPress) — icon (slug), number, title,
-// description, href (links through to the matching /programmes page)
+// description, href (links through to the matching /programmes page),
+// image? { src, alt, position } — shown instead of the number + icon row
 import Reveal from "./Reveal";
 
 const ICONS = {
@@ -58,10 +59,23 @@ export default function Work({ data }) {
       <Reveal as="div" className="work__grid" stagger>
         {data.items.map((item) => (
           <a className="work__item" href={item.href} key={item.num}>
-            <div className="work__top">
-              <span className="work__num">{item.num}</span>
-              {ICONS[item.icon]}
-            </div>
+            {/* 2026-10-30: photo instead of the number + icon row (previous
+                markup: .work__top > .work__num + ICONS[item.icon]). Two
+                layers of the same picture: a muted, navy-toned base and a
+                full-colour copy revealed from the bottom on hover/focus. */}
+            {item.image ? (
+              <div className="work__top work__media" aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="work__img work__img--base" src={item.image.src} alt="" loading="lazy" style={{ objectPosition: item.image.position }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="work__img work__img--color" src={item.image.src} alt="" loading="lazy" style={{ objectPosition: item.image.position }} />
+              </div>
+            ) : (
+              <div className="work__top">
+                <span className="work__num">{item.num}</span>
+                {ICONS[item.icon]}
+              </div>
+            )}
             <h3 className="work__heading">{item.heading}</h3>
             <p className="work__desc">{item.desc}</p>
           </a>
