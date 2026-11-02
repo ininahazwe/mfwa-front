@@ -48,7 +48,9 @@ function Swatch({ color }) {
 // that country's page on Mediascape (mediascape.mfwa.org/country/<slug>,
 // opened in a new tab — 2026-10-30, Yv) — the map polygon and marker are
 // wrapped in an <a>, hover/focus still drives the shared active state.
-export default function Reach({ data }) {
+// 2026-11-02 (design review N2): `children` (the key figures) render at the
+// end of the intro column, under the links.
+export default function Reach({ data, children }) {
   const [activeCountry, setActiveCountry] = useState(null);
 
   const col1 = data.countries.slice(0, 8);
@@ -87,6 +89,7 @@ export default function Reach({ data }) {
               </a>
             )}
           </div>
+          {children}
         </Reveal>
 
         <div className="reach__map" data-reach-map onMouseLeave={clearActive}>

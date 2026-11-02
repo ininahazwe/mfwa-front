@@ -32,6 +32,24 @@
   --dur-fast: .18s;
   --dur-slow: .5s;
   --radius-sm: 4px;
+
+  /* 2026-11-02 (design review I3) — type scale. The homepage sections use
+     these nine sizes instead of ~40 one-off values; other pages keep their
+     own values until they are migrated. Previous values: git history.
+     Left outside the scale on purpose: header/nav (shared, tight fit at
+     1181px), buttons (already one style: 12px / .1em caps), and the big
+     numerals (key stats, funders count, opportunity day), sized to their
+     boxes. */
+  --fs-label:   11px;                              /* eyebrows, tags, dates (caps) */
+  --fs-small:   13px;                              /* arrow links, meta, captions */
+  --fs-body:    15px;                              /* paragraphs — 16px on phones */
+  --fs-lead:    clamp(16px, .4vw + 13px, 18px);   /* lede, sans card titles */
+  --fs-h4:      clamp(18px, 1.5vw, 22px);         /* serif card titles */
+  --fs-h3:      clamp(22px, 1.1vw + 8px, 26px);   /* featured story, CTA cards */
+  --fs-h2:      clamp(28px, 3vw, 38px);           /* section titles (Yv's value) */
+  --fs-h1:      clamp(30px, 2.4vw, 38px);         /* homepage slogan */
+  --fs-display: clamp(36px, 4.4vw, 64px);         /* inner page heroes (later) */
+  --caps-tracking: .12em;                          /* every caps label */
 }
 /* La maquette est une identité de marque : elle ne s'inverse pas
    selon le thème du visiteur. On fige les valeurs. */
@@ -84,16 +102,19 @@ img.is-loading{ opacity:0; }
 img{ transition:opacity var(--dur-slow) var(--ease); }
 
 /* -- Révélation au défilement -------------------------------- */
+/* 2026-11-02 (design review I6): shorter and lighter — .4s and 16px
+   (was var(--dur-slow) = .5s and 24px); the trigger moved earlier in
+   lib/hooks.js (useScrollReveal). */
 [data-reveal]{
   opacity:0;
-  transform:translateY(24px);
-  transition:opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+  transform:translateY(16px);
+  transition:opacity .4s var(--ease), transform .4s var(--ease);
 }
 [data-reveal].is-visible{ opacity:1; transform:none; }
 [data-reveal="stagger"] > *{
   opacity:0;
-  transform:translateY(24px);
-  transition:opacity var(--dur-slow) var(--ease), transform var(--dur-slow) var(--ease);
+  transform:translateY(16px);
+  transition:opacity .4s var(--ease), transform .4s var(--ease);
 }
 [data-reveal="stagger"].is-visible > *{ opacity:1; transform:none; }
 
@@ -292,6 +313,10 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 .lang-switch a.lang-switch__lang:hover::after{ transform:scaleX(1); }
 .lang-switch__divider{ color:var(--hairline); }
+/* 2026-11-02 (finding 01): ↗ after FR, the link opens mfwa.org */
+.lang-switch__lang--ext{ display:inline-flex; align-items:center; gap:3px; }
+.lang-switch__lang--ext svg{ flex:none; transition:transform var(--dur-fast) var(--ease); }
+.lang-switch__lang--ext:hover svg{ transform:translate(1px, -1px); }
 .icon-btn{
   width:34px; height:34px;
   display:grid; place-items:center;
@@ -383,12 +408,15 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:flex;
   align-items:center;
   gap:16px;
-  font-size:11px;
+  font-size:var(--fs-label);
   font-weight:600;
-  letter-spacing:.16em;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--navy);
 }
+/* 2026-11-02 (design review N1, Yv's call): the red dash stays — the logo
+   red as a small, constant signature on every section. Red otherwise
+   means action (buttons, hover, focus); keep new decorative uses out. */
 .eyebrow::before{
   content:"";
   width:26px; height:3px;
@@ -399,7 +427,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(12px, 2.2vh, 30px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 40px);
+  font-size:var(--fs-h1);
   line-height:1.1;
   letter-spacing:-.015em;
   color:var(--navy-ink);
@@ -407,7 +435,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .hero__lede{
   margin:clamp(10px, 2vh, 28px) 0 0;
   max-width:33ch;
-  font-size:clamp(16px, .4vw + 13px, 18px);
+  font-size:var(--fs-lead);
   line-height:1.55;
   font-weight:600;
   color:var(--blue);
@@ -478,9 +506,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:flex;
   align-items:center;
   gap:12px;
-  font-size:12px;
+  font-size:var(--fs-label);
   font-weight:600;
-  letter-spacing:.17em;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--white);
 }
@@ -505,27 +533,29 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(12px, 2.2vh, 22px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(20px, 1.1vw + 10px, 27px);
+  font-size:var(--fs-h3);
   line-height:1.24;
   letter-spacing:-.005em;
   color:var(--white);
 }
 .news__text{
   margin:clamp(10px, 1.8vh, 20px) 0 0;
-  font-size:14px;
+  font-size:var(--fs-body);
   line-height:1.6;
   color:var(--panel-muted);
   max-width:34ch;
 }
+/* 2026-11-02 (design review I2): sentence case like every other arrow
+   link ("About MFWA", "Read the story"); capitals stay for buttons, tags
+   and eyebrows. Previous: font-size:12px; letter-spacing:.13em;
+   text-transform:uppercase; */
 .news__link{
   display:inline-flex;
   align-items:center;
   gap:11px;
   margin-top:clamp(14px, 2.4vh, 26px);
-  font-size:12px;
+  font-size:var(--fs-small);
   font-weight:600;
-  letter-spacing:.13em;
-  text-transform:uppercase;
   color:var(--white);
   align-self:flex-start;
 }
@@ -567,10 +597,10 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 @media (max-width:1180px){
   .hero__feature{ grid-template-columns:57fr 43fr; }
-  .hero__title{ font-size:clamp(28px, 3.2vw, 38px); max-width:none; }
-  .hero__intro > .eyebrow{ font-size:10px; letter-spacing:.1em; gap:12px; }
-  .hero__lede{ font-size:16px; max-width:38ch; }
-  .news__title{ font-size:23px; }
+  .hero__title{ font-size:var(--fs-h1); max-width:none; }
+  .hero__intro > .eyebrow{ font-size:var(--fs-label); letter-spacing:var(--caps-tracking); gap:12px; }
+  .hero__lede{ font-size:var(--fs-lead); max-width:38ch; }
+  .news__title{ font-size:var(--fs-h3); }
   .nav{ gap:26px; }
 }
 
@@ -591,7 +621,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .hero__lede{ max-width:46ch; }
   .hero__media{ aspect-ratio:16/10; }
   .hero__news{ padding:40px var(--gutter) 48px; }
-  .news__title{ font-size:26px; max-width:18ch; }
+  .news__title{ font-size:var(--fs-h3); max-width:18ch; }
   .news__text{ max-width:52ch; }
   .news__thumb{ max-width:420px; flex:0 0 auto; aspect-ratio:287/135; }
 }
@@ -625,9 +655,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:flex;
   align-items:center;
   gap:9px;
-  font-size:11.5px;
-  font-weight:700;
-  letter-spacing:.09em;
+  font-size:var(--fs-label);
+  font-weight:600;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--navy);
   white-space:nowrap;
@@ -686,7 +716,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   align-items:center;
   gap:10px;
   flex:none;
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--navy);
 }
@@ -697,7 +727,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin: 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 38px);
+  font-size:var(--fs-h2);
   line-height:1.16;
   letter-spacing:-.015em;
   color:var(--navy-ink);
@@ -744,9 +774,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:flex;
   align-items:center;
   gap:7px;
-  font-size:11px;
+  font-size:var(--fs-label);
   font-weight:600;
-  letter-spacing:.11em;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--blue);
 }
@@ -756,7 +786,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:14px 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:18px;
+  font-size:var(--fs-h4);
   line-height:1.32;
   color:var(--navy-ink);
   letter-spacing:-.005em;
@@ -776,9 +806,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   justify-content:space-between;
   gap:16px;
   margin-top:16px;
-  font-size:11.5px;
+  font-size:var(--fs-label);
   font-weight:600;
-  letter-spacing:.06em;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--ink-muted);
 }
@@ -796,7 +826,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .story__body{ display:flex; flex-direction:column; flex:1 1 auto; }
 .story__excerpt{
   margin:10px 0 0;
-  font-size:13.5px;
+  font-size:var(--fs-body);
   line-height:1.55;
   color:var(--ink-muted);
 }
@@ -817,7 +847,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 @media (max-width:560px){
   .latest__head{ align-items:flex-start; }
-  .latest__all span{ display:none; }
+  /* 2026-11-02 (design review C2): label kept on mobile — hidden, the link
+     shrank to a 15x9 px arrow and two identical arrows sat side by side.
+     Previous rule: .latest__all span{ display:none; } */
   .latest__grid{ grid-template-columns:1fr; gap:32px; }
 }
 
@@ -841,7 +873,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(10px, 1.8vh, 18px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 38px);
+  font-size:var(--fs-h2);
   line-height:1.12;
   letter-spacing:-.015em;
   color:var(--navy-ink);
@@ -850,7 +882,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .work__text{
   margin:0;
   max-width:40ch;
-  font-size:15px;
+  font-size:var(--fs-body);
   line-height:1.65;
   color:var(--ink-muted);
 }
@@ -859,7 +891,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   align-items:center;
   gap:10px;
   margin-top:16px;
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--blue);
 }
@@ -904,7 +936,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .work__num{
   flex:none;
   min-width:18px;
-  font-size:14px;
+  font-size:var(--fs-small);
   font-weight:700;
   letter-spacing:.02em;
   color:var(--blue);
@@ -970,14 +1002,14 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:22px 0 0;
   font-family:var(--font-sans);
   font-weight:700;
-  font-size:16.5px;
+  font-size:var(--fs-lead);
   line-height:1.3;
   color:var(--navy-ink);
   max-width:20ch;
 }
 .work__desc{
   margin:10px 0 0;
-  font-size:14px;
+  font-size:var(--fs-body);
   line-height:1.55;
   color:var(--ink-muted);
   max-width:24ch;
@@ -985,7 +1017,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 /* -- Responsive -------------------------------------------- */
 @media (max-width:1180px){
-  .work__heading{ font-size:15.5px; }
+  .work__heading{ font-size:var(--fs-lead); }
 }
 
 @media (max-width:900px){
@@ -1144,7 +1176,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:flex;
   align-items:center;
   gap:8px;
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--navy);
 }
@@ -1155,7 +1187,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(10px, 1.8vh, 18px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 38px);
+  font-size:var(--fs-h2);
   line-height:1.16;
   letter-spacing:-.015em;
   color:var(--navy-ink);
@@ -1181,12 +1213,12 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 .impact-story--featured .impact-story__body{ flex:1 1 auto; min-width:0; }
 .impact-story--featured .impact-story__heading{
-  font-size:clamp(21px, 1.9vw, 26px);
+  font-size:var(--fs-h3);
   line-height:1.28;
 }
 .impact-story__excerpt{
   margin:12px 0 0;
-  font-size:13.5px;
+  font-size:var(--fs-body);
   line-height:1.6;
   color:var(--ink-muted);
 }
@@ -1195,7 +1227,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   align-items:center;
   gap:8px;
   margin-top:16px;
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:700;
   color:var(--blue);
 }
@@ -1226,7 +1258,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 .impact-story--compact .impact-story__body{ flex:1 1 auto; min-width:0; }
 .impact-story--compact .impact-story__heading{
-  font-size:18px;
+  font-size:var(--fs-h4);
   line-height:1.32;
 }
 
@@ -1247,9 +1279,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 .impact-story__tag{
   margin:0;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.08em;
+  font-size:var(--fs-label);
+  font-weight:600;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--ink-muted);
 }
@@ -1264,7 +1296,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .impact-story__link:hover .impact-story__heading{ color:var(--blue); }
 .impact-story__meta{
   margin:10px 0 0;
-  font-size:12px;
+  font-size:var(--fs-small);
   color:var(--ink-muted);
 }
 .impact-story__meta i{ font-style:normal; margin:0 6px; }
@@ -1311,7 +1343,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(10px, 1.8vh, 18px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 38px);
+  font-size:var(--fs-h2);
   line-height:1.16;
   letter-spacing:-.015em;
   color:var(--navy-ink);
@@ -1319,7 +1351,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .reach__text{
   margin:clamp(14px, 2vh, 20px) 0 0;
   max-width:36ch;
-  font-size:14.5px;
+  font-size:var(--fs-body);
   line-height:1.65;
   color:var(--ink-muted);
 }
@@ -1328,7 +1360,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   align-items:center;
   gap:10px;
   margin-top:16px;
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--blue);
 }
@@ -1397,7 +1429,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   gap:14px;
 }
 .reach__col li{
-  font-size:14.5px;
+  font-size:var(--fs-body);
   color:var(--ink-muted);
   transition:color var(--dur-fast) var(--ease);
 }
@@ -1453,7 +1485,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(8px, 1.4vh, 14px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 38px);
+  font-size:var(--fs-h2);
   line-height:1.14;
   letter-spacing:-.015em;
   color:var(--navy-ink);
@@ -1461,7 +1493,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .expertise__text{
   margin:clamp(10px, 1.6vh, 16px) 0 0;
   max-width:38ch;
-  font-size:14.5px;
+  font-size:var(--fs-body);
   line-height:1.65;
   color:var(--ink-muted);
 }
@@ -1470,7 +1502,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   align-items:center;
   gap:10px;
   margin-top:16px;
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--blue);
 }
@@ -1496,14 +1528,15 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .expertise__icon{ display:block; color:var(--navy-ink); }
 .expertise__heading{
   margin:14px 0 0;
-  font-size:15px;
+  font-size:var(--fs-lead);
   font-weight:700;
   line-height:1.3;
+  text-wrap:balance; /* N3: replaces the forced <br> in Expertise.js */
   color:var(--navy-ink);
 }
 .expertise__desc{
   margin:8px 0 0;
-  font-size:13px;
+  font-size:var(--fs-small);
   line-height:1.5;
   color:var(--ink-muted);
 }
@@ -1581,7 +1614,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(10px, 1.8vh, 18px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(26px, 3.2vw, 40px);
+  font-size:var(--fs-h2);
   line-height:1.2;
   letter-spacing:-.015em;
   color:var(--white);
@@ -1605,7 +1638,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   border-left:none;
 }
 .cta__link a{
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:600;
   letter-spacing:.01em;
   color:rgba(255,255,255,.82);
@@ -1620,7 +1653,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 .cta__text{
   margin:0 0 20px;
-  font-size:13.5px;
+  font-size:var(--fs-body);
   line-height:1.65;
   color:rgba(255,255,255,.78);
 }
@@ -1702,7 +1735,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   height:auto;
 }
 .footer-brand__name{
-  font-size:12px;
+  font-size:var(--fs-small);
   line-height:1.4;
   color:rgba(255,255,255,.62);
 }
@@ -1714,7 +1747,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   gap:11px;
 }
 .footer-nav a{
-  font-size:14px;
+  font-size:var(--fs-body);
   font-weight:600;
   color:var(--white);
   transition:color var(--dur-fast) var(--ease);
@@ -1742,7 +1775,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .footer-social__icons a:hover{ opacity:1; }
 .footer-social__tagline{
   margin:0;
-  font-size:13px;
+  font-size:var(--fs-small);
   line-height:1.55;
   color:rgba(255,255,255,.58);
 }
@@ -1766,7 +1799,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .footer-credential__caption{
   margin:0;
   max-width:150px;
-  font-size:13px;
+  font-size:var(--fs-small);
   line-height:1.55;
   color:rgba(255,255,255,.58);
 }
@@ -1782,7 +1815,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 .footer-copy{
   margin:0;
-  font-size:12.5px;
+  font-size:var(--fs-small);
   color:rgba(255,255,255,.5);
 }
 .footer-legal{
@@ -1790,7 +1823,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   gap:26px;
 }
 .footer-legal a{
-  font-size:12.5px;
+  font-size:var(--fs-small);
   color:rgba(255,255,255,.5);
   transition:color var(--dur-fast) var(--ease);
 }
@@ -1991,12 +2024,12 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:16px 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(26px, 3.4vw, 36px);
+  font-size:var(--fs-h2);
   line-height:1.2;
 }
 .newsletter__text{
   margin:14px 0 0;
-  font-size:15px;
+  font-size:var(--fs-body);
   line-height:1.6;
   color:rgba(255,255,255,.72);
 }
@@ -2023,7 +2056,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   background:rgba(255,255,255,.06);
   color:var(--white);
   font-family:var(--font-sans);
-  font-size:14.5px;
+  font-size:var(--fs-body);
 }
 .newsletter__input::placeholder{ color:rgba(255,255,255,.45); }
 .newsletter__input:focus-visible{ outline:2px solid var(--white); outline-offset:2px; }
@@ -2047,12 +2080,12 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .newsletter__submit:disabled{ opacity:.6; cursor:default; }
 .newsletter__privacy{
   margin:14px 0 0;
-  font-size:12px;
+  font-size:var(--fs-small);
   color:rgba(255,255,255,.55);
 }
 .newsletter__success{
   margin:28px 0 0;
-  font-size:15px;
+  font-size:var(--fs-body);
   color:var(--white);
 }
 
@@ -3681,9 +3714,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .header-search__label{
   display:block;
   margin-bottom:10px;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.12em;
+  font-size:var(--fs-label);
+  font-weight:600;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--ink-muted);
 }
@@ -3696,7 +3729,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   border:1px solid var(--hairline);
   border-radius:var(--radius-sm);
   font:inherit;
-  font-size:14px;
+  font-size:var(--fs-body);
   color:var(--navy-ink);
   background:var(--white);
 }
@@ -3781,7 +3814,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .news-controls > *{ pointer-events:auto; }
 .news-controls__count{
   margin:0;
-  font-size:12px;
+  font-size:var(--fs-small);
   letter-spacing:.14em;
   color:rgba(255,255,255,.7);
   font-variant-numeric:tabular-nums;
@@ -3844,9 +3877,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .cta__sites-title{
   flex:none;
   margin:0;
-  font-size:11px;
-  font-weight:700;
-  letter-spacing:.14em;
+  font-size:var(--fs-label);
+  font-weight:600;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:rgba(255,255,255,.7);
 }
@@ -3873,8 +3906,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   transition:background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 .cta__sites-list a:hover{ background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.6); }
-.cta__site-name{ font-size:14px; font-weight:700; }
-.cta__site-host{ grid-column:1; font-size:11.5px; color:rgba(255,255,255,.62); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cta__site-name{ font-size:var(--fs-body); font-weight:700; }
+.cta__site-host{ grid-column:1; font-size:var(--fs-small); color:rgba(255,255,255,.62); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cta__site-arrow{ grid-column:2; grid-row:1 / span 2; opacity:.7; }
 /* Logo du site, après le lien : tuile blanche de 32px de haut, donc plus basse
    que le bloc nom + adresse — la hauteur du bandeau ne change pas. La place
@@ -3940,7 +3973,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(8px, 1.4vh, 14px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 38px);
+  font-size:var(--fs-h2);
   line-height:1.16;
   letter-spacing:-.015em;
   color:var(--navy-ink);
@@ -3960,7 +3993,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   color:var(--navy-ink);
   font-variant-numeric:tabular-nums;
 }
-.funders__count-label{ font-size:14px; color:var(--ink-muted); }
+.funders__count-label{ font-size:var(--fs-body); color:var(--ink-muted); }
 
 .funders__rail{
   --fade: clamp(32px, 6vw, 90px);
@@ -4042,14 +4075,14 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:block;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(18px, 1.5vw, 21px);
+  font-size:var(--fs-h4);
   line-height:1.2;
   color:var(--navy-ink);
 }
 .funders__entry-desc{
   display:block;
   margin-top:6px;
-  font-size:13px;
+  font-size:var(--fs-small);
   line-height:1.45;
   color:var(--ink-muted);
 }
@@ -4798,7 +4831,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   display:inline-flex;
   align-items:center;
   gap:10px;
-  font-size:14px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--navy);
 }
@@ -4808,7 +4841,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 .latest__empty{
   margin:clamp(20px, 3vh, 32px) 0 0;
-  font-size:15px;
+  font-size:var(--fs-body);
   color:var(--ink-muted);
 }
 
@@ -5226,18 +5259,24 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
   /* slogan compact */
   .hero__intro{ padding-right:clamp(20px, 2vw, 36px); }
-  .hero__intro .hero__title{ font-size:clamp(25px, 1.9vw, 30px); }
-  .hero__intro .hero__lede{ font-size:15px; max-width:30ch; }
+  /* 2026-11-02 (design review I1): the h1 was smaller than the story
+     title (27.4 vs 29.6px at 1440) and than every section title (38px).
+     The story keeps the room; the h1 gets the biggest type back.
+     Previous: clamp(25px, 1.9vw, 30px) */
+  .hero__intro .hero__title{ font-size:var(--fs-h1); }
+  .hero__intro .hero__lede{ font-size:var(--fs-lead); max-width:30ch; }
   .hero__intro .hero__actions{ gap:12px 22px; }
 
   /* article à la une */
   .hero__news .news__title{
-    font-size:clamp(26px, 1.5vw + 8px, 34px);
+    /* I1: 22-26px (7 lines -> 5 at 1440, more room for the excerpt).
+       Previous: clamp(26px, 1.5vw + 8px, 34px) */
+    font-size:var(--fs-h3);
     line-height:1.2;
   }
-  .hero__news .news__text{ font-size:15px; max-width:38ch; }
+  .hero__news .news__text{ font-size:var(--fs-body); max-width:38ch; }
   .hero__news .news__link{
-    font-size:12.5px;
+    font-size:var(--fs-small); /* I2: was 12.5px in capitals */
     padding-bottom:6px;
     /*border-bottom:2px solid var(--red);*/
   }
@@ -5257,7 +5296,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   gap:clamp(20px, 4vw, 64px);
 }
 .cta__head-aside{ max-width:46ch; }
-.cta__text--head{ margin:0 0 12px; font-size:15px; }
+.cta__text--head{ margin:0 0 12px; font-size:var(--fs-body); }
 .cta__cards{
   list-style:none;
   margin:0;
@@ -5286,15 +5325,19 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .cta-card__title{
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(22px, 2vw, 28px);
+  font-size:var(--fs-h3);
   line-height:1.15;
 }
 .cta-card__text{
-  font-size:14px;
+  font-size:var(--fs-body);
   line-height:1.55;
   color:rgba(255,255,255,.86);
   max-width:40ch;
 }
+/* 2026-11-02 (design review C1): white at 86% on the red Donate card was
+   3.82:1, below WCAG 4.5:1 for 14px text. Opaque white gives 4.79:1. The
+   other cards sit on the dark band, where 86% white stays well above 4.5:1. */
+.cta-card--primary .cta-card__text{ color:var(--white); }
 .cta-card__go{
   position:absolute;
   left:clamp(20px, 2.4vw, 28px);
@@ -5305,7 +5348,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .cta-card:hover .cta-card__go svg{ transform:translateX(6px); }
 .cta__contact{
   margin:0;
-  font-size:13px;
+  font-size:var(--fs-small);
   color:rgba(255,255,255,.7);
 }
 .cta__contact a{ color:var(--white); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
@@ -5324,8 +5367,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   border-top:1px solid rgba(255,255,255,.18);
 }
 .newsletter--inline .newsletter__eyebrow{ justify-content:flex-start; grid-column:1; }
-.newsletter--inline .newsletter__title{ grid-column:1; margin-top:10px; font-size:clamp(22px, 2.2vw, 28px); }
-.newsletter--inline .newsletter__text{ grid-column:1; font-size:14px; margin-top:8px; }
+.newsletter--inline .newsletter__title{ grid-column:1; margin-top:10px; font-size:var(--fs-h3); }
+.newsletter--inline .newsletter__text{ grid-column:1; font-size:var(--fs-body); margin-top:8px; }
 .newsletter--inline .newsletter__form,
 .newsletter--inline .newsletter__success{ grid-column:2; grid-row:1 / span 3; margin-top:0; }
 
@@ -5352,7 +5395,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .latest > .topics--labelled{ margin:clamp(18px, 2.4vh, 26px) 0 0; }
 .topics__label{
   flex:none;
-  font-size:12.5px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--ink-muted);
   white-space:nowrap;
@@ -5688,7 +5731,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .keystats__label{
   display:block;
   margin-top:10px;
-  font-size:13px;
+  font-size:var(--fs-small);
   line-height:1.4;
   color:var(--ink-muted);
   transition:color var(--dur-fast) var(--ease);
@@ -5723,7 +5766,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   margin:clamp(10px, 1.8vh, 18px) 0 0;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3vw, 38px);
+  font-size:var(--fs-h2);
   line-height:1.12;
   letter-spacing:-.015em;
   color:var(--white);
@@ -5731,7 +5774,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .opps__text{
   margin:16px 0 0;
   max-width:38ch;
-  font-size:15px;
+  font-size:var(--fs-body);
   line-height:1.65;
   color:var(--panel-muted);
 }
@@ -5740,7 +5783,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   align-items:center;
   gap:10px;
   margin-top:22px;
-  font-size:13px;
+  font-size:var(--fs-small);
   font-weight:600;
   color:var(--white);
 }
@@ -5773,7 +5816,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  width:64px;
+  width:68px; /* I3: 64 -> 68px, the month now uses the shared caps tracking */
   min-height:64px;
   border-radius:var(--radius-sm);
   background:var(--white);
@@ -5786,11 +5829,13 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   font-size:26px;
   line-height:1;
 }
+/* 2026-11-02 (design review C3): 10px -> 11px, Apple's minimum for text
+   (9px on mobile before). I3: shared caps label size and tracking. */
 .opps__month{
   margin-top:4px;
-  font-size:10px;
+  font-size:var(--fs-label);
   font-weight:600;
-  letter-spacing:.08em;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--ink-muted);
   white-space:nowrap;
@@ -5799,9 +5844,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .opps__body{ display:block; min-width:0; }
 .opps__tag{
   display:block;
-  font-size:11px;
+  font-size:var(--fs-label);
   font-weight:600;
-  letter-spacing:.12em;
+  letter-spacing:var(--caps-tracking);
   text-transform:uppercase;
   color:var(--panel-muted);
 }
@@ -5811,10 +5856,21 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   -webkit-line-clamp:2;
   overflow:hidden;
   margin-top:6px;
-  font-size:16px;
+  font-size:var(--fs-lead);
   font-weight:600;
   line-height:1.4;
   color:var(--white);
+}
+/* 2026-11-02 (design review I4): on phones every title needed 4 lines
+   and was cut after 2, often just before the words that tell the calls
+   apart ("...Fellowship 2026"). Full titles there; desktop keeps 2 lines. */
+@media (max-width:560px){
+  .opps__heading{
+    display:block;
+    -webkit-line-clamp:unset;
+    line-clamp:none;
+    overflow:visible;
+  }
 }
 .opps__go{
   display:inline-flex;
@@ -5836,10 +5892,146 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 @media (max-width:520px){
   .opps__link{ grid-template-columns:auto minmax(0, 1fr); }
   .opps__go{ display:none; }
-  .opps__date{ width:60px; min-height:56px; }
+  .opps__date{ width:68px; min-height:56px; } /* C3/I3: 60 -> 68px for the 11px month */
   .opps__day{ font-size:22px; }
-  .opps__month{ font-size:9px; letter-spacing:.04em; }
+  .opps__month{ font-size:var(--fs-label); letter-spacing:var(--caps-tracking); } /* C3/I3: was 9px / .04em */
 }
 @media (prefers-reduced-motion: reduce){
   .opps__link:hover .opps__go{ transform:none; }
 }
+
+/* =========================================================
+   2026-11-02 (design review C2) — tap targets
+   Every control gets a hit area of at least 28x28 px (Apple's minimum;
+   WCAG 2.2 SC 2.5.8 asks 24x24). The look is unchanged: text links grow
+   with padding cancelled by a negative margin, small items with an
+   invisible ::before. Map shapes are left as they are — the country list
+   next to the map is the equivalent target.
+   ========================================================= */
+
+/* Arrow text links (20-25 px tall before) -> 32-37 px */
+.hero__secondary,
+.news__link,
+.latest__all,
+.work__link,
+.opps__all,
+.expertise__link,
+.impact-highlights__all,
+.reach__link{
+  padding-block:6px;
+  margin-block:-6px;
+}
+
+/* Country list and footer links (19-22 px tall before) -> 29-32 px */
+.reach__col a,
+.footer-nav a,
+.footer-legal a{
+  padding-block:5px;
+  margin-block:-5px;
+}
+
+/* Social icons (17x17 before) -> 29x29 */
+.footer-social__icons a{
+  padding:6px;
+  margin:-6px;
+}
+
+/* "Contact us" sits inside a sentence; inline padding grows the target
+   (16 px tall before -> 30 px) without moving the line */
+.cta__contact a{ padding-block:7px; }
+
+/* FR link (16x26 before) -> 32x34; ::after is the hover underline */
+.lang-switch a.lang-switch__lang::before{
+  content:"";
+  position:absolute;
+  inset:-4px -8px;
+}
+
+/* Topic links (21 px tall before) -> 29 px; .topics padding absorbs it */
+.topics__item::before{
+  content:"";
+  position:absolute;
+  inset:-4px -6px;
+}
+
+/* Carousel dots (8x8 before): the button becomes a 28x28 target and the
+   dot is drawn by ::before, same size and colours as before */
+.news-controls__dots{ gap:0; }
+.news-controls__dot,
+.news-controls__dot:hover,
+.news-controls__dot.is-active{
+  position:relative;
+  width:28px;
+  height:28px;
+  background:transparent;
+}
+.news-controls__dot::before{
+  content:"";
+  position:absolute;
+  top:50%; left:50%;
+  width:8px; height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.35);
+  transform:translate(-50%, -50%);
+  transition:width var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.news-controls__dot:hover::before{ background:rgba(255,255,255,.6); }
+.news-controls__dot.is-active::before{ width:22px; background:var(--white); }
+
+/* =========================================================
+   2026-11-02 (design review C3, folded into I3) — running text on mobile
+   Paragraphs were 13.5-15px on phones. Apple's default for body text on
+   mobile is 17pt; 16px is the usual web equivalent. Every paragraph and
+   both text fields use --fs-body, so raising the token is enough. 16px
+   in the fields also stops iOS Safari zooming in on focus.
+   ========================================================= */
+@media (max-width:560px){
+  :root{ --fs-body:16px; }
+}
+
+/* =========================================================
+   2026-11-02 (design review N2, Yv's call: options A + B)
+   Mediascape comes right after the news and carries the key figures;
+   the expertise pillars sit under « What we do ». Previous layout: the
+   band .keystats and the section .expertise on their own (rules above,
+   still used if those components render standalone).
+   ========================================================= */
+/* Work is white now: Mediascape (#f9fafa) sits right above it */
+.work{ background:var(--white); }
+
+/* Key figures inside the Mediascape intro: 2 x 2, no panel */
+.keystats__list--embedded{
+  margin-top:clamp(24px, 3.5vh, 32px);
+  padding:clamp(18px, 2.6vh, 24px) 0 0;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:20px 24px;
+  background:none;
+  border-radius:0;
+  border-top:1px dotted var(--hairline);
+}
+.keystats__list--embedded .keystats__num{ font-size:clamp(28px, 2.4vw, 36px); }
+.keystats__list--embedded .keystats__label{ margin-top:6px; }
+
+/* Expertise pillars as a sub-block of « What we do » */
+.work__expertise{
+  margin-top:clamp(44px, 6vh, 64px);
+  padding-top:clamp(24px, 3.5vh, 36px);
+  border-top:1px dotted var(--hairline);
+}
+.work__expertise-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px 24px;
+  margin-bottom:clamp(20px, 3vh, 28px);
+}
+.work__expertise-title{ margin:0; }
+.work__expertise .expertise__grid{ --work-hairline:#dde5ec; }
+
+/* Impact stories: title in the head row (no eyebrow) */
+.impact-highlights__head > .impact-highlights__title{ margin:0; }
+
+/* Impact and partners are both white now: dotted separator between them */
+.impact-highlights + .funders{ border-top:1px dotted var(--hairline); }
+

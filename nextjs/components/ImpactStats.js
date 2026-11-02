@@ -67,7 +67,9 @@ export function FundersSection({ data }) {
     <section className="funders" id="funders" aria-labelledby="funders-title">
       <div className="funders__inner">
         <Reveal as="div" className="funders__intro">
-          <p className="eyebrow">{f.eyebrow}</p>
+          {/* N2 (2026-11-02): optional — dropped on the homepage, where it
+              repeated the title */}
+          {f.eyebrow && <p className="eyebrow">{f.eyebrow}</p>}
           <h2 className="funders__title" id="funders-title">
             {f.title}
           </h2>

@@ -1,0 +1,49 @@
+// Hand-written sample Impact stories, homepage — replaced 2026-11-02 by
+// WordPress impact stories (design review I5). Kept for reference.
+
+// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/posts?category=impact&per_page=3&_embed`).then(r => r.json())
+export async function getImpactHighlights() {
+  return {
+    eyebrow: "Impact",
+    title: "Impact stories",
+    viewAll: { label: "View all stories", href: "/impact-stories" },
+    featured: {
+      link: "#article-advocacy-training",
+      image: {
+        src: "/images/ghana5.jpg",
+        alt: "Image d'illustration : l'arche de l'indépendance du Ghana, portant l'inscription « Freedom and Justice ».",
+      },
+      tag: ["Ghana", "Impact"],
+      heading: "How advocacy training helped protect 40 journalists across Ghana",
+      date: "15 Sep 2026",
+      readTime: "4 min read",
+      excerpt:
+        "A year after MFWA's safety and legal-support programme launched, newsroom leaders report fewer threats and faster response when journalists are at risk.",
+      ctaLabel: "Read the story",
+    },
+    compact: [
+      {
+        link: "#article-digital-safety",
+        image: {
+          src: "/images/ghana4.jpg",
+          alt: "Image d'illustration : rassemblement public au Black Star Square, Accra.",
+        },
+        tag: ["West Africa", "Impact"],
+        heading: "Digital safety workshops cut online attacks on young reporters in half",
+        date: "11 Sep 2026",
+        readTime: "3 min read",
+      },
+      {
+        link: "#article-community-radio-impact",
+        image: {
+          src: "/images/ghana1.jpg",
+          alt: "Image d'illustration : scène de rue animée sur un marché ouest-africain.",
+        },
+        tag: ["Sierra Leone", "Impact"],
+        heading: "Community radio partnerships reached 200,000 listeners with civic reporting",
+        date: "08 Sep 2026",
+        readTime: "3 min read",
+      },
+    ],
+  };
+}

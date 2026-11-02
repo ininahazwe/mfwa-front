@@ -41,7 +41,12 @@ export function useScrollReveal() {
           obs.unobserve(entry.target);
         });
       },
-      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+      // 2026-11-02 (design review I6): reveal as soon as the top of the
+      // block is 48px into the viewport, whatever its height. It used to
+      // wait for 15% of the block above the bottom 8% of the screen — on a
+      // phone, ~300px of blank scrolling before a 2000px grid showed up.
+      // Previous: { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+      { threshold: 0, rootMargin: "0px 0px -48px 0px" }
     );
 
     observer.observe(el);
@@ -136,6 +141,9 @@ export function useFooterReveal() {
  * ease-out cubic easing, and shows the final value immediately when the
  * user prefers reduced motion or IntersectionObserver is unavailable.
  */
+// 2026-11-02 (design review I6): no longer used — StatCounter now shows
+// the figure as it is (the count-up displayed wrong values for 1.2s).
+// Kept so the animation can come back by restoring StatCounter.js.
 export function useStatCounters(target, suffix = "") {
   const ref = useRef(null);
 

@@ -36,7 +36,9 @@ const ICONS = {
   ),
 };
 
-export default function Work({ data }) {
+// 2026-11-02 (design review N2): `children` (the expertise pillars) render
+// below the programmes grid.
+export default function Work({ data, children }) {
   return (
     <section className="work" id="our-work">
       <div className="work__head">
@@ -81,6 +83,7 @@ export default function Work({ data }) {
           </a>
         ))}
       </Reveal>
+      {children}
     </section>
   );
 }

@@ -83,17 +83,25 @@ export default async function Home() {
               funders, and the call to action. Previous order: Hero, Latest,
               Expertise, ImpactStats (+ funders), ImpactHighlights, Reach,
               Work, Cta. */}
+          {/* 2026-11-02 (design review N2, at Yv's call — options A + B):
+              Mediascape moves up right after the news, as the homepage's
+              signature, and carries the key figures; the expertise pillars
+              join « What we do ». 10 sections -> 8. Previous order: Hero,
+              Latest, KeyStats, Work, HomeOpportunities, Expertise,
+              ImpactHighlights, Reach, FundersSection, Cta. */}
           <Hero data={hero} />
           <Latest data={latest} />
-          {/* 2026-10-30: key figures band (3–4, whatever is available) */}
-          <KeyStats data={keyStats} />
-          <Work data={work} />
+          <Reach data={reach}>
+            <KeyStats data={keyStats} embedded />
+          </Reach>
+          <Work data={work}>
+            <Expertise data={expertise} embedded />
+          </Work>
           {/* 2026-10-30: 4 latest opportunities (dated list on a navy band) */}
           <HomeOpportunities data={opportunities} />
-          <Expertise data={expertise} />
           {/*<ImpactStats data={impactStats} showFunders={false} />*/}
-          <ImpactHighlights data={impactHighlights} />
-          <Reach data={reach} />
+          {/* null when WordPress can't answer (design review I5) */}
+          {impactHighlights && <ImpactHighlights data={impactHighlights} />}
           <FundersSection data={impactStats} />
           <Cta data={cta} newsletter={newsletter} />
         </main>

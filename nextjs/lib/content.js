@@ -391,8 +391,12 @@ export async function getImpactStats() {
       // 2026-10-21 (homepage UX review, point 4): eyebrow was "Our funders"
       // under the title "Partners Highlights" (com team #17); the link now
       // opens the funding partners page itself (was /about-us/our-partners/).
-      eyebrow: "Funding partners",
-      title: "Partners Highlights",
+      // 2026-11-02 (design review N2): no eyebrow, it repeated the title.
+      // Previous: eyebrow: "Funding partners",
+      eyebrow: null,
+      // 2026-11-02 (design review I2): "Partners Highlights" -> sentence
+      // case and singular, like the other section titles.
+      title: "Partner highlights",
       count: funderLogos.length,
       countLabel: "funding partners",
       link: { label: "Meet our funding partners", href: "/about-us/our-partners/funding-partners" },
@@ -419,50 +423,47 @@ export async function getImpactStats() {
   };
 }
 
-// Future: return fetch(`${process.env.WP_API_BASE}/wp/v2/posts?category=impact&per_page=3&_embed`).then(r => r.json())
+// Homepage « Impact stories » (2026-11-02, design review I5, at Yv's call):
+// the 3 most recent WordPress impact stories — the same content as the
+// /impact-stories archive — instead of hand-written samples, which carried
+// made-up figures, dead #links and photos already used in « What we do ».
+// The first one is the large card and needs an excerpt: WordPress's own
+// if filled, otherwise the first paragraphs of the body (as in the hero).
+// No read time in WordPress, so the cards don't show one. If WordPress
+// can't answer, the section is left out rather than showing samples.
+// Previous version: lib/content.js.bak-impact.
+const IMPACT_HOME_COUNT = 3;
 export async function getImpactHighlights() {
+  const res = await getWpImpactStories({ perPage: IMPACT_HOME_COUNT, withExcerpt: true }).catch((err) => {
+    console.error("getImpactHighlights failed —", err);
+    return null;
+  });
+  const items = res?.items ?? [];
+  if (!items.length) return null;
+
+  const [first, ...rest] = items;
+  if (!first.excerpt) {
+    const bodies = await getWpBodyExcerpts([first.id], { base: "impact-stories", max: 300 }).catch((err) => {
+      console.error("getImpactHighlights: body excerpt unavailable —", err);
+      return new Map();
+    });
+    first.excerpt = bodies.get(first.id) ?? "";
+  }
+  const toCard = (story) => ({
+    link: story.link,
+    image: story.image,
+    tag: [...story.tag, "Impact"],
+    heading: story.heading,
+    date: story.date,
+  });
+
   return {
-    eyebrow: "Impact",
+    // N2 (2026-11-02): no eyebrow, it repeated the title. Previous: "Impact"
+    eyebrow: null,
     title: "Impact stories",
     viewAll: { label: "View all stories", href: "/impact-stories" },
-    featured: {
-      link: "#article-advocacy-training",
-      image: {
-        src: "/images/ghana5.jpg",
-        alt: "Image d'illustration : l'arche de l'indépendance du Ghana, portant l'inscription « Freedom and Justice ».",
-      },
-      tag: ["Ghana", "Impact"],
-      heading: "How advocacy training helped protect 40 journalists across Ghana",
-      date: "15 Sep 2026",
-      readTime: "4 min read",
-      excerpt:
-        "A year after MFWA's safety and legal-support programme launched, newsroom leaders report fewer threats and faster response when journalists are at risk.",
-      ctaLabel: "Read the story",
-    },
-    compact: [
-      {
-        link: "#article-digital-safety",
-        image: {
-          src: "/images/ghana4.jpg",
-          alt: "Image d'illustration : rassemblement public au Black Star Square, Accra.",
-        },
-        tag: ["West Africa", "Impact"],
-        heading: "Digital safety workshops cut online attacks on young reporters in half",
-        date: "11 Sep 2026",
-        readTime: "3 min read",
-      },
-      {
-        link: "#article-community-radio-impact",
-        image: {
-          src: "/images/ghana1.jpg",
-          alt: "Image d'illustration : scène de rue animée sur un marché ouest-africain.",
-        },
-        tag: ["Sierra Leone", "Impact"],
-        heading: "Community radio partnerships reached 200,000 listeners with civic reporting",
-        date: "08 Sep 2026",
-        readTime: "3 min read",
-      },
-    ],
+    featured: { ...toCard(first), excerpt: first.excerpt, ctaLabel: "Read the story" },
+    compact: rest.map(toCard),
   };
 }
 

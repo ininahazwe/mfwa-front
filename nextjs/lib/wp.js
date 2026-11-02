@@ -475,6 +475,9 @@ function mapImpactStory(post, { mediaMap, countryMap } = {}) {
   const countryName = countryMap?.get(post.country?.[0])?.name ?? null;
 
   return {
+    id: post.id,
+    // Only filled when the caller asks for it (withExcerpt, homepage).
+    excerpt: post.excerpt ? plainExcerpt(post.excerpt.rendered, 300) : undefined,
     link: post.link,
     image: mediaToImage(mediaMap?.get(post.featured_media), title),
     tag: countryName ? [countryName] : [],
@@ -484,10 +487,14 @@ function mapImpactStory(post, { mediaMap, countryMap } = {}) {
   };
 }
 
-export async function getWpImpactStories({ page = 1, perPage = 12 } = {}) {
+// 2026-11-02: the rest_base "impact-stories" answers with real stories
+// (59 on the live site), so the path above is confirmed in practice.
+// `withExcerpt` (homepage Impact stories, design review I5) adds the
+// excerpt field; the archive page doesn't need it.
+export async function getWpImpactStories({ page = 1, perPage = 12, withExcerpt = false } = {}) {
   const { data, totalPages, total } = await fetchJson(
     `/impact-stories?page=${page}&per_page=${perPage}&orderby=date&order=desc` +
-      `&_fields=id,date,link,title,featured_media,country`
+      `&_fields=id,date,link,title,featured_media,country${withExcerpt ? ",excerpt" : ""}`
   );
   const [mediaMap, countryMap] = await Promise.all([
     getWpMediaByIds(data.map((p) => p.featured_media)),

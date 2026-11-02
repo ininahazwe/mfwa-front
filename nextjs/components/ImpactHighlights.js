@@ -1,4 +1,7 @@
-// API: taxonomy filter — les 3 derniers articles de la catégorie WordPress "Impact"
+// API: the 3 most recent WordPress impact stories (getImpactHighlights).
+// 2026-11-02 (design review I5): tags joined from the list (a story may
+// have no country), read time and excerpt shown only when present.
+import { Fragment } from "react";
 import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
 
@@ -8,20 +11,65 @@ const ARROW = (
   </svg>
 );
 
+function Tags({ tag }) {
+  return (
+    <p className="impact-story__tag">
+      {tag.map((t, i) => (
+        <Fragment key={t}>
+          {i > 0 && (
+            <>
+              {" "}
+              <span>·</span>{" "}
+            </>
+          )}
+          {t}
+        </Fragment>
+      ))}
+    </p>
+  );
+}
+
+function Meta({ story }) {
+  return (
+    <p className="impact-story__meta">
+      <span>
+        {story.date}
+        {story.readTime && (
+          <>
+            {" "}
+            <i>·</i> {story.readTime}
+          </>
+        )}
+      </span>
+    </p>
+  );
+}
+
 export default function ImpactHighlights({ data }) {
   return (
     <section className="impact-highlights" id="impact-highlights">
+      {/* 2026-11-02 (design review N2): no eyebrow when it would repeat the
+          title ("Impact" / "Impact stories") — the title moves into the head
+          row, next to "View all stories". */}
       <div className="impact-highlights__head">
-        <p className="eyebrow">{data.eyebrow}</p>
+        {data.eyebrow ? (
+          <p className="eyebrow">{data.eyebrow}</p>
+        ) : (
+          <Reveal as="h2" className="impact-highlights__title">
+            {data.title}
+          </Reveal>
+        )}
         <a className="impact-highlights__all" href={data.viewAll.href}>
           <span>{data.viewAll.label}</span>
           {ARROW}
         </a>
       </div>
 
-      <Reveal as="h2" className="impact-highlights__title">
-        {data.title}
-      </Reveal>
+      {data.eyebrow && (
+        <Reveal as="h2" className="impact-highlights__title">
+          {data.title}
+        </Reveal>
+      )}
 
       <Reveal as="div" className="impact-highlights__grid" stagger>
         <article className="impact-story impact-story--featured">
@@ -30,16 +78,10 @@ export default function ImpactHighlights({ data }) {
               <FadeImg src={data.featured.image.src} alt={data.featured.image.alt} removeOnError />
             </figure>
             <div className="impact-story__body">
-              <p className="impact-story__tag">
-                {data.featured.tag[0]} <span>·</span> {data.featured.tag[1]}
-              </p>
+              <Tags tag={data.featured.tag} />
               <h3 className="impact-story__heading">{data.featured.heading}</h3>
-              <p className="impact-story__meta">
-                <span>
-                  {data.featured.date} <i>·</i> {data.featured.readTime}
-                </span>
-              </p>
-              <p className="impact-story__excerpt">{data.featured.excerpt}</p>
+              <Meta story={data.featured} />
+              {data.featured.excerpt && <p className="impact-story__excerpt">{data.featured.excerpt}</p>}
               <span className="impact-story__cta">
                 {data.featured.ctaLabel}
                 {ARROW}
@@ -56,15 +98,9 @@ export default function ImpactHighlights({ data }) {
                   <FadeImg src={story.image.src} alt={story.image.alt} removeOnError />
                 </figure>
                 <div className="impact-story__body">
-                  <p className="impact-story__tag">
-                    {story.tag[0]} <span>·</span> {story.tag[1]}
-                  </p>
+                  <Tags tag={story.tag} />
                   <h3 className="impact-story__heading">{story.heading}</h3>
-                  <p className="impact-story__meta">
-                    <span>
-                      {story.date} <i>·</i> {story.readTime}
-                    </span>
-                  </p>
+                  <Meta story={story} />
                 </div>
               </a>
             </article>

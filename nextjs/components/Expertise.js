@@ -31,7 +31,47 @@ const ICONS = {
   ),
 };
 
-export default function Expertise({ data }) {
+const LINK_ARROW = (
+  <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
+  </svg>
+);
+
+function ExpertiseGrid({ items, Heading = "h3" }) {
+  return (
+    <Reveal as="div" className="expertise__grid" stagger>
+      {items.map((item) => (
+        <div className="expertise__item" key={item.icon}>
+          {ICONS[item.icon]}
+          {/* 2026-11-02 (design review N3): one line that wraps by itself
+              (text-wrap: balance in the CSS) instead of a forced <br>, which
+              left short ragged lines on phones ("Research &" / "Analysis"). */}
+          <Heading className="expertise__heading">{item.headingLines.join(" ")}</Heading>
+          <p className="expertise__desc">{item.desc}</p>
+        </div>
+      ))}
+    </Reveal>
+  );
+}
+
+// 2026-11-02 (design review N2): `embedded` renders the four pillars as a
+// sub-block of « What we do » (components/Work.js) — the eyebrow becomes
+// its h3, the pillars h4, and the link to the reports is kept.
+export default function Expertise({ data, embedded = false }) {
+  if (embedded) {
+    return (
+      <div className="work__expertise">
+        <div className="work__expertise-head">
+          <h3 className="eyebrow work__expertise-title">{data.eyebrow}</h3>
+          <a className="expertise__link" href={data.link.href}>
+            {data.link.label}
+            {LINK_ARROW}
+          </a>
+        </div>
+        <ExpertiseGrid items={data.items} Heading="h4" />
+      </div>
+    );
+  }
   return (
     <section className="expertise" id="expertise">
       <div className="expertise__inner">
@@ -47,19 +87,7 @@ export default function Expertise({ data }) {
           </a>
         </Reveal>
 
-        <Reveal as="div" className="expertise__grid" stagger>
-          {data.items.map((item) => (
-            <div className="expertise__item" key={item.icon}>
-              {ICONS[item.icon]}
-              <h3 className="expertise__heading">
-                {item.headingLines[0]}
-                <br />
-                {item.headingLines[1]}
-              </h3>
-              <p className="expertise__desc">{item.desc}</p>
-            </div>
-          ))}
-        </Reveal>
+        <ExpertiseGrid items={data.items} />
       </div>
     </section>
   );

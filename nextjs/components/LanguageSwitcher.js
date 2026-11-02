@@ -28,8 +28,22 @@ export default function LanguageSwitcher() {
         EN
       </span>
       <span className="lang-switch__divider" aria-hidden="true">/</span>
-      <a className="lang-switch__lang" href={frenchHref(pathname)} lang="fr" hrefLang="fr">
+      {/* 2026-11-02 (design review, finding 01): the link leaves this site
+          for mfwa.org, so it says so — the same ↗ as the Mediascape link
+          in Reach.js, a tooltip, and an accessible name that still starts
+          with the visible "FR" (WCAG 2.5.3). Same tab, as before. */}
+      <a
+        className="lang-switch__lang lang-switch__lang--ext"
+        href={frenchHref(pathname)}
+        lang="fr"
+        hrefLang="fr"
+        title="Version française sur mfwa.org"
+        aria-label="FR, version française sur mfwa.org"
+      >
         FR
+        <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 1h6v6M9 1 1 9" />
+        </svg>
       </a>
     </div>
   );

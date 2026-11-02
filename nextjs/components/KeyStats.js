@@ -6,11 +6,17 @@
 import Reveal from "./Reveal";
 import StatCounter from "./StatCounter";
 
-export default function KeyStats({ data }) {
+// 2026-11-02 (design review N2): `embedded` renders the list alone, for
+// the Mediascape section (components/Reach.js), instead of a band of its own.
+export default function KeyStats({ data, embedded = false }) {
   if (!data?.stats?.length) return null;
-  return (
-    <section className="keystats" id="key-figures" aria-label={data.label}>
-      <Reveal as="ul" className="keystats__list" style={{ "--keystats-n": data.stats.length }}>
+  const list = (
+      <Reveal
+        as="ul"
+        className={`keystats__list${embedded ? " keystats__list--embedded" : ""}`}
+        style={{ "--keystats-n": data.stats.length }}
+        aria-label={embedded ? data.label : undefined}
+      >
         {data.stats.map((stat) => {
           const body = (
             <>
@@ -25,6 +31,11 @@ export default function KeyStats({ data }) {
           );
         })}
       </Reveal>
+  );
+  if (embedded) return list;
+  return (
+    <section className="keystats" id="key-figures" aria-label={data.label}>
+      {list}
     </section>
   );
 }
