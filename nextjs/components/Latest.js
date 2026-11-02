@@ -115,6 +115,7 @@ export default function Latest({ data }) {
         )}
         <a className="latest__all" href={data.viewAll.href}>
           <span>{data.viewAll.label}</span>
+          {data.viewAll.srSuffix && <span className="visually-hidden">{data.viewAll.srSuffix}</span>}
           {ARROW}
         </a>
       </div>

@@ -311,7 +311,7 @@ export default function Hero({ data }) {
           <div className="hero__slides hero__slides--static">
             <div className="hero-slide is-active">
               <h1 className="hero__title">{intro.title}</h1>
-              <p className="hero__lede">{intro.lede}</p>
+              {/*<p className="hero__lede">{intro.lede}</p>*/}
               <div className="hero__actions">
                 <a className="btn btn--hero hero__cta" href={intro.primary.href}>
                   {intro.primary.label}
@@ -424,8 +424,11 @@ export default function Hero({ data }) {
                 <div className="hero__news">
                   <h2 className="news__title">{story.title}</h2>
                   {story.excerpt && <p className="news__text">{story.excerpt}</p>}
+                  {/* 2026-11-02 (finding 05): the 4 slides all say "Read more";
+                      screen readers get the story title too. */}
                   <a className="news__link" href={story.link}>
                     {story.linkLabel}
+                    <span className="visually-hidden">: {story.title}</span>
                     {NEWS_ARROW}
                   </a>
                 </div>

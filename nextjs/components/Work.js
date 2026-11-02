@@ -41,13 +41,14 @@ const ICONS = {
 export default function Work({ data, children }) {
   return (
     <section className="work" id="our-work">
-      <div className="work__head">
+      {/* 2026-11-02 (Yv): same split as « Our reach » (.reach__inner) — title,
+          text and link in a column on the left, programmes and expertise on
+          the right. Previous markup: .work__head > .work__intro (eyebrow +
+          title) + .work__summary (text + link), grid full width below. */}
+      <div className="work__inner">
         <Reveal as="div" className="work__intro">
           <p className="eyebrow">{data.eyebrow}</p>
           <h2 className="work__title">{data.title}</h2>
-        </Reveal>
-
-        <div className="work__summary">
           <p className="work__text">{data.text}</p>
           <a className="work__link" href={data.link.href}>
             {data.link.label}
@@ -55,35 +56,37 @@ export default function Work({ data, children }) {
               <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
             </svg>
           </a>
+        </Reveal>
+
+        <div className="work__body">
+          <Reveal as="div" className="work__grid" stagger>
+            {data.items.map((item) => (
+              <a className="work__item" href={item.href} key={item.num}>
+                {/* 2026-10-30: photo instead of the number + icon row (previous
+                    markup: .work__top > .work__num + ICONS[item.icon]). Two
+                    layers of the same picture: a muted, navy-toned base and a
+                    full-colour copy revealed from the bottom on hover/focus. */}
+                {item.image ? (
+                  <div className="work__top work__media" aria-hidden="true">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img className="work__img work__img--base" src={item.image.src} alt="" loading="lazy" style={{ objectPosition: item.image.position }} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img className="work__img work__img--color" src={item.image.src} alt="" loading="lazy" style={{ objectPosition: item.image.position }} />
+                  </div>
+                ) : (
+                  <div className="work__top">
+                    <span className="work__num">{item.num}</span>
+                    {ICONS[item.icon]}
+                  </div>
+                )}
+                <h3 className="work__heading">{item.heading}</h3>
+                <p className="work__desc">{item.desc}</p>
+              </a>
+            ))}
+          </Reveal>
+          {children}
         </div>
       </div>
-
-      <Reveal as="div" className="work__grid" stagger>
-        {data.items.map((item) => (
-          <a className="work__item" href={item.href} key={item.num}>
-            {/* 2026-10-30: photo instead of the number + icon row (previous
-                markup: .work__top > .work__num + ICONS[item.icon]). Two
-                layers of the same picture: a muted, navy-toned base and a
-                full-colour copy revealed from the bottom on hover/focus. */}
-            {item.image ? (
-              <div className="work__top work__media" aria-hidden="true">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="work__img work__img--base" src={item.image.src} alt="" loading="lazy" style={{ objectPosition: item.image.position }} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="work__img work__img--color" src={item.image.src} alt="" loading="lazy" style={{ objectPosition: item.image.position }} />
-              </div>
-            ) : (
-              <div className="work__top">
-                <span className="work__num">{item.num}</span>
-                {ICONS[item.icon]}
-              </div>
-            )}
-            <h3 className="work__heading">{item.heading}</h3>
-            <p className="work__desc">{item.desc}</p>
-          </a>
-        ))}
-      </Reveal>
-      {children}
     </section>
   );
 }

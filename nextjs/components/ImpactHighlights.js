@@ -61,6 +61,7 @@ export default function ImpactHighlights({ data }) {
         )}
         <a className="impact-highlights__all" href={data.viewAll.href}>
           <span>{data.viewAll.label}</span>
+          {data.viewAll.srSuffix && <span className="visually-hidden">{data.viewAll.srSuffix}</span>}
           {ARROW}
         </a>
       </div>

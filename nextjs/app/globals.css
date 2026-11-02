@@ -47,7 +47,8 @@
   --fs-h4:      clamp(18px, 1.5vw, 22px);         /* serif card titles */
   --fs-h3:      clamp(22px, 1.1vw + 8px, 26px);   /* featured story, CTA cards */
   --fs-h2:      clamp(28px, 3vw, 38px);           /* section titles (Yv's value) */
-  --fs-h1:      clamp(30px, 2.4vw, 38px);         /* homepage slogan */
+  --fs-h1:      clamp(32px, 3vw + 1px, 42px);     /* homepage slogan, always > --fs-h2
+                                                     (was clamp(30px, 2.4vw, 38px), 2026-11-02) */
   --fs-display: clamp(36px, 4.4vw, 64px);         /* inner page heroes (later) */
   --caps-tracking: .12em;                          /* every caps label */
 }
@@ -425,6 +426,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 .hero__title{
   margin:clamp(12px, 2.2vh, 30px) 0 0;
+  /* 2026-11-02: the slogan is bigger than the section titles now and runs
+     on 3 lines at 1200-1440px; balance avoids a lone "Good" on the last. */
+  text-wrap:balance;
   font-family:var(--font-serif);
   font-weight:600;
   font-size:var(--fs-h1);
@@ -6012,7 +6016,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .keystats__list--embedded .keystats__num{ font-size:clamp(28px, 2.4vw, 36px); }
 .keystats__list--embedded .keystats__label{ margin-top:6px; }
 
-/* Expertise pillars as a sub-block of « What we do » */
+/* Expertise pillars as a sub-block of « What we do » — unused since Yv
+   put « Our expertise » back as its own section (2026-11-02); kept for
+   <Expertise embedded />. */
 .work__expertise{
   margin-top:clamp(44px, 6vh, 64px);
   padding-top:clamp(24px, 3.5vh, 36px);
@@ -6034,4 +6040,47 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 /* Impact and partners are both white now: dotted separator between them */
 .impact-highlights + .funders{ border-top:1px dotted var(--hairline); }
+
+/* =========================================================
+   2026-11-02 (Yv) — « What we do » split like « Our reach »
+   Title, text and link on the left (same width as .reach__intro), the
+   programmes grid and the expertise pillars on the right. The intro stays
+   in view while the right column scrolls. Previous layout: .work__head
+   (title | text) above a full-width grid — rules above, now unused.
+   ========================================================= */
+.work__inner{
+  display:flex;
+  align-items:flex-start;
+  gap:clamp(28px, 5vw, 64px);
+}
+.work__intro{
+  flex:1 1 300px;
+  max-width:380px;
+  position:sticky;
+  top:32px;
+}
+.work__intro .work__text{ margin:clamp(14px, 2vh, 20px) 0 0; }
+.work__intro .work__link{ margin-top:16px; }
+.work__body{
+  flex:2.4 1 600px;
+  min-width:0;
+}
+.work__body .work__grid{ margin-top:0; }
+/* In the right column 4 cards would be ~125-160px wide below 1500px:
+   2 x 2 there, 4 in a row on wide screens. Phones keep the rules of
+   .work__grid above (2 columns up to 640px, 1 up to 420px). */
+@media (min-width:641px) and (max-width:1499px){
+  .work__body .work__grid{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    row-gap:clamp(32px, 5vh, 44px);
+  }
+  .work__body .work__item + .work__item::before{ display:none; }
+  .work__body .work__item:nth-child(2n)::before{ display:block; }
+}
+
+@media (max-width:1100px){
+  .work__inner{ flex-wrap:wrap; }
+  .work__intro{ flex:1 1 100%; max-width:none; position:static; }
+  .work__body{ flex:1 1 100%; }
+}
 

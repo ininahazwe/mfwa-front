@@ -1,7 +1,21 @@
 import "./globals.css";
 
+// 2026-11-02 (finding 06): the homepage had no meta description; this one
+// is the default for every page that doesn't set its own (the inner pages
+// mostly do). openGraph gives shares a site name and a summary.
+const SITE_DESCRIPTION =
+  "The Media Foundation for West Africa (MFWA) strengthens media, freedom of expression and democratic participation across West Africa.";
+
 export const metadata = {
   title: "Media Foundation for West Africa",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "Media Foundation for West Africa",
+    title: "Media Foundation for West Africa",
+    description: SITE_DESCRIPTION,
+    locale: "en_GB",
+  },
 };
 
 export default function RootLayout({ children }) {

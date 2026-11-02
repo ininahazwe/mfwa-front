@@ -86,7 +86,8 @@ export default async function Home() {
           {/* 2026-11-02 (design review N2, at Yv's call — options A + B):
               Mediascape moves up right after the news, as the homepage's
               signature, and carries the key figures; the expertise pillars
-              join « What we do ». 10 sections -> 8. Previous order: Hero,
+              joined « What we do » (undone the same day, see below).
+              10 sections -> 9. Previous order: Hero,
               Latest, KeyStats, Work, HomeOpportunities, Expertise,
               ImpactHighlights, Reach, FundersSection, Cta. */}
           <Hero data={hero} />
@@ -94,11 +95,14 @@ export default async function Home() {
           <Reach data={reach}>
             <KeyStats data={keyStats} embedded />
           </Reach>
-          <Work data={work}>
-            <Expertise data={expertise} embedded />
-          </Work>
+          {/* 2026-11-02 (Yv): « Our expertise » back as its own section, at
+              its former place after the opportunities — the merge into
+              « What we do » (N2, option B) is undone. Work and Expertise
+              still accept the embedded mode if it's ever wanted again. */}
+          <Work data={work} />
           {/* 2026-10-30: 4 latest opportunities (dated list on a navy band) */}
           <HomeOpportunities data={opportunities} />
+          <Expertise data={expertise} />
           {/*<ImpactStats data={impactStats} showFunders={false} />*/}
           {/* null when WordPress can't answer (design review I5) */}
           {impactHighlights && <ImpactHighlights data={impactHighlights} />}

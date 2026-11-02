@@ -262,7 +262,10 @@ export async function getLatestStories() {
     eyebrow: "What’s happening",
     title: "The latest from MFWA",
     // 2026-10-20: the Issues in Focus archive (app/issues-in-focus/page.js)
-    viewAll: { label: "View all stories", href: "/issues-in-focus" },
+    // 2026-11-02 (finding 05): two "View all stories" links on the homepage
+    // lead to different pages; srSuffix (visually hidden) tells them apart
+    // for screen readers without changing the visible label.
+    viewAll: { label: "View all stories", srSuffix: " — Issues in Focus", href: "/issues-in-focus" },
     topics: [
       { label: "Free Expression", href: "/where-we-work?category=freedom-of-expression" },
       { label: "Digital Rights", href: "/where-we-work?category=digital-rights" },
@@ -461,7 +464,7 @@ export async function getImpactHighlights() {
     // N2 (2026-11-02): no eyebrow, it repeated the title. Previous: "Impact"
     eyebrow: null,
     title: "Impact stories",
-    viewAll: { label: "View all stories", href: "/impact-stories" },
+    viewAll: { label: "View all stories", srSuffix: " — impact stories", href: "/impact-stories" }, // finding 05
     featured: { ...toCard(first), excerpt: first.excerpt, ctaLabel: "Read the story" },
     compact: rest.map(toCard),
   };
