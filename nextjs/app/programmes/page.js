@@ -14,7 +14,7 @@ export async function generateMetadata() {
   return {
     title: "Programmes — Media Foundation for West Africa",
     description:
-      "The programmes through which the MFWA defends freedom of expression, digital rights, media democracy, and peace and social cohesion across West Africa.",
+      "The programmes through which the MFWA defends freedom of expression, tech and digital rights, and media democracy and good governance across West Africa.",
   };
 }
 

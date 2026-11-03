@@ -90,22 +90,23 @@ export default async function Home() {
               10 sections -> 9. Previous order: Hero,
               Latest, KeyStats, Work, HomeOpportunities, Expertise,
               ImpactHighlights, Reach, FundersSection, Cta. */}
+          {/* Retours com round 2 (2026-11-03, at Yv's call): thin dark figures
+              bar right after the Hero, then Impact stories, then the latest
+              news, then What we do; the rest follows in its previous order.
+              Previous order: Hero, Latest, Reach (+ embedded key figures),
+              Work, HomeOpportunities, Expertise, ImpactHighlights,
+              FundersSection, Cta. */}
           <Hero data={hero} />
+          <KeyStats data={keyStats} variant="bar" />
+          {/* null when WordPress can't answer (design review I5) */}
+          {impactHighlights && <ImpactHighlights data={impactHighlights} />}
           <Latest data={latest} />
-          <Reach data={reach}>
-            <KeyStats data={keyStats} embedded />
-          </Reach>
-          {/* 2026-11-02 (Yv): « Our expertise » back as its own section, at
-              its former place after the opportunities — the merge into
-              « What we do » (N2, option B) is undone. Work and Expertise
-              still accept the embedded mode if it's ever wanted again. */}
           <Work data={work} />
+          <Reach data={reach} />
           {/* 2026-10-30: 4 latest opportunities (dated list on a navy band) */}
           <HomeOpportunities data={opportunities} />
           <Expertise data={expertise} />
           {/*<ImpactStats data={impactStats} showFunders={false} />*/}
-          {/* null when WordPress can't answer (design review I5) */}
-          {impactHighlights && <ImpactHighlights data={impactHighlights} />}
           <FundersSection data={impactStats} />
           <Cta data={cta} newsletter={newsletter} />
         </main>

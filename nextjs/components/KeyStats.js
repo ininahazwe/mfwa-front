@@ -8,7 +8,9 @@ import StatCounter from "./StatCounter";
 
 // 2026-11-02 (design review N2): `embedded` renders the list alone, for
 // the Mediascape section (components/Reach.js), instead of a band of its own.
-export default function KeyStats({ data, embedded = false }) {
+// 2026-11-03 (retours com round 2): variant="bar" = thin dark band right
+// after the Hero (number + label side by side).
+export default function KeyStats({ data, embedded = false, variant }) {
   if (!data?.stats?.length) return null;
   const list = (
       <Reveal
@@ -34,7 +36,7 @@ export default function KeyStats({ data, embedded = false }) {
   );
   if (embedded) return list;
   return (
-    <section className="keystats" id="key-figures" aria-label={data.label}>
+    <section className={`keystats${variant === "bar" ? " keystats--bar" : ""}`} id="key-figures" aria-label={data.label}>
       {list}
     </section>
   );

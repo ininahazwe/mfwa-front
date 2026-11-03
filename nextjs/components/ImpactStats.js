@@ -73,10 +73,10 @@ export function FundersSection({ data }) {
           <h2 className="funders__title" id="funders-title">
             {f.title}
           </h2>
-          <p className="funders__count">
+          {/*<p className="funders__count">
             <StatCounter className="funders__num" count={f.count} />
             <span className="funders__count-label">{f.countLabel}</span>
-          </p>
+          </p>*/}
         </Reveal>
 
         <div className="funders__side">

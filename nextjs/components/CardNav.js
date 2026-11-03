@@ -15,7 +15,7 @@ export default function CardNav({ data }) {
       <div className="ab-wrap">
         <SectionHead eyebrow={data.eyebrow} title={data.title} text={data.text} />
 
-        <Reveal as="ul" className="ab-networks__grid ab-stagger" stagger>
+        <Reveal as="ul" className={`ab-networks__grid ab-stagger${data.items.length === 2 ? " ab-networks__grid--duo" : ""}`} stagger>
           {data.items.map((item) => (
             <li key={item.id}>
               <a className="ab-card ab-network" href={item.href}>

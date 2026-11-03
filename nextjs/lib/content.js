@@ -92,7 +92,19 @@ export async function getHeader() {
         ],
       },
       { label: "Our Impact", href: "/impact-stories" },
-      { label: "About", href: "/about-us" },
+      // Retours com round 2 (2026-11-03): About gets a 3-entry dropdown.
+      // The parent stays a link to /about-us (NavDropdown/MobileNav support
+      // href + children). "Board & Staff" targets the #people block of the
+      // hub, which presents both and links to each directory.
+      {
+        label: "About",
+        href: "/about-us",
+        children: [
+          { label: "Mission and vision", href: "/about-us#drives" },
+          { label: "Board & Staff", href: "/about-us#people" },
+          { label: "Partners & Funders", href: "/about-us/our-partners" },
+        ],
+      },
     ],
     // NGOSource badge (#18, 2026-10-16): moved here from the footer —
     // same asset/caption that getFooter() used to carry as `credential`.
@@ -266,12 +278,17 @@ export async function getLatestStories() {
     // lead to different pages; srSuffix (visually hidden) tells them apart
     // for screen readers without changing the visible label.
     viewAll: { label: "View all stories", srSuffix: " — Issues in Focus", href: "/issues-in-focus" },
+    // Retours com round 2 (2026-11-03): six topics, in the com team's order.
+    // "Journalist Safety" and the short "Accountability" label left the row.
+    // "Peace and social cohesion" has no category among the explorer's 13
+    // issues, so it links to the matching programme page.
     topics: [
+      { label: "Media Development", href: "/where-we-work?category=media-development" },
+      { label: "Transparency and Accountability", href: "/where-we-work?category=transparency-and-accountability" },
+      { label: "Peace and Social Cohesion", href: "/programmes/media-peace-social-cohesion" },
       { label: "Free Expression", href: "/where-we-work?category=freedom-of-expression" },
       { label: "Digital Rights", href: "/where-we-work?category=digital-rights" },
-      { label: "Investigations", href: "/where-we-work?category=investigative-journalism" },
-      { label: "Accountability", href: "/where-we-work?category=transparency-and-accountability" },
-      { label: "Journalist Safety", href: "/where-we-work?category=safety-of-journalists" },
+      { label: "Investigative Journalism", href: "/where-we-work?category=investigative-journalism" },
     ],
     // 2026-10-21 (homepage UX review, point 5): "Opportunities" (calls,
     // fellowships, vacancies) is not an editorial topic — it left the topics
@@ -291,23 +308,22 @@ export async function getLatestStories() {
 const KEY_STATS_MAX = 4;
 const KEY_STATS_MIN = 3;
 
+// Retours com round 2 (2026-11-03): the bar now shows the three figures the
+// com team asked for. PROVISIONAL VALUES — placeholders chosen by Claude, NOT
+// real figures: replace them with MFWA's confirmed numbers before launch
+// (the labels follow the com team's wording; "FOE" = freedom of expression).
+// Previous version (WordPress totals + partners/projects/countries):
+// lib/content.js.bak-keystats.
+const PROVISIONAL_KEY_FIGURES = [
+  { count: 150, suffix: "+", label: "media houses supported" },
+  { count: 5000, suffix: "+", label: "journalists trained" },
+  { count: 300, suffix: "+", label: "FOE actions carried out" },
+];
+
 export async function getKeyStats() {
-  const [{ stories, reports }, { logos: funderLogos }] = await Promise.all([
-    getWpContentTotals(),
-    getFundingPartnersPage(),
-  ]);
-  const candidates = [
-    { count: stories, label: "articles published", href: "/issues-in-focus" },
-    { count: reports, label: "reports & publications", href: "/reports" },
-    { count: funderLogos.length || null, label: "funding partners", href: "/about-us/our-partners/funding-partners" },
-    { count: ABOUT_PROJECTS_COUNT, label: "projects", href: "/programmes" },
-    { count: 16, label: "countries covered", href: "/where-we-work" },
-    { count: 6, label: "regional & global networks", href: "/about-us/our-partners/our-networks" },
-  ];
-  const stats = candidates.filter((s) => Number.isFinite(s.count) && s.count > 0).slice(0, KEY_STATS_MAX);
   return {
     label: "MFWA in figures",
-    stats: stats.length >= KEY_STATS_MIN ? stats : [],
+    stats: PROVISIONAL_KEY_FIGURES,
   };
 }
 
@@ -399,7 +415,7 @@ export async function getImpactStats() {
       eyebrow: null,
       // 2026-11-02 (design review I2): "Partners Highlights" -> sentence
       // case and singular, like the other section titles.
-      title: "Partner highlights",
+      title: "Our partners",
       count: funderLogos.length,
       countLabel: "funding partners",
       link: { label: "Meet our funding partners", href: "/about-us/our-partners/funding-partners" },
@@ -1444,6 +1460,7 @@ export async function getAboutUs() {
         "UN ECOSOC Consultative Status",
         "AU Observer Status (ACHPR)",
         "NGOSource Equivalency Determination",
+        "MOU with ECOWAS", // retours com round 2 (2026-11-03)
         "Secretariat of AFEX",
       ],
     },
@@ -2128,32 +2145,42 @@ export async function getProgrammesPage() {
     hero: {
       crumbs: [{ label: "Programmes" }],
       eyebrow: "What we do",
-      titleLines: ["Four ways we", "defend free expression."],
-      lede: "Over 27 years working across West Africa, our 2025–2029 Strategic Plan focuses on four thematic areas — Freedom of Expression, Tech & Digital Rights, Media for Democracy & Good Governance, and Media for Peace & Social Cohesion — with Institutional Development as a cross-cutting pillar and women's empowerment as a cross-cutting theme.",
+      // Retours com round 2 (2026-11-03): hub aligned on two programmes.
+      // Previous: "Four ways we" / four thematic areas incl. Media for Peace &
+      // Social Cohesion (its page still exists, no longer listed here).
+      titleLines: ["Two ways we", "defend free expression."],
+      lede: "Over 27 years working across West Africa, our 2025–2029 Strategic Plan focuses on two thematic areas — Freedom of Expression, Tech & Digital Rights, and Media for Democracy & Good Governance — with Institutional Development as a cross-cutting pillar and women's empowerment as a cross-cutting theme.",
       primary: { label: "Our overall strategy", href: "https://mfwa.org/wp-content/uploads/2025/10/Strategic-Plan-doc_MFWA_2025-to-2029_clean-1.pdf" },
       secondary: { label: "About MFWA", href: "/about-us" },
-      tiles: PROGRAMME_TILES.map((t) => ({ ...t, tone: t.hubTone })),
+      // Retours com round 2 (2026-11-03): the hub's tile grid shows 2 tiles,
+      // not 4. Both still link to the CURRENT programme pages (kept intact
+      // until the new pages' content is defined with Yv): the merged tile
+      // opens Freedom of Expression, the other one Media & Governance.
+      // Detail pages keep using PROGRAMME_TILES for their cross-navigation.
+      // Revert: tiles: PROGRAMME_TILES.map((t) => ({ ...t, tone: t.hubTone })),
+      // and drop tilesLayout.
+      tilesLayout: "duo",
+      tiles: [
+        { id: "foe-digital", label: "Freedom of Expression, Tech and Digital Rights", href: "/programmes/freedom-of-expression", variant: "mic", tone: "prog-red" },
+        { id: "governance", label: "Media for Democracy & Good Governance", href: "/programmes/media-democracy-governance", variant: "newspaper", tone: "prog-navy" },
+      ],
     },
     nav: {
       eyebrow: "Explore",
-      title: "Our four programmes",
+      title: "Our two programmes",
       text: "Each programme is pursued through impact-oriented advocacy, strategic partnerships, research and documentation, and stronger institutional systems.",
+      // Previous version: 4 cards (Freedom of Expression, Tech & Digital
+      // Rights, Media for Democracy & Good Governance, Media for Peace &
+      // Social Cohesion). The merged card links to the current Freedom of
+      // Expression page until the new page exists.
       items: [
         {
-          id: "foe",
+          id: "foe-digital",
           icon: "mic",
-          name: "Freedom of Expression",
+          name: "Freedom of Expression, Tech and Digital Rights",
           scope: "Thematic area",
-          desc: "Protecting the right to free expression and access to information across West Africa.",
+          desc: "Protecting the right to free expression and access to information, and building a freer and safer online environment for all, especially women.",
           href: "/programmes/freedom-of-expression",
-        },
-        {
-          id: "digital",
-          icon: "orbit",
-          name: "Tech & Digital Rights",
-          scope: "Thematic area",
-          desc: "A freer and safer online environment for expression and participation by all, especially women.",
-          href: "/programmes/digital-rights",
         },
         {
           id: "governance",
@@ -2162,14 +2189,6 @@ export async function getProgrammesPage() {
           scope: "Thematic area",
           desc: "Strengthening the media's capacity to contribute to participatory, accountable governance.",
           href: "/programmes/media-democracy-governance",
-        },
-        {
-          id: "peace",
-          icon: "quote",
-          name: "Media for Peace & Social Cohesion",
-          scope: "Thematic area",
-          desc: "Engaging the media to address extremism, polarisation, mis/disinformation and conflict prevention.",
-          href: "/programmes/media-peace-social-cohesion",
         },
       ],
     },

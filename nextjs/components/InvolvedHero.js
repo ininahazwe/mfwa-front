@@ -73,7 +73,7 @@ export default function InvolvedHero({ data, tiles, tone, art, topo, tilesLabel 
             the tiles exactly as before — that is the whole revert. */}
         {art && <div className="ab-hero__art">{art}</div>}
         {!art && tiles && (
-          <div className={`ab-hero__tiles-slot${tiles.length === 4 ? " ab-hero__tiles-slot--quad" : ""}`}>
+          <div className={`ab-hero__tiles-slot${tiles.length === 4 ? " ab-hero__tiles-slot--quad" : ""}${data.tilesLayout === "duo" ? " ab-hero__tiles-slot--duo" : ""}`}>
             {/* Decorative colour-blob behind the tiles (2026-09-30, at
                 Yv's call): only on programme pages that pass a "tone"
                 (the hub itself represents all 5 programmes at once, so it
@@ -90,7 +90,7 @@ export default function InvolvedHero({ data, tiles, tone, art, topo, tilesLabel 
                 globals.css. */}
             {tone && BLOB && <div ref={blobRef} className={`ab-hero__blob ab-hero__blob--${tone}`} aria-hidden="true" />}
             {tone && !BLOB && <div className={`ab-hero__plate ab-hero__plate--${tone}`} aria-hidden="true" />}
-            <Reveal as="ul" className={`ab-tiles st-tiles ab-stagger${tiles.length === 4 ? " ab-tiles--quad" : ""}`} stagger aria-label={data.tilesLabel ?? tilesLabel}>
+            <Reveal as="ul" className={`ab-tiles st-tiles ab-stagger${tiles.length === 4 ? " ab-tiles--quad" : ""}${data.tilesLayout === "duo" ? " ab-tiles--duo" : ""}`} stagger aria-label={data.tilesLabel ?? tilesLabel}>
               {tiles.map((tile) => (
                 <li key={tile.id}>
                   <a className={`ab-tile ab-tile--${tile.tone} st-tile ab-tile--link`} href={tile.href}>
