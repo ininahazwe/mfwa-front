@@ -353,6 +353,7 @@ export async function getWork() {
         heading: "Freedom of Expression",
         desc: "Protecting journalists and media rights.",
         href: "/programmes/freedom-of-expression",
+        tone: "red",
         image: { src: "/images/ghana.jpg", alt: "", position: "50% 40%" },
       },
       {
@@ -361,6 +362,7 @@ export async function getWork() {
         heading: "Digital Rights",
         desc: "Safer digital spaces for everyone.",
         href: "/programmes/digital-rights",
+        tone: "lavender",
         image: { src: "/images/ghana1.jpg", alt: "", position: "50% 30%" },
       },
       {
@@ -369,6 +371,7 @@ export async function getWork() {
         heading: "Media & Democracy",
         desc: "Stronger media for informed societies.",
         href: "/programmes/media-democracy-governance",
+        tone: "navy",
         image: { src: "/images/ghana4.jpg", alt: "", position: "50% 55%" },
       },
       {
@@ -377,6 +380,7 @@ export async function getWork() {
         heading: "Peace & Social Cohesion",
         desc: "Media for more inclusive and resilient communities.",
         href: "/programmes/media-peace-social-cohesion",
+        tone: "green",
         image: { src: "/images/ghana2.jpg", alt: "", position: "60% 35%" },
       },
     ],

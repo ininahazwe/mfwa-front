@@ -13,7 +13,16 @@ import { useEffect, useRef, useState } from "react";
 //   is-dragging   a mouse drag is in progress
 const DRAG_THRESHOLD = 6; // px
 
-export default function DragScroll({ className = "", label, children }) {
+// 2026-11-04 (at Yv's call): `autoplay` makes the rail drift slowly to the
+// right once it is on screen, then back to the left (ping-pong, so the DOM
+// stays as it is — no duplicated logos for screen readers). It pauses while
+// the pointer is over the rail, while it has focus, during a drag, and after
+// the visitor scrolls it by hand until the pointer leaves; it never runs
+// with prefers-reduced-motion.
+const AUTO_SPEED = 28; // px per second
+const AUTO_PAUSE_AT_END = 1200; // ms
+
+export default function DragScroll({ className = "", label, children, autoplay = false }) {
   const ref = useRef(null);
   const [state, setState] = useState({ scrollable: false, left: false, right: false });
   const [dragging, setDragging] = useState(false);
@@ -94,6 +103,75 @@ export default function DragScroll({ className = "", label, children }) {
       window.removeEventListener("load", measure);
     };
   }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!autoplay || !el || typeof IntersectionObserver === "undefined") return undefined;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
+
+    let visible = false;
+    let paused = false;
+    let raf = 0;
+    let last = 0;
+    let pos = el.scrollLeft;
+    let set = pos; // last value we wrote, to tell our scrolls from the visitor's
+    let dir = 1;
+    let holdUntil = 0;
+
+    function tick(now) {
+      raf = 0;
+      if (!visible || paused) return;
+      const dt = Math.min(64, now - (last || now));
+      last = now;
+      const max = el.scrollWidth - el.clientWidth;
+      if (max > 2 && now >= holdUntil) {
+        // the visitor moved the rail: continue from where it is now
+        if (Math.abs(el.scrollLeft - Math.round(set)) > 2) pos = el.scrollLeft;
+        pos += (dir * AUTO_SPEED * dt) / 1000;
+        if (pos >= max) { pos = max; dir = -1; holdUntil = now + AUTO_PAUSE_AT_END; }
+        else if (pos <= 0) { pos = 0; dir = 1; holdUntil = now + AUTO_PAUSE_AT_END; }
+        set = pos;
+        el.scrollLeft = pos;
+      }
+      raf = requestAnimationFrame(tick);
+    }
+    function run() {
+      if (!raf && visible && !paused) {
+        last = 0;
+        pos = el.scrollLeft;
+        set = pos;
+        raf = requestAnimationFrame(tick);
+      }
+    }
+    const pause = () => { paused = true; };
+    const resume = () => { paused = false; run(); };
+    const onTouchEnd = () => { setTimeout(resume, 2500); };
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+        if (visible) run();
+      },
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    el.addEventListener("pointerenter", pause);
+    el.addEventListener("pointerleave", resume);
+    el.addEventListener("focusin", pause);
+    el.addEventListener("focusout", resume);
+    el.addEventListener("touchstart", pause, { passive: true });
+    el.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      io.disconnect();
+      el.removeEventListener("pointerenter", pause);
+      el.removeEventListener("pointerleave", resume);
+      el.removeEventListener("focusin", pause);
+      el.removeEventListener("focusout", resume);
+      el.removeEventListener("touchstart", pause);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [autoplay]);
 
   const classes = [
     className,

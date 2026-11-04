@@ -756,7 +756,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .story__media{
   position:relative;
   overflow:hidden;
-  border-radius:2px;
+  border-radius:6px;
   background:
     radial-gradient(120% 90% at 30% 22%, #6f7a6a 0%, #3d4a45 45%, #23302f 100%);
 }
@@ -1274,7 +1274,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .impact-story__media{
   position:relative;
   overflow:hidden;
-  border-radius:2px;
+  border-radius:6px;
   background:#eef0ea;
 }
 .impact-story__media img{
@@ -6289,4 +6289,72 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 .keystats__statement{
   max-width:none;
   padding-inline:0;
+}
+
+/* ============================================================
+   2026-11-04 — « What we do » : cartes teintées (modèle fourni)
+   Carte arrondie à la couleur du programme (mêmes teintes que les tuiles de
+   /programmes : rouge, lavande, marine, vert) ; texte (pastille + flèche
+   ronde, titre, description) et photo en retrait, en alternance : les cartes
+   paires inversent l'ordre (photo d'abord, texte dessous).
+   ============================================================ */
+.work__item{
+  --card-bg:#eef2f6;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:14px;
+  border-radius:clamp(18px, 1.8vw, 26px);
+  background:var(--card-bg);
+  transition:transform var(--dur-fast) var(--ease);
+}
+.work__item--red{ --card-bg:#fce8e6; }
+.work__item--lavender{ --card-bg:#ece7fb; }
+.work__item--navy{ --card-bg:#e4eefa; }
+.work__item--green{ --card-bg:#e3f3ea; }
+.work__item:nth-child(even){ flex-direction:column-reverse; }
+.work__item + .work__item::before{ display:none !important; }
+.work__grid{ column-gap:clamp(14px, 1.6vw, 24px); }
+.work__body .work__grid{ row-gap:clamp(14px, 1.6vw, 24px); }
+.work__text{
+  flex:1 1 auto;
+  display:flex;
+  flex-direction:column;
+  padding:8px 8px 6px;
+}
+.work__meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:clamp(18px, 3vh, 32px);
+}
+.work__pill{
+  padding:5px 12px;
+  border-radius:999px;
+  border:1px solid rgba(19, 49, 92, .18);
+  font-size:var(--fs-label);
+  font-weight:600;
+  letter-spacing:var(--caps-tracking);
+  color:var(--navy-ink);
+}
+.work__arrow{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:var(--white);
+  color:var(--navy-ink);
+  transition:background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.work__item:hover .work__arrow,
+.work__item:focus-visible .work__arrow{ background:var(--navy-ink); color:var(--white); transform:rotate(45deg); }
+.work__item .work__heading{ margin:0; max-width:none; }
+.work__item .work__desc{ margin:10px 0 0; max-width:none; }
+.work__item:hover .work__heading,
+.work__item:hover .work__desc{ opacity:1; }
+.work__item .work__media{ border-radius:clamp(12px, 1.2vw, 18px); }
+@media (prefers-reduced-motion: reduce){
+  .work__arrow{ transition:none; }
+  .work__item:hover .work__arrow{ transform:none; }
 }

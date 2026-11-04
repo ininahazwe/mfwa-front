@@ -60,11 +60,24 @@ export default function Work({ data, children }) {
         <div className="work__body">
           <Reveal as="div" className="work__grid" stagger>
             {data.items.map((item) => (
-              <a className="work__item" href={item.href} key={item.num}>
-                {/* 2026-10-30: photo instead of the number + icon row (previous
-                    markup: .work__top > .work__num + ICONS[item.icon]). Two
-                    layers of the same picture: a muted, navy-toned base and a
-                    full-colour copy revealed from the bottom on hover/focus. */}
+              <a className={`work__item${item.tone ? ` work__item--${item.tone}` : ""}`} href={item.href} key={item.num}>
+                {/* 2026-11-04 (at Yv's call, card model supplied): a rounded card
+                    tinted with the programme's colour — pill + round arrow on
+                    top, title, text — and the photo inset below; every other
+                    card flips (photo first, text below), see .work__item:nth-child(even).
+                    Previous markup: photo, then h3 + p, on the bare page. */}
+                <div className="work__text">
+                  <div className="work__meta">
+                    <span className="work__pill">{item.num}</span>
+                    <span className="work__arrow" aria-hidden="true">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3.5 10.5l7-7M4.5 3.5h6v6" />
+                      </svg>
+                    </span>
+                  </div>
+                  <h3 className="work__heading">{item.heading}</h3>
+                  <p className="work__desc">{item.desc}</p>
+                </div>
                 {item.image ? (
                   <div className="work__top work__media" aria-hidden="true">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -78,8 +91,6 @@ export default function Work({ data, children }) {
                     {ICONS[item.icon]}
                   </div>
                 )}
-                <h3 className="work__heading">{item.heading}</h3>
-                <p className="work__desc">{item.desc}</p>
               </a>
             ))}
           </Reveal>

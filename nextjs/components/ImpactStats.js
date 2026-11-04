@@ -102,7 +102,7 @@ export function FundersSection({ data }) {
             </nav>
           )}
 
-          <DragScroll className="funders__rail" label={f.railLabel}>
+          <DragScroll className="funders__rail" label={f.railLabel} autoplay>
             <ul className="funders__logos">
               {f.items.map((item) => (
                 <li key={item.name}>
