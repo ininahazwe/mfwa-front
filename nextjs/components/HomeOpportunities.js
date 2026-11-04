@@ -34,9 +34,16 @@ export default function HomeOpportunities({ data }) {
     <section className="opps" id="opportunities" aria-labelledby="opps-title">
       <div className="opps__inner">
         <Reveal as="div" className="opps__intro">
-          <p className="eyebrow">{data.eyebrow}</p>
           <h2 className="opps__title" id="opps-title">
-            {data.title}
+            {data.titleLines ? (
+              <>
+                {data.titleLines[0]}
+                <br />
+                <span className="title-soft">{data.titleLines[1]}</span>
+              </>
+            ) : (
+              data.title
+            )}
           </h2>
           <p className="opps__text">{data.text}</p>
           <a className="opps__all" href={data.viewAll.href}>

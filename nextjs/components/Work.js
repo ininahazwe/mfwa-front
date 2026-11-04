@@ -47,7 +47,6 @@ export default function Work({ data, children }) {
           title) + .work__summary (text + link), grid full width below. */}
       <div className="work__inner">
         <Reveal as="div" className="work__intro">
-          <p className="eyebrow">{data.eyebrow}</p>
           <h2 className="work__title">{data.title}</h2>
           <p className="work__text">{data.text}</p>
           <a className="work__link" href={data.link.href}>

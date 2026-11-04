@@ -12,6 +12,29 @@ import StatCounter from "./StatCounter";
 // after the Hero (number + label side by side).
 export default function KeyStats({ data, embedded = false, variant }) {
   if (!data?.stats?.length) return null;
+  // 2026-11-04 (step D, at Yv's call): variant="statement" replaces the thin
+  // bar by one large centred sentence; the figures are woven into it.
+  // data.statement = array of strings and stat indexes (numbers).
+  if (variant === "statement" && data.statement) {
+    return (
+      <section className="keystats keystats--statement" id="key-figures" aria-label={data.label}>
+        <Reveal as="h2" className="keystats__statement">
+          {data.statement.map((part, i) =>
+            typeof part === "number" ? (
+              <StatCounter
+                key={i}
+                className="keystats__inline-num"
+                count={data.stats[part].count}
+                suffix={data.stats[part].suffix}
+              />
+            ) : (
+              <span key={i} className="title-soft">{part}</span>
+            ),
+          )}
+        </Reveal>
+      </section>
+    );
+  }
   const list = (
       <Reveal
         as="ul"

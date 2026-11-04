@@ -28,13 +28,38 @@ export default function Latest({ data }) {
   return (
     <section className="latest" id="stories">
 
+      {/* 2026-11-04 (homepage rhythm, tasteskill.dev study): same head row as
+          Impact stories — title on the left, the section's links on the
+          right, bottom-aligned. The two links used to sit alone under the
+          cards (.latest__more). */}
       <div className="latest__head">
-        <p className="eyebrow">{data.eyebrow}</p>
+        <div className="latest__heading">
+          <Reveal as="h2" className="latest__title">
+            {data.titleLines ? (
+              <>
+                {data.titleLines[0]}
+                <br />
+                <span className="title-soft">{data.titleLines[1]}</span>
+              </>
+            ) : (
+              data.title
+            )}
+          </Reveal>
+        </div>
+        <div className="latest__links">
+          {data.opportunities && (
+            <a className="latest__all latest__all--secondary" href={data.opportunities.href}>
+              <span>{data.opportunities.label}</span>
+              {ARROW}
+            </a>
+          )}
+          <a className="latest__all" href={data.viewAll.href}>
+            <span>{data.viewAll.label}</span>
+            {data.viewAll.srSuffix && <span className="visually-hidden">{data.viewAll.srSuffix}</span>}
+            {ARROW}
+          </a>
+        </div>
       </div>
-
-      <Reveal as="h2" className="latest__title">
-        {data.title}
-      </Reveal>
 
       {/* 2026-10-21 (homepage UX review, point 5): same pill look, but under
           the title, introduced by a label, and without the red dot on the
@@ -105,20 +130,6 @@ export default function Latest({ data }) {
       ) : (
         <p className="latest__empty">Our latest stories are temporarily unavailable — please check back shortly.</p>
       )}
-
-      <div className="latest__more">
-        {data.opportunities && (
-          <a className="latest__all latest__all--secondary" href={data.opportunities.href}>
-            <span>{data.opportunities.label}</span>
-            {ARROW}
-          </a>
-        )}
-        <a className="latest__all" href={data.viewAll.href}>
-          <span>{data.viewAll.label}</span>
-          {data.viewAll.srSuffix && <span className="visually-hidden">{data.viewAll.srSuffix}</span>}
-          {ARROW}
-        </a>
-      </div>
     </section>
   );
 }

@@ -15,7 +15,11 @@
   --panel-muted:     #a6b6c6;
   --hairline:        #cfcac1;
 
-  --gutter: clamp(20px, 6.2vw, 90px);
+  /* 2026-11-04 (tasteskill.dev): fixed side padding, content width capped at
+     --page-max and centred — the margin grows only on wide screens.
+     Previous: clamp(20px, 6.2vw, 90px). */
+  --page-max: 1280px;
+  --gutter: max(48px, calc((100vw - var(--page-max)) / 2 + 48px));
   --header-h: 82px;
   --hero-h: 60vh;
   /* Footer "reveal" effect fallback (see .page-shell / .site-footer below
@@ -251,7 +255,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 
 /* -- Navigation ------------------------------------------ */
-.nav{ display:flex; align-items:center; gap:36px; }
+.nav{ display:flex; align-items:center; gap:26px; }
 .nav__link{
   font-size:14px;
   font-weight:500;
@@ -3838,7 +3842,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 .news-controls__dot:hover{ background:rgba(255,255,255,.6); }
 .news-controls__dot.is-active{ width:22px; background:var(--white); }
-.news-controls__nav{ display:flex; gap:10px; }
+.news-controls__nav{ display:none; gap:10px; }
 .news-controls__btn{
   width:38px; height:38px;
   display:grid; place-items:center;
@@ -6133,3 +6137,156 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 /* /programmes : deux cartes (CardNav, data.items.length === 2) sur 2 colonnes */
 .ab-networks__grid--duo{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
 @media (max-width:640px){ .ab-networks__grid--duo{ grid-template-columns:1fr; } }
+
+/* =========================================================
+   Fil d'Ariane de l'accueil (2026-11-04, components/SectionThread.js)
+   Ligne fine dans la marge gauche, un point par section au niveau de son
+   titre, relié au trait rouge de l'eyebrow par un pointillé. La ligne se
+   remplit de rouge au défilement. Masqué sous 1100 px.
+   ========================================================= */
+#main{ position:relative; }
+.sthread{ position:absolute; inset:0; pointer-events:none; z-index:3; --sthread-x:40px; }
+.sthread__seg,
+.sthread__fill{ position:absolute; left:var(--sthread-x); width:1px; }
+.sthread__seg{ background:rgba(19, 49, 92, .06); }
+.sthread__seg.is-dark{ background:rgba(255, 255, 255, .2); }
+.sthread__fill{ background:var(--cream); transform-origin:top; transform:scaleY(0); transition:transform .15s linear; }
+.sthread__node{ z-index:1;
+  position:absolute; left:var(--sthread-x);
+  width:9px; height:9px; border-radius:50%;
+  transform:translate(-50%, -50%);
+  background:var(--white); box-shadow:0 0 0 1.5px var(--red);
+  transition:background-color .3s var(--ease);
+}
+.sthread__node.is-dark{ background:var(--navy-panel); }
+.sthread__node.is-on{ background:var(--red); }
+.sthread__link{ position:absolute; height:0; border-top:1px dotted var(--red); opacity:.55; }
+@media (max-width:1099px){ .sthread{ display:none; } }
+@media (prefers-reduced-motion: reduce){
+  .sthread__fill, .sthread__node{ transition:none; }
+}
+
+/* =========================================================
+   Accueil — rythme et titres (2026-11-04, points A + B, inspirés de
+   tasteskill.dev, à la demande de Yv)
+   A. Une seule taille pour tous les titres de section (plus grande, serrée),
+      le slogan du Hero reste au-dessus ; intros en 17 px.
+   B. Une seule respiration entre sections : --home-pad en haut et en bas
+      de chaque section (avant : 30 à 81 px selon la section). Les écarts
+      internes ne changent pas : c'est le contraste entre les deux qui
+      sépare les blocs.
+   Portée : l'accueil seulement (#main > …). Retirer ce bloc pour revenir.
+   ========================================================= */
+:root{
+  --home-pad:clamp(72px, 8.5vw, 128px);
+  --home-h2:clamp(32px, 3.4vw, 50px);
+}
+#main > :is(.impact-highlights, .latest, .work, .reach, .opps, .expertise, .funders){ padding-block:var(--home-pad); }
+#main > .cta .cta__inner{ padding-block:var(--home-pad); }
+#main :is(.impact-highlights__title, .latest__title, .work__title, .reach__title,
+          .opps__title, .expertise__title, .funders__title, .cta__title){
+  font-size:var(--home-h2);
+  line-height:1.05;
+  letter-spacing:-.025em;
+}
+#main .hero__title{ font-size:clamp(40px, 4.2vw, 58px); line-height:1.02; letter-spacing:-.03em; }
+#main :is(.work__text, .reach__text, .opps__text, .expertise__text, .cta__text--head){ font-size:17px; line-height:1.6; }
+
+/* Accueil — en-tête commun des sections « contenu pleine largeur » (2026-11-04) :
+   titre à gauche (avec son eyebrow s'il en a un), lien(s) de la section à
+   droite, alignés en bas ; même écart avant le contenu pour Impact stories
+   et The latest. Les sections à colonne d'intro (What we do, Mediascape,
+   Opportunities, Partners) gardent leur découpe gauche / droite. */
+#main :is(.impact-highlights__head, .latest__head){
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:20px clamp(24px, 4vw, 64px);
+  margin-bottom:clamp(32px, 4vw, 56px);
+}
+.latest__heading{ min-width:0; }
+.latest__links{ display:flex; flex-wrap:wrap; align-items:center; gap:12px clamp(20px, 3vw, 36px); }
+#main .impact-highlights__grid{ margin-top:0; }
+#main .latest__grid{ padding-top:0; }
+#main .latest > .topics{ margin-top:0; margin-bottom:clamp(28px, 3.4vw, 44px); }
+#main .latest__title{ margin:clamp(10px, 1.8vh, 18px) 0 0; }
+
+/* ============================================================
+   2026-11-04 — Titres bicolores (étape C, tasteskill.dev)
+   Les petits eyebrows rouges au-dessus des titres d'accueil sont retirés ;
+   la 2e ligne du titre passe en teinte atténuée (couleur du titre, à ~50 %,
+   donc valable sur fond clair comme sur fond sombre).
+   ============================================================ */
+.title-soft{
+  color:#6b7f95;
+  color:color-mix(in srgb, currentColor 50%, transparent);
+}
+#main :is(.latest__title, .work__title, .reach__title, .opps__title, .expertise__title, .cta__title){
+  margin-top:0;
+}
+
+/* 2026-11-04 — étape D : un grand énoncé centré à la place de la barre de
+   chiffres (KeyStats variant="statement"). Chiffres en encre, reste en teinte
+   atténuée (.title-soft). */
+.keystats--statement{ padding-block:var(--home-pad); background:var(--white); }
+.keystats__statement{
+  max-width:22ch;
+  max-width:min(24em, 100%);
+  margin:0 auto;
+  padding-inline:var(--gutter);
+  text-align:center;
+  font-family:var(--font-serif);
+  font-weight:600;
+  font-size:clamp(28px, 3.6vw, 52px);
+  line-height:1.18;
+  letter-spacing:-.025em;
+  color:var(--navy-ink);
+  text-wrap:balance;
+}
+.keystats__inline-num{ color:var(--navy-ink); font-variant-numeric:lining-nums; }
+
+/* ============================================================
+   2026-11-04 — Étape E (tasteskill.dev) : moins de bandes pleine largeur.
+   Les sections à fond propre (Mediascape, Opportunities, Expertise) deviennent
+   des panneaux arrondis posés sur la page blanche ; seuls le hero et l'appel
+   à l'action final restent pleine largeur. L'inset reste < au x du fil
+   d'Ariane (--sthread-x) pour que le fil traverse bien les panneaux.
+   ============================================================ */
+:root{ --panel-inset:clamp(8px, 1vw, 14px); --panel-radius:clamp(20px, 2.4vw, 32px); }
+#main :is(.reach, .opps, .expertise){
+  margin-inline:var(--panel-inset);
+  /*margin-block:clamp(12px, 1.6vw, 24px);*/
+  border-radius:var(--panel-radius);
+}
+#main .expertise{ padding-block:var(--home-pad); }
+#main .funders{ border-bottom:0; }
+@media (max-width:640px){
+  :root{ --panel-inset:8px; --panel-radius:20px; }
+}
+#main .reach{ background:#f2f5f8; }
+
+@media (max-width:640px){ :root{ --gutter:20px; } }
+@media (min-width:641px) and (max-width:1099px){ :root{ --gutter:32px; } }
+/* Panneaux (étape E) : le contenu reste aligné sur la même marge que les autres
+   sections — le padding compense l'inset du panneau. */
+#main :is(.reach, .opps, .expertise){ padding-inline:calc(var(--gutter) - var(--panel-inset)); }
+
+/* ============================================================
+   2026-11-04 — Grands écrans (marge fixe + largeur plafonnée)
+   1. Hero : la marge gauche passe du padding de la colonne d'accroche au
+      padding du hero, pour que les colonnes 1,2fr / 2fr se partagent la
+      largeur de contenu (plafonnée) et non « marge comprise ».
+   2. Chiffres-énoncé : la marge est celle de la section, pas du titre, et
+      le texte occupe toute la largeur de contenu.
+   ============================================================ */
+@media (min-width:901px){
+  .hero--float{ padding-left:var(--gutter); }
+  .hero--float .hero__intro{ padding-left:0; }
+}
+@media (min-width:1181px){
+  .hero--float{ grid-template-columns:minmax(0, 1.2fr) minmax(0, 2fr); }
+}
+.keystats--statement{ padding-inline:var(--gutter); }
+.keystats__statement{
+  max-width:none;
+  padding-inline:0;
+}

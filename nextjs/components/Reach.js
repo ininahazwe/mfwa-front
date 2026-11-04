@@ -65,11 +65,10 @@ export default function Reach({ data, children }) {
     <section className="reach" id="reach">
       <div className="reach__inner">
         <Reveal as="div" className="reach__intro">
-          <p className="eyebrow">{data.eyebrow}</p>
           <h2 className="reach__title">
             {data.titleLines[0]}
             <br />
-            {data.titleLines[1]}
+            <span className="title-soft">{data.titleLines[1]}</span>
           </h2>
           <p className="reach__text">{data.text}</p>
           <div className="reach__links">

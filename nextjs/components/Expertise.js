@@ -76,8 +76,17 @@ export default function Expertise({ data, embedded = false }) {
     <section className="expertise" id="expertise">
       <div className="expertise__inner">
         <Reveal as="div" className="expertise__intro">
-          <p className="eyebrow">{data.eyebrow}</p>
-          <h2 className="expertise__title">{data.title}</h2>
+          <h2 className="expertise__title">
+            {data.titleLines ? (
+              <>
+                {data.titleLines[0]}
+                <br />
+                <span className="title-soft">{data.titleLines[1]}</span>
+              </>
+            ) : (
+              data.title
+            )}
+          </h2>
           <p className="expertise__text">{data.text}</p>
           <a className="expertise__link" href={data.link.href}>
             {data.link.label}

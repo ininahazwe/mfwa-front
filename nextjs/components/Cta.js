@@ -26,11 +26,10 @@ export default function Cta({ data, newsletter }) {
         <div className="cta__inner">
           <div className="cta__head">
             <div className="cta__intro">
-              <p className="eyebrow">{data.eyebrow}</p>
               <h2 className="cta__title">
                 {data.titleLines[0]}
                 <br />
-                {data.titleLines[1]}
+                <span className="title-soft">{data.titleLines[1]}</span>
               </h2>
             </div>
             <div className="cta__head-aside">
@@ -92,11 +91,10 @@ export default function Cta({ data, newsletter }) {
 
       <div className="cta__inner">
         <div className="cta__intro">
-          <p className="eyebrow">{data.eyebrow}</p>
           <h2 className="cta__title">
             {data.titleLines[0]}
             <br />
-            {data.titleLines[1]}
+            <span className="title-soft">{data.titleLines[1]}</span>
           </h2>
         </div>
 

@@ -273,6 +273,7 @@ export async function getLatestStories() {
   return {
     eyebrow: "What’s happening",
     title: "The latest from MFWA",
+    titleLines: ["The latest", "from MFWA"],
     // 2026-10-20: the Issues in Focus archive (app/issues-in-focus/page.js)
     // 2026-11-02 (finding 05): two "View all stories" links on the homepage
     // lead to different pages; srSuffix (visually hidden) tells them apart
@@ -324,6 +325,12 @@ export async function getKeyStats() {
   return {
     label: "MFWA in figures",
     stats: PROVISIONAL_KEY_FIGURES,
+    // 2026-11-04 (step D): sentence for KeyStats variant="statement";
+    // numbers are indexes into stats. Figures still provisional.
+    statement: [
+      "We have supported ", 0, " media houses, trained ", 1,
+      " journalists and carried out ", 2, " actions for free expression in West Africa.",
+    ],
   };
 }
 
@@ -392,6 +399,7 @@ export async function getHomeOpportunities() {
   return {
     eyebrow: "Get involved",
     title: "Latest opportunities",
+    titleLines: ["Latest", "opportunities"],
     text: "Calls for applications, fellowships, grants, trainings and vacancies from the MFWA and its partners across West Africa.",
     viewAll: { label: "All opportunities", href: "/opportunities" },
     items: (res?.items ?? []).slice(0, HOME_OPPORTUNITIES_COUNT),
@@ -556,6 +564,7 @@ export async function getExpertise() {
   return {
     eyebrow: "Our expertise",
     title: "Knowledge. Analysis. Impact.",
+    titleLines: ["Knowledge. Analysis.", "Impact."],
     text: "We generate evidence and share insights to inform better policies, stronger media and more resilient democracies.",
     // 2026-10-20 (at Yv's call): leads to the reports archive.
     link: { label: "Explore our expertise", href: "/reports" },

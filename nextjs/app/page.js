@@ -9,6 +9,7 @@ import Reach from "@/components/Reach";
 import Work from "@/components/Work";
 import HomeOpportunities from "@/components/HomeOpportunities";
 import Cta from "@/components/Cta";
+import SectionThread from "@/components/SectionThread";
 import Footer from "@/components/Footer";
 
 import { getHeader } from "@/lib/content";
@@ -97,11 +98,11 @@ export default async function Home() {
               Work, HomeOpportunities, Expertise, ImpactHighlights,
               FundersSection, Cta. */}
           <Hero data={hero} />
-          <KeyStats data={keyStats} variant="bar" />
+          <KeyStats data={keyStats} variant="statement" />
           {/* null when WordPress can't answer (design review I5) */}
           {impactHighlights && <ImpactHighlights data={impactHighlights} />}
-          <Latest data={latest} />
           <Work data={work} />
+          <Latest data={latest} />
           <Reach data={reach} />
           {/* 2026-10-30: 4 latest opportunities (dated list on a navy band) */}
           <HomeOpportunities data={opportunities} />
@@ -109,6 +110,8 @@ export default async function Home() {
           {/*<ImpactStats data={impactStats} showFunders={false} />*/}
           <FundersSection data={impactStats} />
           <Cta data={cta} newsletter={newsletter} />
+          {/* 2026-11-04: section thread in the left gutter (components/SectionThread.js) */}
+          <SectionThread />
         </main>
       </div>
 
