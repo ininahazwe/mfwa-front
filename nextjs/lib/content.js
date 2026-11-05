@@ -279,6 +279,26 @@ export async function getLatestStories() {
 
 const LATEST_COUNT = 3;
 
+// Homepage « Latest opportunities » band, right after « What we do » (at
+// Yv's call): the 4 most recent opportunities — on mfwa.org the regular
+// WordPress posts, see OPPORTUNITIES in lib/wp.js. If WordPress can't
+// answer, the section shows a short "temporarily unavailable" line instead
+// of failing the homepage or showing made-up items.
+const HOME_OPPORTUNITIES_COUNT = 4;
+export async function getHomeOpportunities() {
+  const res = await getOpportunityPosts({ page: 1, perPage: HOME_OPPORTUNITIES_COUNT }).catch((err) => {
+    console.error("getHomeOpportunities failed —", err);
+    return null;
+  });
+  return {
+    eyebrow: "Get involved",
+    titleLines: ["Latest", "opportunities"],
+    text: "Calls for applications, fellowships, grants, trainings and vacancies from the MFWA and its partners across West Africa.",
+    link: { label: "All opportunities", href: "/opportunities" },
+    items: res?.items ?? [],
+  };
+}
+
 export async function getWork() {
   return {
     eyebrow: "Our work",
@@ -291,6 +311,7 @@ export async function getWork() {
         icon: "shield",
         heading: "Freedom of Expression",
         desc: "Protecting journalists and media rights.",
+        image: { src: "/images/ghana5.jpg", alt: "" },
         href: "/programmes/freedom-of-expression",
       },
       {
@@ -298,6 +319,7 @@ export async function getWork() {
         icon: "network",
         heading: "Digital Rights",
         desc: "Safer digital spaces for everyone.",
+        image: { src: "/images/ghana4.jpg", alt: "" },
         href: "/programmes/digital-rights",
       },
       {
@@ -305,6 +327,7 @@ export async function getWork() {
         icon: "document",
         heading: "Media & Democracy",
         desc: "Stronger media for informed societies.",
+        image: { src: "/images/ghana.jpg", alt: "" },
         href: "/programmes/media-democracy-governance",
       },
       {
@@ -312,6 +335,7 @@ export async function getWork() {
         icon: "connections",
         heading: "Peace & Social Cohesion",
         desc: "Media for more inclusive and resilient communities.",
+        image: { src: "/images/ghana2.jpg", alt: "" },
         href: "/programmes/media-peace-social-cohesion",
       },
     ],
@@ -324,18 +348,22 @@ export async function getImpactStats() {
   // funding-partner logos as /about-us/our-partners/funding-partners,
   // shown under the home statistics with their count, as "Partners
   // Highlights".
-  const { logos: funderLogos } = await getFundingPartnersPage();
+  const [{ logos: funderLogos }, ourPartners] = await Promise.all([getFundingPartnersPage(), getOurPartnersPage()]);
   return {
     funders: {
       // 2026-10-21 (homepage UX review, point 4): eyebrow was "Our funders"
       // under the title "Partners Highlights" (com team #17); the link now
       // opens the funding partners page itself (was /about-us/our-partners/).
       eyebrow: "Funding partners",
-      title: "Partners Highlights",
+      // 2026-11-05 (at Yv's call): "Highlights" dropped — the title is now just "Partners".
+      title: "Partners",
       count: funderLogos.length,
       countLabel: "funding partners",
       link: { label: "Meet our funding partners", href: "/about-us/our-partners/funding-partners" },
       items: funderLogos,
+      // 2026-11-05 (at Yv's call): the 3 « explore » cards of /about-us/our-partners
+      // (Funding Partners · National Partners · Our Networks), shown under the logos.
+      explore: ourPartners.nav.items,
     },
     media: { src: "/images/ghana5.jpg", alt: "" },
     titleLines: ["From story", "to change."],
@@ -1856,21 +1884,21 @@ export async function getOurPartnersPage() {
           id: "funding",
           name: "Funding Partners",
           scope: "11 funders",
-          desc: "The foundations, agencies and companies whose support makes our work across West Africa possible.",
+          desc: "The organisations that support our work",
           href: "/about-us/our-partners/funding-partners",
         },
         {
           id: "national",
           name: "National Partners",
           scope: "17 organisations",
-          desc: "The leading press-freedom and media-development organisations we work with in each country of the region.",
+          desc: "Our partner organisations in all 16 countries",
           href: "/about-us/our-partners/national-partners",
         },
         {
           id: "networks",
           name: "Our Networks",
           scope: "6 networks",
-          desc: "The national, regional and international networks that build synergies and broad collaborative advocacy.",
+          desc: "The regional and global networks we belong to",
           href: "/about-us/our-partners/our-networks",
         },
       ],

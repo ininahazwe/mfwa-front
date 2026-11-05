@@ -6,6 +6,7 @@ import ImpactStats, { FundersSection } from "@/components/ImpactStats";
 import ImpactHighlights from "@/components/ImpactHighlights";
 import Reach from "@/components/Reach";
 import Work from "@/components/Work";
+import Opportunities from "@/components/Opportunities";
 import Cta from "@/components/Cta";
 import Footer from "@/components/Footer";
 
@@ -17,6 +18,7 @@ import { getImpactStats } from "@/lib/content";
 import { getImpactHighlights } from "@/lib/content";
 import { getReach } from "@/lib/content";
 import { getWork } from "@/lib/content";
+import { getHomeOpportunities } from "@/lib/content";
 import { getCta } from "@/lib/content";
 import { getNewsletter } from "@/lib/content";
 import { getFooter } from "@/lib/content";
@@ -42,6 +44,7 @@ export default async function Home() {
     impactHighlights,
     reach,
     work,
+    opportunities,
     cta,
     newsletter,
     footer,
@@ -54,6 +57,7 @@ export default async function Home() {
     getImpactHighlights(),
     getReach(),
     getWork(),
+    getHomeOpportunities(),
     getCta(),
     getNewsletter(),
     getFooter(),
@@ -72,15 +76,17 @@ export default async function Home() {
           {/* Order revised 2026-10-21 (homepage UX review, at Yv's call): news
               first, then what we do (programmes) and how (expertise) side by
               side, then impact as one block (figures → stories), then reach,
-              funders, and the call to action. Previous order: Hero, Latest,
+              funders, and the call to action. « Latest opportunities » added
+              right after « What we do » (at Yv's call). Previous order: Hero, Latest,
               Expertise, ImpactStats (+ funders), ImpactHighlights, Reach,
               Work, Cta. */}
           <Hero data={hero} />
-          <Latest data={latest} />
-          <Work data={work} />
-          <Expertise data={expertise} />
           <ImpactStats data={impactStats} showFunders={false} />
           <ImpactHighlights data={impactHighlights} />
+          <Latest data={latest} />
+          <Work data={work} />
+          <Opportunities data={opportunities} />
+          <Expertise data={expertise} />
           <Reach data={reach} />
           <FundersSection data={impactStats} />
           <Cta data={cta} newsletter={newsletter} />

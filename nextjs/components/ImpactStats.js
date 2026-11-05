@@ -4,6 +4,7 @@ import Reveal from "./Reveal";
 import FadeImg from "./FadeImg";
 import StatCounter from "./StatCounter";
 import ImpactTopo from "./ImpactTopo";
+import { ICONS, ARROW_RIGHT } from "./AboutIcons";
 
 // Background of the impact section (2026-10-19 test, at Yv's call):
 // true = animated topographic SVG (components/ImpactTopo.js),
@@ -29,12 +30,14 @@ export default function ImpactStats({ data, showFunders = true }) {
             {data.titleLines[1]}
           </h2>
           <p className="impact__text">{data.text}</p>
+          {/* Bouton masqué (commenté) à la demande de Yv — retirer ce commentaire pour le réafficher.
           <a className="btn btn--light impact__cta" href={data.cta.href}>
             {data.cta.label}
             <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
             </svg>
           </a>
+          */}
         </Reveal>
 
         <ul className="impact__stats">
@@ -74,16 +77,51 @@ export function FundersSection({ data }) {
           </a>
         </Reveal>
 
-        <ul className="funders__logos">
-          {data.funders.items.map((item) => (
-            <li key={item.name}>
-              <a href={item.href} target="_blank" rel="noopener noreferrer" title={item.name}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={item.logo} alt={item.name} loading="lazy" />
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="funders__main">
+          {/* Same 3 cards as the « Explore » grid of /about-us/our-partners
+            (components/CardNav.js), copied under the logos at Yv's call. */}
+          {data.funders.explore?.length > 0 && (
+              <Reveal as="ul" className="ab-networks__grid ab-stagger funders__explore" stagger>
+                {data.funders.explore.map((item) => (
+                    <li key={item.id}>
+                      <a className="ab-card ab-network" href={item.href}>
+                        <span className="ab-network__top">
+                          <span className="ab-tag">{item.scope}</span>
+                          <span className="ab-network__icon">{ICONS[item.icon] || ICONS.globe}</span>
+                        </span>
+                        <span className="ab-card__title">{item.name}</span>
+                        <span className="ab-card__text">{item.desc}</span>
+                        <span className="ab-network__arrow">{ARROW_RIGHT}</span>
+                      </a>
+                    </li>
+                ))}
+              </Reveal>
+          )}
+
+          {/* Logos: one single line scrolling slowly (CSS marquee), started when the
+              section reaches the screen (Reveal adds .is-visible). The second set is
+              an aria-hidden duplicate so the loop has no jump. */}
+          <Reveal as="div" className="funders__marquee">
+            <ul className="funders__logos funders__track" style={{ "--n": data.funders.items.length }}>
+              {data.funders.items.map((item) => (
+                <li key={item.name}>
+                  <a href={item.href} target="_blank" rel="noopener noreferrer" title={item.name}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.logo} alt={item.name} loading="lazy" />
+                  </a>
+                </li>
+              ))}
+              {data.funders.items.map((item) => (
+                <li key={`${item.name}-copy`} aria-hidden="true">
+                  <a href={item.href} target="_blank" rel="noopener noreferrer" tabIndex={-1}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.logo} alt="" loading="lazy" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
       </div>
     </section>
   );

@@ -107,12 +107,12 @@ export default function Latest({ data }) {
       )}
 
       <div className="latest__more">
-        {data.opportunities && (
+        {/*{data.opportunities && (
           <a className="latest__all latest__all--secondary" href={data.opportunities.href}>
             <span>{data.opportunities.label}</span>
             {ARROW}
           </a>
-        )}
+        )}*/}
         <a className="latest__all" href={data.viewAll.href}>
           <span>{data.viewAll.label}</span>
           {ARROW}

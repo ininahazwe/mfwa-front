@@ -31,6 +31,11 @@ import HeroTopo from "./HeroTopo";
 
 const AUTOPLAY_DELAY = 7000; // ms — matches main.js (0 disables autoplay)
 const SWIPE_THRESHOLD = 45; // px — matches main.js
+// News carousel autoplay (at Yv's call): next story every 5 s. Paused while the
+// pointer is over the carousel, while it has keyboard focus, when the tab is
+// hidden and with prefers-reduced-motion; the countdown restarts after any
+// manual change (arrows, dots, swipe, keys). 0 disables it.
+const STORY_AUTOPLAY_DELAY = 5000; // ms
 
 const HERO_ARROW = (
   <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -153,6 +158,8 @@ export default function Hero({ data }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
+  const [storyHover, setStoryHover] = useState(false);
+  const [storyFocus, setStoryFocus] = useState(false);
   const storiesRef = useRef(null);
 
   // prefers-reduced-motion and tab visibility, used by the autoplay effect
@@ -183,6 +190,16 @@ export default function Hero({ data }) {
     }, AUTOPLAY_DELAY);
     return () => window.clearTimeout(timer);
   }, [index, paused, tabHidden, reducedMotion, total]);
+
+  // News carousel autoplay. Re-armed on every storyIndex change (manual or
+  // automatic) and on any pause/visibility/reduced-motion change.
+  useEffect(() => {
+    if (storyTotal < 2 || !STORY_AUTOPLAY_DELAY || storyHover || storyFocus || tabHidden || reducedMotion) return undefined;
+    const timer = window.setTimeout(() => {
+      setStoryIndex((i) => (i + 1) % storyTotal);
+    }, STORY_AUTOPLAY_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [storyIndex, storyHover, storyFocus, tabHidden, reducedMotion, storyTotal]);
 
   // News carousel: storyIndex is the source of truth.
   // Fit each story's excerpt to the room its title leaves (see fitExcerpts).
@@ -311,7 +328,9 @@ export default function Hero({ data }) {
           <div className="hero__slides hero__slides--static">
             <div className="hero-slide is-active">
               <h1 className="hero__title">{intro.title}</h1>
+              {/* Texte d'accroche masqué (commenté) à la demande de Yv — retirer le commentaire pour le réafficher.
               <p className="hero__lede">{intro.lede}</p>
+              */}
               <div className="hero__actions">
                 <a className="btn btn--hero hero__cta" href={intro.primary.href}>
                   {intro.primary.label}
@@ -342,7 +361,9 @@ export default function Hero({ data }) {
                   inert={!active}
                 >
                   <Heading className="hero__title">{slide.title}</Heading>
+                  {/* Texte d'accroche masqué (commenté) à la demande de Yv.
                   <p className="hero__lede">{slide.lede}</p>
+                  */}
                   <a className="btn btn--hero hero__cta" href={slide.cta.href}>
                     {slide.cta.label}
                     {HERO_ARROW}
@@ -381,6 +402,15 @@ export default function Hero({ data }) {
         role="group"
         aria-roledescription="carousel"
         aria-label={data.news.ariaLabel}
+        onMouseEnter={() => setStoryHover(true)}
+        onMouseLeave={() => setStoryHover(false)}
+        onFocus={(e) => {
+          // Keyboard focus only: a mouse click on an arrow must not stop the autoplay.
+          if (e.target.matches(":focus-visible")) setStoryFocus(true);
+        }}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget)) setStoryFocus(false);
+        }}
       >
         <div
           className="hero__stories"
