@@ -6236,7 +6236,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   text-align:center;
   font-family:var(--font-serif);
   font-weight:600;
-  font-size:clamp(28px, 3.6vw, 52px);
+  font-size:clamp(28px, 3.6vw, 40px);
   line-height:1.18;
   letter-spacing:-.025em;
   color:var(--navy-ink);
@@ -6358,3 +6358,86 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .work__arrow{ transition:none; }
   .work__item:hover .work__arrow{ transform:none; }
 }
+
+/* ============================================================
+   2026-11-18 — Hero empilé (à la demande de Yv)
+   L'accroche passe au-dessus, sur toute la largeur de contenu (titre à
+   gauche, liens à droite) ; le carrousel d'actualités prend toute la largeur
+   de la page dessous (bord à bord, sans coins arrondis). Les courbes de
+   niveau occupent la droite de la bande d'accroche, entre le titre et les
+   liens, sur tout le relief (viewBox large, voir Hero.js).
+   Revert : STACKED = false dans components/Hero.js.
+   ============================================================ */
+.hero--float.hero--stacked{
+  grid-template-columns:minmax(0, 1fr);
+  grid-template-rows:auto auto;
+  min-height:0;
+  padding:0;
+  gap:0;
+}
+.hero--float.hero--stacked .hero__intro{
+  padding:clamp(40px, 7vh, 88px) var(--gutter) clamp(32px, 5.5vh, 64px);
+}
+.hero--float.hero--stacked .hero__carousel{
+  margin:0;
+  border-radius:0;
+}
+/* le texte de l'actualité reste aligné sur la marge droite des sections */
+.hero--stacked .hero__news,
+.hero--stacked .news-controls{ padding-right:var(--gutter); }
+
+/* courbes : bande d'accroche, côté droit */
+.hero--stacked .hero-topo{
+  grid-column:1 / 2;
+  grid-row:1 / 2;
+  top:0;
+  bottom:auto;
+  left:30%;
+  width:70%;
+  height:100%;
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 50% 50%, #000 30%, rgba(0,0,0,.5) 60%, transparent 100%);
+          mask-image:radial-gradient(ellipse 50% 50% at 50% 50%, #000 30%, rgba(0,0,0,.5) 60%, transparent 100%);
+}
+
+@media (min-width:901px){
+  /* accroche : titre à gauche, boutons à droite, alignés en bas */
+  .hero--stacked .hero__slides--static .hero-slide{
+    flex-direction:row;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:clamp(24px, 4vw, 72px);
+  }
+  .hero--stacked .hero__title{ margin-top:0; max-width:20ch; }
+  .hero--stacked .hero__actions{ flex:none; margin:0 0 .4em; }
+  /* hauteur fixe : l'extrait s'ajuste à la place laissée (fitExcerpts) */
+  .hero--stacked .hero__carousel{ height:clamp(420px, 60vh, 620px); }
+}
+@media (max-width:900px){
+  .hero--float.hero--stacked .hero__intro{ padding-top:clamp(32px, 8vw, 48px); padding-bottom:clamp(24px, 6vw, 36px); }
+  .hero--stacked .hero-topo{ left:0; width:100%; }
+}
+
+/* 2026-11-18 (2) — retours de Yv :
+   1. le carrousel s'arrête aux mêmes marges que les sections en dessous
+      (Impact stories…) au lieu d'aller bord à bord ;
+   2. bouton « Explore our work » en bleu marine plein (et non plus rouge),
+      pour ne pas se confondre avec « Donate » juste au-dessus. */
+.hero--float.hero--stacked .hero__carousel{
+  margin:0 var(--gutter);
+  border-radius:8px;
+}
+.hero--stacked .hero__news,
+.hero--stacked .news-controls{ padding-right:clamp(22px, 2.5vw, 36px); }
+.hero--float.hero--stacked{ padding-bottom:clamp(28px, 5vh, 56px); }
+@media (max-width:900px){
+  .hero--stacked .news-controls{ padding-right:var(--gutter); }
+}
+
+.hero--stacked .btn--hero.hero__cta{
+  background:var(--navy);
+  color:var(--white);
+}
+.hero--stacked .btn--hero.hero__cta:hover,
+.hero--stacked .btn--hero.hero__cta:focus-visible{ background:var(--blue); }
+.hero--stacked .btn--hero.hero__cta svg{ transition:transform var(--dur-fast) var(--ease); }
+.hero--stacked .btn--hero.hero__cta:hover svg{ transform:translateX(4px); }

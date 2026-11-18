@@ -316,9 +316,11 @@ const KEY_STATS_MIN = 3;
 // Previous version (WordPress totals + partners/projects/countries):
 // lib/content.js.bak-keystats.
 const PROVISIONAL_KEY_FIGURES = [
+  { count: 30, suffix: "", label: "years of impact" },
   { count: 150, suffix: "+", label: "media houses supported" },
-  { count: 5000, suffix: "+", label: "journalists trained" },
-  { count: 300, suffix: "+", label: "FOE actions carried out" },
+  { count: 10000, suffix: "+", label: "journalists and civic actors trained" },
+  { count: 2000, suffix: "+", label: "impactful stories" },
+  { count: 1000, suffix: "+", label: "actions carried out" },
 ];
 
 export async function getKeyStats() {
@@ -327,9 +329,11 @@ export async function getKeyStats() {
     stats: PROVISIONAL_KEY_FIGURES,
     // 2026-11-04 (step D): sentence for KeyStats variant="statement";
     // numbers are indexes into stats. Figures still provisional.
+    // 2026-11-18 (at Yv's call): new sentence and figures (30 years, 150+, 10000+, 2000, 1000+).
     statement: [
-      "We have supported ", 0, " media houses, trained ", 1,
-      " journalists and carried out ", 2, " actions for free expression in West Africa.",
+      0, " years of supporting ", 1, " media houses, training ", 2,
+      " journalists and civic actors with ", 3, " impactful stories and carrying out ", 4,
+      " actions contributing to free expression and democratic governance in West Africa.",
     ],
   };
 }

@@ -138,6 +138,14 @@ function fitExcerpts(root) {
 // Revert: FLOAT = false (CSS: .hero--float block in globals.css).
 const FLOAT = true;
 
+// 2026-11-18 (at Yv's call): stacked hero — the intro sits on top, wider
+// (title left, links right), and the news carousel runs full width
+// (edge to edge) underneath. The contour lines move to the right of the
+// intro, on the whole terrain (wide viewBox). Revert: STACKED = false
+// (CSS: "Hero empilé" block at the end of globals.css).
+const STACKED = true;
+const STACKED_TOPO_VIEWBOX = "0 0 1650 500";
+
 export default function Hero({ data }) {
   // 2026-10-19 (at Yv's call): one carousel only in the hero. With
   // `data.intro` (see getHero()) the left column is a fixed statement —
@@ -279,7 +287,7 @@ export default function Hero({ data }) {
 
   return (
     <section
-      className={`hero${intro ? " hero--static-intro" : ""}${storyTotal === 0 ? " hero--no-news" : ""}${FLOAT ? " hero--float" : ""}`}
+      className={`hero${intro ? " hero--static-intro" : ""}${storyTotal === 0 ? " hero--no-news" : ""}${FLOAT ? " hero--float" : ""}${FLOAT && STACKED ? " hero--stacked" : ""}`}
       id="hero"
       data-hero
       aria-label="Featured"
@@ -301,7 +309,7 @@ export default function Hero({ data }) {
             },
           })}
     >
-      {FLOAT && <HeroTopo />}
+      {FLOAT && (STACKED ? <HeroTopo viewBox={STACKED_TOPO_VIEWBOX} /> : <HeroTopo />)}
 
       {/* Colonne 1 : accroche */}
       <div className="hero__intro">
