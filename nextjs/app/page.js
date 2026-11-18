@@ -80,14 +80,19 @@ export default async function Home() {
               right after « What we do » (at Yv's call). Previous order: Hero, Latest,
               Expertise, ImpactStats (+ funders), ImpactHighlights, Reach,
               Work, Cta. */}
+          {/* Order revised 2026-11-18 (at Yv's call): Impact (figures + stories),
+              Latest from MFWA, What we do, Knowledge. Analysis. Impact. (expertise),
+              Mediascape (reach), Opportunities, Our partners, then Take action.
+              Previous order: Hero, ImpactStats, ImpactHighlights, Latest, Work,
+              Opportunities, Expertise, Reach, FundersSection, Cta. */}
           <Hero data={hero} />
           <ImpactStats data={impactStats} showFunders={false} />
           <ImpactHighlights data={impactHighlights} />
           <Latest data={latest} />
           <Work data={work} />
-          <Opportunities data={opportunities} />
           <Expertise data={expertise} />
           <Reach data={reach} />
+          <Opportunities data={opportunities} />
           <FundersSection data={impactStats} />
           <Cta data={cta} newsletter={newsletter} />
         </main>

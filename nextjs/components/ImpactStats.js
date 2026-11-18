@@ -61,14 +61,16 @@ export function FundersSection({ data }) {
     <section className="funders" id="funders" aria-labelledby="funders-title">
       <div className="funders__inner">
         <Reveal as="div" className="funders__intro">
-          <p className="eyebrow">{data.funders.eyebrow}</p>
+          {data.funders.eyebrow && <p className="eyebrow">{data.funders.eyebrow}</p>}
           <h2 className="funders__title" id="funders-title">
             {data.funders.title}
           </h2>
+          {/* Compteur masqué (2026-11-18, demande de Yv, comme sur main) :
           <p className="funders__count">
             <StatCounter className="funders__num" count={data.funders.count} />
             <span className="funders__count-label">{data.funders.countLabel}</span>
           </p>
+          */}
           <a className="funders__link" href={data.funders.link.href}>
             {data.funders.link.label}
             <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
