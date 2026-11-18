@@ -71,12 +71,14 @@ export function FundersSection({ data }) {
             <span className="funders__count-label">{data.funders.countLabel}</span>
           </p>
           */}
+          {/* Lien masqué (2026-11-18, demande de Yv) — retirer le commentaire pour le réafficher.
           <a className="funders__link" href={data.funders.link.href}>
             {data.funders.link.label}
             <svg width="15" height="9" viewBox="0 0 15 9" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M0 4.5h13M9.4 1 13 4.5 9.4 8" />
             </svg>
           </a>
+          */}
         </Reveal>
 
         <div className="funders__main">
