@@ -97,7 +97,7 @@ export async function getHeader() {
       // href + children). "Board & Staff" targets the #people block of the
       // hub, which presents both and links to each directory.
       {
-        label: "About",
+        label: "About us",
         href: "/about-us",
         children: [
           { label: "Mission and vision", href: "/about-us#drives" },
@@ -372,7 +372,7 @@ export async function getWork() {
       {
         num: "03",
         icon: "document",
-        heading: "Media & Democracy",
+        heading: "Media for Democracy and Good Governance",
         desc: "Stronger media for informed societies.",
         href: "/programmes/media-democracy-governance",
         tone: "navy",
@@ -676,7 +676,7 @@ export async function getFooter() {
       { label: "Publications", href: "/reports" },
       { label: "Data", href: "https://mediascape.mfwa.org" },
       { label: "Our Impact", href: "/impact-stories" },
-      { label: "About", href: "/about-us" },
+      { label: "About us", href: "/about-us" },
     ],
     social: [
       { network: "LinkedIn", url: "#" },

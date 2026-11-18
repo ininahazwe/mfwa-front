@@ -99,15 +99,15 @@ export default async function Home() {
               FundersSection, Cta. */}
           <Hero data={hero} />
           <KeyStats data={keyStats} variant="statement" />
+          <Work data={work} />
           {/* null when WordPress can't answer (design review I5) */}
           {impactHighlights && <ImpactHighlights data={impactHighlights} />}
-          <Work data={work} />
           <Latest data={latest} />
           <Reach data={reach} />
           {/* 2026-10-30: 4 latest opportunities (dated list on a navy band) */}
           <HomeOpportunities data={opportunities} />
-          <Expertise data={expertise} />
-          {/*<ImpactStats data={impactStats} showFunders={false} />*/}
+          {/*<Expertise data={expertise} />
+          <ImpactStats data={impactStats} showFunders={false} />*/}
           <FundersSection data={impactStats} />
           <Cta data={cta} newsletter={newsletter} />
           {/* 2026-11-04: section thread in the left gutter (components/SectionThread.js) */}
