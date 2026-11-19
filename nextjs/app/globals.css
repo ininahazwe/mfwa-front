@@ -6568,7 +6568,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   top:12px; bottom:12px; left:50%;
   width:1.5px;
   margin-left:-.75px;
-  background:var(--navy);
+  /*background:var(--navy);*/
+  background:whitesmoke;
   opacity:.45;
 }
 .hero--stacked .hero__switch-dot{
@@ -6578,7 +6579,8 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   padding:0;
   border:0;
   border-radius:50%;
-  background:var(--navy);
+  /*background:var(--navy);*/
+  background: #dfdfdf;
   color:var(--white);
   font-family:var(--font-serif);
   font-weight:700;
