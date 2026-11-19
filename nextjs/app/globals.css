@@ -1032,11 +1032,13 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .work__head{ grid-template-columns:1fr; gap:20px; }
 }
 
+/* 2026-11-19 (at Yv's call): 2 x 2 above 640px (rule further down), 1 per row on mobile. */
 @media (max-width:640px){
-  .work__grid{
+  .work__grid,
+  .work__body .work__grid{
     --work-gap: 32px;
-    grid-template-columns:repeat(2, minmax(0, 1fr));
-    row-gap:clamp(32px, 6vh, 48px);
+    grid-template-columns:1fr;
+    row-gap:clamp(14px, 4vw, 20px);
   }
   .work__item + .work__item::before{ display:none; }
   .work__item:nth-child(2n)::before{ display:block; }
@@ -1210,6 +1212,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 /* -- Article vedette --------------------------------------- */
 .impact-story--featured{ flex:1.8 1 640px; }
+/* 2026-11-19 : retour à la disposition d'origine — photo à gauche, texte à droite (Yv). */
 .impact-story--featured .impact-story__link{
   display:flex;
   gap:clamp(20px, 2.4vw, 32px);
@@ -1467,6 +1470,11 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 
 @media (max-width:420px){
   .reach__list{ flex-direction:column; gap:22px; }
+}
+/* 2026-11-19 (at Yv's call): Mediascape keeps its two country columns side by side on mobile */
+@media (max-width:420px){
+  .reach .reach__list{ flex-direction:row; gap:clamp(20px, 8vw, 32px); }
+  .reach .reach__col{ flex:1 1 0; min-width:0; }
 }
 
 /* =========================================================
@@ -6072,10 +6080,12 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   min-width:0;
 }
 .work__body .work__grid{ margin-top:0; }
-/* In the right column 4 cards would be ~125-160px wide below 1500px:
-   2 x 2 there, 4 in a row on wide screens. Phones keep the rules of
+/* In the right column 4 cards would be ~125-170px wide:
+   2 x 2 there on every screen above mobile. Phones keep the rules of
    .work__grid above (2 columns up to 640px, 1 up to 420px). */
-@media (min-width:641px) and (max-width:1499px){
+/* 2026-11-19 (at Yv's call): 2 x 2 on every screen above mobile (was: 4 in a row
+   from 1500px, but the cards were then only ~170px wide next to the intro). */
+@media (min-width:641px){
   .work__body .work__grid{
     grid-template-columns:repeat(2, minmax(0, 1fr));
     row-gap:clamp(32px, 5vh, 44px);
@@ -6252,7 +6262,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
    d'Ariane (--sthread-x) pour que le fil traverse bien les panneaux.
    ============================================================ */
 :root{ --panel-inset:clamp(8px, 1vw, 14px); --panel-radius:clamp(20px, 2.4vw, 32px); }
-#main :is(.reach, .opps, .expertise){
+#main :is(.reach, .opps, .expertise, .impact-highlights){
   margin-inline:var(--panel-inset);
   /*margin-block:clamp(12px, 1.6vw, 24px);*/
   border-radius:var(--panel-radius);
@@ -6262,13 +6272,13 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 @media (max-width:640px){
   :root{ --panel-inset:8px; --panel-radius:20px; }
 }
-#main .reach{ background:#f2f5f8; }
+#main :is(.reach, .impact-highlights){ background:#f2f5f8; } /* 2026-11-19 : Impact stories = même panneau que Mediascape */
 
 @media (max-width:640px){ :root{ --gutter:20px; } }
 @media (min-width:641px) and (max-width:1099px){ :root{ --gutter:32px; } }
 /* Panneaux (étape E) : le contenu reste aligné sur la même marge que les autres
    sections — le padding compense l'inset du panneau. */
-#main :is(.reach, .opps, .expertise){ padding-inline:calc(var(--gutter) - var(--panel-inset)); }
+#main :is(.reach, .opps, .expertise, .impact-highlights){ padding-inline:calc(var(--gutter) - var(--panel-inset)); }
 
 /* ============================================================
    2026-11-04 — Grands écrans (marge fixe + largeur plafonnée)
@@ -6360,31 +6370,24 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 
 /* ============================================================
-   2026-11-18 — Hero empilé (à la demande de Yv)
-   L'accroche passe au-dessus, sur toute la largeur de contenu (titre à
-   gauche, liens à droite) ; le carrousel d'actualités prend toute la largeur
-   de la page dessous (bord à bord, sans coins arrondis). Les courbes de
-   niveau occupent la droite de la bande d'accroche, entre le titre et les
-   liens, sur tout le relief (viewBox large, voir Hero.js).
+   2026-11-19 — Hero empilé (à la demande de Yv, maquette « 8 UX laws »)
+   L'accroche passe au-dessus du carrousel d'actualités. Dans l'accroche :
+   titre à gauche ; à droite, les deux liens en tuiles avec une icône au-dessus
+   du libellé, sans flèche. Le carrousel s'arrête aux mêmes marges que les
+   sections en dessous. Les courbes de niveau occupent la droite de la bande
+   d'accroche (viewBox large, voir Hero.js).
    Revert : STACKED = false dans components/Hero.js.
    ============================================================ */
 .hero--float.hero--stacked{
   grid-template-columns:minmax(0, 1fr);
   grid-template-rows:auto auto;
   min-height:0;
-  padding:0;
+  padding:0 0 clamp(28px, 5vh, 56px);
   gap:0;
 }
 .hero--float.hero--stacked .hero__intro{
   padding:clamp(40px, 7vh, 88px) var(--gutter) clamp(32px, 5.5vh, 64px);
 }
-.hero--float.hero--stacked .hero__carousel{
-  margin:0;
-  border-radius:0;
-}
-/* le texte de l'actualité reste aligné sur la marge droite des sections */
-.hero--stacked .hero__news,
-.hero--stacked .news-controls{ padding-right:var(--gutter); }
 
 /* courbes : bande d'accroche, côté droit */
 .hero--stacked .hero-topo{
@@ -6399,45 +6402,211 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
           mask-image:radial-gradient(ellipse 50% 50% at 50% 50%, #000 30%, rgba(0,0,0,.5) 60%, transparent 100%);
 }
 
+/* tuiles : icône au-dessus du libellé */
+.hero--stacked .hero__actions{ gap:14px; align-items:stretch; flex-wrap:nowrap; }
+.hero--stacked .hero__cta,
+.hero--stacked .hero__secondary{
+  flex:0 0 auto;
+  flex-direction:column;
+  justify-content:center;
+  gap:12px;
+  min-width:clamp(128px, 11vw, 160px);
+  height:auto;
+  padding:20px 22px 18px;
+  border-radius:clamp(14px, 1.4vw, 20px);
+  text-align:center;
+  font-size:var(--fs-small);
+  font-weight:600;
+  letter-spacing:.02em;
+  text-transform:none;
+  margin:0;
+  transition:background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.hero--stacked .hero__icon{ flex:none; transition:transform var(--dur-fast) var(--ease); }
+.hero--stacked :is(.hero__cta, .hero__secondary):hover .hero__icon,
+.hero--stacked :is(.hero__cta, .hero__secondary):focus-visible .hero__icon{ transform:translateY(-3px); }
+/* principale : marine plein (et non rouge, pour ne pas ressembler à « Donate ») */
+.hero--stacked .hero__cta{ background:var(--navy); color:var(--white); }
+.hero--stacked .hero__cta:hover,
+.hero--stacked .hero__cta:focus-visible{ background:var(--blue); }
+/* secondaire : tuile claire à fin contour */
+.hero--stacked .hero__secondary{
+  background:rgba(255,255,255,.72);
+  border:1px solid var(--hairline);
+  color:var(--navy);
+  padding-block:19px 17px;
+}
+.hero--stacked .hero__secondary:hover,
+.hero--stacked .hero__secondary:focus-visible{ border-color:var(--navy); color:var(--navy); }
+
 @media (min-width:901px){
-  /* accroche : titre à gauche, boutons à droite, alignés en bas */
   .hero--stacked .hero__slides--static .hero-slide{
     flex-direction:row;
-    align-items:flex-end;
+    align-items:center;
     justify-content:space-between;
     gap:clamp(24px, 4vw, 72px);
   }
   .hero--stacked .hero__title{ margin-top:0; max-width:20ch; }
-  .hero--stacked .hero__actions{ flex:none; margin:0 0 .4em; }
-  /* hauteur fixe : l'extrait s'ajuste à la place laissée (fitExcerpts) */
-  .hero--stacked .hero__carousel{ height:clamp(420px, 60vh, 620px); }
+  .hero--stacked .hero__actions{ flex:none; margin:0; }
 }
 @media (max-width:900px){
   .hero--float.hero--stacked .hero__intro{ padding-top:clamp(32px, 8vw, 48px); padding-bottom:clamp(24px, 6vw, 36px); }
   .hero--stacked .hero-topo{ left:0; width:100%; }
+  .hero--stacked .hero__cta,
+  .hero--stacked .hero__secondary{ flex:1 1 0; min-width:0; }
 }
 
-/* 2026-11-18 (2) — retours de Yv :
-   1. le carrousel s'arrête aux mêmes marges que les sections en dessous
-      (Impact stories…) au lieu d'aller bord à bord ;
-   2. bouton « Explore our work » en bleu marine plein (et non plus rouge),
-      pour ne pas se confondre avec « Donate » juste au-dessus. */
-.hero--float.hero--stacked .hero__carousel{
+/* ------------------------------------------------------------
+   2026-11-19 — Carrousel redessiné (maquette « Slider », Yv)
+   Sélecteur vertical à gauche (points reliés par un trait, le point actif
+   agrandi avec son numéro) ; par slide, un bloc texte (titre, sous-titre,
+   bouton, sans fond) et la photo en paysage 3:2 ; un huitième de la photo du
+   slide suivant dépasse à droite (clic = slide suivant).
+   ------------------------------------------------------------ */
+.hero--stacked .hero__carousel{
+  display:grid;
+  grid-template-columns:clamp(44px, 4vw, 64px) minmax(0, 1fr);
+  align-items:center;
   margin:0 var(--gutter);
-  border-radius:8px;
+  background:transparent;
+  border-radius:0;
+  overflow:hidden;
 }
-.hero--stacked .hero__news,
-.hero--stacked .news-controls{ padding-right:clamp(22px, 2.5vw, 36px); }
-.hero--float.hero--stacked{ padding-bottom:clamp(28px, 5vh, 56px); }
-@media (max-width:900px){
-  .hero--stacked .news-controls{ padding-right:var(--gutter); }
+.hero--stacked .hero__stories{ grid-column:2; grid-row:1; overflow:hidden; }
+.hero--stacked .hero__story{
+  grid-template-columns:minmax(0, 5fr) minmax(0, 8fr) minmax(0, 1fr);
+  column-gap:clamp(20px, 2.6vw, 40px);
+  align-items:center;
+  background:transparent;
+  overflow:hidden;
 }
-
-.hero--stacked .btn--hero.hero__cta{
+.hero--stacked .hero__story .hero__news{
+  grid-column:1; grid-row:1;
+  background:transparent;
+  color:var(--navy-ink);
+  padding:0;
+  overflow:visible;
+  justify-content:center;
+}
+.hero--stacked .hero__story .hero__media{
+  grid-column:2; grid-row:1;
+  aspect-ratio:3 / 2;
+  border-radius:clamp(14px, 1.4vw, 22px);
+}
+.hero--stacked .hero__news .news__title{
+  margin:0;
+  font-size:clamp(26px, 2.5vw, 38px);
+  line-height:1.14;
+  letter-spacing:-.015em;
+  color:var(--navy-ink);
+  text-wrap:balance;
+}
+.hero--stacked .hero__news .news__text{
+  margin:clamp(12px, 1.8vh, 18px) 0 0;
+  font-size:var(--fs-body);
+  line-height:1.6;
+  color:var(--ink-muted);
+  max-width:40ch;
+}
+/* bouton : marine plein, sans flèche */
+.hero--stacked .hero__news .news__link{
+  align-self:flex-start;
+  height:44px;
+  margin:clamp(18px, 3vh, 28px) 0 0;
+  padding:0 24px;
+  border-radius:var(--radius-sm);
   background:var(--navy);
   color:var(--white);
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  transition:background-color var(--dur-fast) var(--ease), opacity .6s ease-in-out, transform .6s ease-in-out;
 }
-.hero--stacked .btn--hero.hero__cta:hover,
-.hero--stacked .btn--hero.hero__cta:focus-visible{ background:var(--blue); }
-.hero--stacked .btn--hero.hero__cta svg{ transition:transform var(--dur-fast) var(--ease); }
-.hero--stacked .btn--hero.hero__cta:hover svg{ transform:translateX(4px); }
+.hero--stacked .hero__news .news__link:hover,
+.hero--stacked .hero__news .news__link:focus-visible{ background:var(--blue); }
+
+/* aperçu du slide suivant */
+.hero--stacked .hero__peek{
+  grid-column:3; grid-row:1;
+  align-self:center;
+  position:relative;
+  display:block;
+  height:84%;
+  padding:0;
+  border:0;
+  overflow:hidden;
+  border-radius:clamp(14px, 1.4vw, 22px) 0 0 clamp(14px, 1.4vw, 22px);
+  background:#eef0ea;
+  cursor:pointer;
+  opacity:.9;
+  transition:opacity var(--dur-fast) var(--ease);
+}
+.hero--stacked .hero__peek:hover{ opacity:1; }
+/* l'image garde la largeur de la photo principale (8 × la colonne) : on n'en voit que le premier huitième */
+.hero--stacked .hero__peek img{
+  position:absolute; top:0; left:0;
+  width:800%; height:100%;
+  max-width:none;
+  object-fit:cover;
+}
+
+/* sélecteur vertical */
+.hero--stacked .hero__switch{
+  grid-column:1; grid-row:1;
+  align-self:stretch;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  padding:6px 0;
+}
+.hero--stacked .hero__switch::before{
+  content:"";
+  position:absolute;
+  top:12px; bottom:12px; left:50%;
+  width:1.5px;
+  margin-left:-.75px;
+  background:var(--navy);
+  opacity:.45;
+}
+.hero--stacked .hero__switch-dot{
+  position:relative;
+  z-index:1;
+  width:14px; height:14px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:var(--navy);
+  color:var(--white);
+  font-family:var(--font-serif);
+  font-weight:700;
+  font-size:0;
+  line-height:1;
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  transition:width var(--dur-fast) var(--ease), height var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+.hero--stacked .hero__switch-dot:hover{ background:var(--blue); }
+.hero--stacked .hero__switch-dot.is-active{ width:38px; height:38px; font-size:15px; }
+.hero--stacked .hero__switch-dot:focus-visible{ outline:2px solid var(--blue); outline-offset:3px; }
+
+/* tablette / mobile : photo puis texte, sélecteur horizontal sous le slide, pas d'aperçu */
+@media (max-width:900px){
+  .hero--stacked .hero__carousel{ grid-template-columns:minmax(0, 1fr); align-items:start; }
+  .hero--stacked .hero__stories{ grid-column:1; }
+  .hero--stacked .hero__story{ grid-template-columns:minmax(0, 1fr); row-gap:20px; align-items:start; }
+  .hero--stacked .hero__story .hero__media{ grid-column:1; grid-row:1; }
+  .hero--stacked .hero__story .hero__news{ grid-column:1; grid-row:2; }
+  .hero--stacked .hero__peek{ display:none; }
+  .hero--stacked .hero__switch{
+    grid-column:1; grid-row:2;
+    flex-direction:row;
+    align-self:auto;
+    margin-top:22px;
+    padding:0 6px;
+  }
+  .hero--stacked .hero__switch::before{ top:50%; bottom:auto; left:12px; right:12px; width:auto; height:1.5px; margin:-.75px 0 0; }
+}

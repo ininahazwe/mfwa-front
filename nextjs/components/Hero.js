@@ -102,6 +102,15 @@ function getTabHiddenServerSnapshot() {
 const FIT_QUERY = "(min-width: 901px)";
 function fitExcerpts(root) {
   if (!root) return;
+  // Stacked hero (2026-11-19): the text block has no fixed height — it is as
+  // tall as its content, so there is nothing to fit (the CSS clamps at 4 lines).
+  if (root.closest(".hero--stacked")) {
+    root.querySelectorAll(".news__text").forEach((text) => {
+      text.hidden = false;
+      text.style.removeProperty("--news-lines");
+    });
+    return;
+  }
   const wide = window.matchMedia(FIT_QUERY).matches;
   root.querySelectorAll(".hero__news").forEach((panel) => {
     const text = panel.querySelector(".news__text");
@@ -138,13 +147,33 @@ function fitExcerpts(root) {
 // Revert: FLOAT = false (CSS: .hero--float block in globals.css).
 const FLOAT = true;
 
-// 2026-11-18 (at Yv's call): stacked hero — the intro sits on top, wider
-// (title left, links right), and the news carousel runs full width
-// (edge to edge) underneath. The contour lines move to the right of the
-// intro, on the whole terrain (wide viewBox). Revert: STACKED = false
-// (CSS: "Hero empilé" block at the end of globals.css).
+// 2026-11-19 (at Yv's call): stacked hero — the intro sits above the news
+// carousel (full content width, below). Intro layout: title on the left,
+// the two links on the right as tiles with an icon above the label, no
+// arrows. The contour lines sit on the right of the intro band.
+// Revert: STACKED = false (CSS: "Hero empilé" block at the end of globals.css).
 const STACKED = true;
 const STACKED_TOPO_VIEWBOX = "0 0 1650 500";
+
+const ICON_PROPS = {
+  width: 30, height: 30, viewBox: "0 0 32 32", fill: "none", stroke: "currentColor",
+  strokeWidth: 1.4, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", focusable: "false",
+};
+// compass — « Explore our work »
+const ICON_EXPLORE = (
+  <svg {...ICON_PROPS} className="hero__icon">
+    <circle cx="16" cy="16" r="12" />
+    <path d="M20.5 11.5 18 18l-6.5 2.5L14 14z" />
+    <circle cx="16" cy="16" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+// institution — « About MFWA »
+const ICON_ABOUT = (
+  <svg {...ICON_PROPS} className="hero__icon">
+    <path d="M4 12 16 5l12 7z" />
+    <path d="M7 12v11M13 12v11M19 12v11M25 12v11M4 27h24M5 23h22" />
+  </svg>
+);
 
 export default function Hero({ data }) {
   // 2026-10-19 (at Yv's call): one carousel only in the hero. With
@@ -322,13 +351,15 @@ export default function Hero({ data }) {
               {/*<p className="hero__lede">{intro.lede}</p>*/}
               <div className="hero__actions">
                 <a className="btn btn--hero hero__cta" href={intro.primary.href}>
-                  {intro.primary.label}
-                  {HERO_ARROW}
+                  {STACKED ? ICON_EXPLORE : null}
+                  <span className="hero__action-label">{intro.primary.label}</span>
+                  {STACKED ? null : HERO_ARROW}
                 </a>
                 {intro.secondary && (
                   <a className="hero__secondary" href={intro.secondary.href}>
-                    {intro.secondary.label}
-                    {NEWS_ARROW}
+                    {STACKED ? ICON_ABOUT : null}
+                    <span className="hero__action-label">{intro.secondary.label}</span>
+                    {STACKED ? null : NEWS_ARROW}
                   </a>
                 )}
               </div>
@@ -390,6 +421,24 @@ export default function Hero({ data }) {
         aria-roledescription="carousel"
         aria-label={data.news.ariaLabel}
       >
+        {/* Stacked hero (2026-11-19): vertical switcher on the left — dots joined
+            by a line, the active one enlarged with its number. */}
+        {STACKED && storyTotal > 1 && (
+          <div className="hero__switch" role="group" aria-label="Choose a story">
+            {stories.map((story, i) => (
+              <button
+                key={story.title}
+                type="button"
+                className={`hero__switch-dot${i === storyIndex ? " is-active" : ""}`}
+                aria-label={`Story ${i + 1}`}
+                aria-current={i === storyIndex ? "true" : "false"}
+                onClick={() => goToStory(i)}
+              >
+                <span aria-hidden="true">{i + 1}</span>
+              </button>
+            ))}
+          </div>
+        )}
         <div
           className="hero__stories"
           ref={storiesRef}
@@ -437,14 +486,29 @@ export default function Hero({ data }) {
                   <a className="news__link" href={story.link}>
                     {story.linkLabel}
                     <span className="visually-hidden">: {story.title}</span>
-                    {NEWS_ARROW}
+                    {STACKED ? null : NEWS_ARROW}
                   </a>
                 </div>
+
+                {/* Stacked hero: the next story's photo peeks in on the right
+                    (about 1/8 of the photo's width); a click moves on to it. */}
+                {STACKED && storyTotal > 1 && (
+                  <button
+                    type="button"
+                    className="hero__peek"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    onClick={() => goToStory(i + 1)}
+                  >
+                    <FadeImg src={stories[(i + 1) % storyTotal].image.src} alt="" removeOnError />
+                  </button>
+                )}
               </article>
             );
           })}
         </div>
 
+        {!STACKED && (
         <div className="news-controls">
           <p className="news-controls__count" aria-live="polite">
             <b>{pad(storyIndex + 1)}</b> / {pad(storyTotal)}
@@ -470,6 +534,7 @@ export default function Hero({ data }) {
             </button>
           </div>
         </div>
+        )}
       </div>
       </>
       )}

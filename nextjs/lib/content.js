@@ -329,7 +329,7 @@ export async function getKeyStats() {
     stats: PROVISIONAL_KEY_FIGURES,
     // 2026-11-04 (step D): sentence for KeyStats variant="statement";
     // numbers are indexes into stats. Figures still provisional.
-    // 2026-11-18 (at Yv's call): new sentence and figures (30 years, 150+, 10000+, 2000, 1000+).
+    // 2026-11-19 (at Yv's call): new sentence and figures (30 years, 150+, 10,000+, 2,000+, 1,000+).
     statement: [
       0, " years of supporting ", 1, " media houses, training ", 2,
       " journalists and civic actors with ", 3, " impactful stories and carrying out ", 4,
