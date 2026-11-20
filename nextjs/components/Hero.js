@@ -31,6 +31,11 @@ import HeroTopo from "./HeroTopo";
 
 const AUTOPLAY_DELAY = 7000; // ms — matches main.js (0 disables autoplay)
 const SWIPE_THRESHOLD = 45; // px — matches main.js
+// 2026-11-20 (at Yv's call): the news carousel slides by itself every 3 s
+// (0 disables it). It pauses while the pointer or keyboard focus is on the
+// carousel, while the tab is hidden, and with prefers-reduced-motion; any
+// manual change (dots, switcher, arrows, swipe, peek) restarts the countdown.
+const STORY_AUTOPLAY_DELAY = 3000; // ms
 
 const HERO_ARROW = (
   <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -202,6 +207,7 @@ export default function Hero({ data }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [storyIndex, setStoryIndex] = useState(0);
+  const [storyPaused, setStoryPaused] = useState(false);
   const storiesRef = useRef(null);
 
   // prefers-reduced-motion and tab visibility, used by the autoplay effect
@@ -232,6 +238,16 @@ export default function Hero({ data }) {
     }, AUTOPLAY_DELAY);
     return () => window.clearTimeout(timer);
   }, [index, paused, tabHidden, reducedMotion, total]);
+
+  // News carousel autoplay (see STORY_AUTOPLAY_DELAY). Re-armed on every
+  // story change, so a manual choice restarts the 3 s countdown.
+  useEffect(() => {
+    if (storyTotal < 2 || !STORY_AUTOPLAY_DELAY || storyPaused || tabHidden || reducedMotion) return undefined;
+    const timer = window.setTimeout(() => {
+      setStoryIndex((i) => (i + 1) % storyTotal);
+    }, STORY_AUTOPLAY_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [storyIndex, storyPaused, tabHidden, reducedMotion, storyTotal]);
 
   // News carousel: storyIndex is the source of truth.
   // Fit each story's excerpt to the room its title leaves (see fitExcerpts).
@@ -432,6 +448,12 @@ export default function Hero({ data }) {
         role="group"
         aria-roledescription="carousel"
         aria-label={data.news.ariaLabel}
+        onMouseEnter={() => setStoryPaused(true)}
+        onMouseLeave={() => setStoryPaused(false)}
+        onFocus={() => setStoryPaused(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget)) setStoryPaused(false);
+        }}
       >
         {/* Stacked hero (2026-11-19): vertical switcher on the left — dots joined
             by a line, the active one enlarged with its number. */}
