@@ -6627,3 +6627,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   .hero--float.hero--carousel-classic{ padding-bottom:clamp(28px, 5vh, 56px); }
   .hero--float.hero--carousel-classic .hero__carousel{ margin:0 var(--gutter); border-radius:8px; }
 }
+
+/* 2026-11-20 (at Yv's call): on mobile the hero's story excerpt is hidden —
+   photo, title and "Read more" only (both carousels). */
+@media (max-width:640px){
+  .hero .hero__news .news__text{ display:none; }
+}
