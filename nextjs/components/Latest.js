@@ -47,12 +47,12 @@ export default function Latest({ data }) {
           </Reveal>
         </div>
         <div className="latest__links">
-          {data.opportunities && (
+          {/*{data.opportunities && (
             <a className="latest__all latest__all--secondary" href={data.opportunities.href}>
               <span>{data.opportunities.label}</span>
               {ARROW}
             </a>
-          )}
+          )}*/}
           <a className="latest__all" href={data.viewAll.href}>
             <span>{data.viewAll.label}</span>
             {data.viewAll.srSuffix && <span className="visually-hidden">{data.viewAll.srSuffix}</span>}

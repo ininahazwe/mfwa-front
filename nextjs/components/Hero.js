@@ -104,7 +104,7 @@ function fitExcerpts(root) {
   if (!root) return;
   // Stacked hero (2026-11-19): the text block has no fixed height — it is as
   // tall as its content, so there is nothing to fit (the CSS clamps at 4 lines).
-  if (root.closest(".hero--stacked")) {
+  if (root.closest(".hero--carousel-side")) {
     root.querySelectorAll(".news__text").forEach((text) => {
       text.hidden = false;
       text.style.removeProperty("--news-lines");
@@ -154,6 +154,18 @@ const FLOAT = true;
 // Revert: STACKED = false (CSS: "Hero empilé" block at the end of globals.css).
 const STACKED = true;
 const STACKED_TOPO_VIEWBOX = "0 0 1650 500";
+// 2026-11-20 (at Yv's call): TWO different carousels under the intro, same
+// data and same markup — pick one here:
+//   "side"    : switcher on the left (dots joined by a line, active one
+//               enlarged), text block + landscape 3:2 photo, next photo
+//               peeking in on the right. Content width.
+//   "classic" : the previous look — photo left, navy panel right, counter /
+//               dots / arrows. Full screen width on every screen except
+//               beyond 15" (>= 1500px), where it sits within the page margins.
+// CSS: "Carrousel « side »" and "Carrousel « classic »" blocks at the end of
+// globals.css (breakpoint 1500px).
+const CAROUSEL_VARIANT = "side"; // "side" | "classic"
+const SIDE = CAROUSEL_VARIANT === "classic";
 
 const ICON_PROPS = {
   width: 30, height: 30, viewBox: "0 0 32 32", fill: "none", stroke: "currentColor",
@@ -316,7 +328,7 @@ export default function Hero({ data }) {
 
   return (
     <section
-      className={`hero${intro ? " hero--static-intro" : ""}${storyTotal === 0 ? " hero--no-news" : ""}${FLOAT ? " hero--float" : ""}${FLOAT && STACKED ? " hero--stacked" : ""}`}
+      className={`hero${intro ? " hero--static-intro" : ""}${storyTotal === 0 ? " hero--no-news" : ""}${FLOAT ? " hero--float" : ""}${FLOAT && STACKED ? " hero--stacked" : ""}${SIDE ? " hero--carousel-side" : " hero--carousel-classic"}`}
       id="hero"
       data-hero
       aria-label="Featured"
@@ -350,18 +362,18 @@ export default function Hero({ data }) {
               <h1 className="hero__title">{intro.title}</h1>
               {/*<p className="hero__lede">{intro.lede}</p>*/}
               <div className="hero__actions">
-                <a className="btn btn--hero hero__cta" href={intro.primary.href}>
+                {/*<a className="btn btn--hero hero__cta" href={intro.primary.href}>
                   {STACKED ? ICON_EXPLORE : null}
                   <span className="hero__action-label">{intro.primary.label}</span>
                   {STACKED ? null : HERO_ARROW}
-                </a>
-                {intro.secondary && (
+                </a>*/}
+                {/*{intro.secondary && (
                   <a className="hero__secondary" href={intro.secondary.href}>
                     {STACKED ? ICON_ABOUT : null}
                     <span className="hero__action-label">{intro.secondary.label}</span>
                     {STACKED ? null : NEWS_ARROW}
                   </a>
-                )}
+                )}*/}
               </div>
             </div>
           </div>
@@ -423,7 +435,7 @@ export default function Hero({ data }) {
       >
         {/* Stacked hero (2026-11-19): vertical switcher on the left — dots joined
             by a line, the active one enlarged with its number. */}
-        {STACKED && storyTotal > 1 && (
+        {SIDE && storyTotal > 1 && (
           <div className="hero__switch" role="group" aria-label="Choose a story">
             {stories.map((story, i) => (
               <button
@@ -486,13 +498,13 @@ export default function Hero({ data }) {
                   <a className="news__link" href={story.link}>
                     {story.linkLabel}
                     <span className="visually-hidden">: {story.title}</span>
-                    {STACKED ? null : NEWS_ARROW}
+                    {SIDE ? null : NEWS_ARROW}
                   </a>
                 </div>
 
                 {/* Stacked hero: the next story's photo peeks in on the right
                     (about 1/8 of the photo's width); a click moves on to it. */}
-                {STACKED && storyTotal > 1 && (
+                {SIDE && storyTotal > 1 && (
                   <button
                     type="button"
                     className="hero__peek"
@@ -508,7 +520,7 @@ export default function Hero({ data }) {
           })}
         </div>
 
-        {!STACKED && (
+        {!SIDE && (
         <div className="news-controls">
           <p className="news-controls__count" aria-live="polite">
             <b>{pad(storyIndex + 1)}</b> / {pad(storyTotal)}

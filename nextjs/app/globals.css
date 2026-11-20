@@ -6382,7 +6382,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   grid-template-columns:minmax(0, 1fr);
   grid-template-rows:auto auto;
   min-height:0;
-  padding:0 0 clamp(28px, 5vh, 56px);
+  padding:0;
   gap:0;
 }
 .hero--float.hero--stacked .hero__intro{
@@ -6457,13 +6457,14 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 
 /* ------------------------------------------------------------
-   2026-11-19 — Carrousel redessiné (maquette « Slider », Yv)
-   Sélecteur vertical à gauche (points reliés par un trait, le point actif
-   agrandi avec son numéro) ; par slide, un bloc texte (titre, sous-titre,
-   bouton, sans fond) et la photo en paysage 3:2 ; un huitième de la photo du
-   slide suivant dépasse à droite (clic = slide suivant).
+   2026-11-20 — Deux carrousels différents sous l'accroche (Yv)
+   Choix dans components/Hero.js : CAROUSEL_VARIANT = "side" | "classic".
    ------------------------------------------------------------ */
-.hero--stacked .hero__carousel{
+
+/* Carrousel « side » : sélecteur vertical à gauche, bloc texte, photo
+   paysage 3:2, aperçu de la photo suivante. Largeur de contenu. */
+.hero--float.hero--carousel-side{ padding-bottom:clamp(28px, 5vh, 56px); }
+.hero--carousel-side .hero__carousel{
   display:grid;
   grid-template-columns:clamp(44px, 4vw, 64px) minmax(0, 1fr);
   align-items:center;
@@ -6472,15 +6473,15 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   border-radius:0;
   overflow:hidden;
 }
-.hero--stacked .hero__stories{ grid-column:2; grid-row:1; overflow:hidden; }
-.hero--stacked .hero__story{
+.hero--carousel-side .hero__stories{ grid-column:2; grid-row:1; overflow:hidden; }
+.hero--carousel-side .hero__story{
   grid-template-columns:minmax(0, 5fr) minmax(0, 8fr) minmax(0, 1fr);
   column-gap:clamp(20px, 2.6vw, 40px);
   align-items:center;
   background:transparent;
   overflow:hidden;
 }
-.hero--stacked .hero__story .hero__news{
+.hero--carousel-side .hero__story .hero__news{
   grid-column:1; grid-row:1;
   background:transparent;
   color:var(--navy-ink);
@@ -6488,12 +6489,12 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   overflow:visible;
   justify-content:center;
 }
-.hero--stacked .hero__story .hero__media{
+.hero--carousel-side .hero__story .hero__media{
   grid-column:2; grid-row:1;
   aspect-ratio:3 / 2;
   border-radius:clamp(14px, 1.4vw, 22px);
 }
-.hero--stacked .hero__news .news__title{
+.hero--carousel-side .hero__news .news__title{
   margin:0;
   font-size:clamp(26px, 2.5vw, 38px);
   line-height:1.14;
@@ -6501,7 +6502,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   color:var(--navy-ink);
   text-wrap:balance;
 }
-.hero--stacked .hero__news .news__text{
+.hero--carousel-side .hero__news .news__text{
   margin:clamp(12px, 1.8vh, 18px) 0 0;
   font-size:var(--fs-body);
   line-height:1.6;
@@ -6509,7 +6510,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   max-width:40ch;
 }
 /* bouton : marine plein, sans flèche */
-.hero--stacked .hero__news .news__link{
+.hero--carousel-side .hero__news .news__link{
   align-self:flex-start;
   height:44px;
   margin:clamp(18px, 3vh, 28px) 0 0;
@@ -6523,11 +6524,11 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   text-transform:uppercase;
   transition:background-color var(--dur-fast) var(--ease), opacity .6s ease-in-out, transform .6s ease-in-out;
 }
-.hero--stacked .hero__news .news__link:hover,
-.hero--stacked .hero__news .news__link:focus-visible{ background:var(--blue); }
+.hero--carousel-side .hero__news .news__link:hover,
+.hero--carousel-side .hero__news .news__link:focus-visible{ background:var(--blue); }
 
 /* aperçu du slide suivant */
-.hero--stacked .hero__peek{
+.hero--carousel-side .hero__peek{
   grid-column:3; grid-row:1;
   align-self:center;
   position:relative;
@@ -6542,9 +6543,9 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   opacity:.9;
   transition:opacity var(--dur-fast) var(--ease);
 }
-.hero--stacked .hero__peek:hover{ opacity:1; }
+.hero--carousel-side .hero__peek:hover{ opacity:1; }
 /* l'image garde la largeur de la photo principale (8 × la colonne) : on n'en voit que le premier huitième */
-.hero--stacked .hero__peek img{
+.hero--carousel-side .hero__peek img{
   position:absolute; top:0; left:0;
   width:800%; height:100%;
   max-width:none;
@@ -6552,7 +6553,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 
 /* sélecteur vertical */
-.hero--stacked .hero__switch{
+.hero--carousel-side .hero__switch{
   grid-column:1; grid-row:1;
   align-self:stretch;
   position:relative;
@@ -6562,7 +6563,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   justify-content:space-between;
   padding:6px 0;
 }
-.hero--stacked .hero__switch::before{
+.hero--carousel-side .hero__switch::before{
   content:"";
   position:absolute;
   top:12px; bottom:12px; left:50%;
@@ -6572,7 +6573,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   background:whitesmoke;
   opacity:.45;
 }
-.hero--stacked .hero__switch-dot{
+.hero--carousel-side .hero__switch-dot{
   position:relative;
   z-index:1;
   width:14px; height:14px;
@@ -6591,24 +6592,38 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   place-items:center;
   transition:width var(--dur-fast) var(--ease), height var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
 }
-.hero--stacked .hero__switch-dot:hover{ background:var(--blue); }
-.hero--stacked .hero__switch-dot.is-active{ width:38px; height:38px; font-size:15px; }
-.hero--stacked .hero__switch-dot:focus-visible{ outline:2px solid var(--blue); outline-offset:3px; }
+.hero--carousel-side .hero__switch-dot:hover{ background:var(--blue); }
+.hero--carousel-side .hero__switch-dot.is-active{ width:38px; height:38px; font-size:15px; }
+.hero--carousel-side .hero__switch-dot:focus-visible{ outline:2px solid var(--blue); outline-offset:3px; }
 
 /* tablette / mobile : photo puis texte, sélecteur horizontal sous le slide, pas d'aperçu */
 @media (max-width:900px){
-  .hero--stacked .hero__carousel{ grid-template-columns:minmax(0, 1fr); align-items:start; }
-  .hero--stacked .hero__stories{ grid-column:1; }
-  .hero--stacked .hero__story{ grid-template-columns:minmax(0, 1fr); row-gap:20px; align-items:start; }
-  .hero--stacked .hero__story .hero__media{ grid-column:1; grid-row:1; }
-  .hero--stacked .hero__story .hero__news{ grid-column:1; grid-row:2; }
-  .hero--stacked .hero__peek{ display:none; }
-  .hero--stacked .hero__switch{
+  .hero--carousel-side .hero__carousel{ grid-template-columns:minmax(0, 1fr); align-items:start; }
+  .hero--carousel-side .hero__stories{ grid-column:1; }
+  .hero--carousel-side .hero__story{ grid-template-columns:minmax(0, 1fr); row-gap:20px; align-items:start; }
+  .hero--carousel-side .hero__story .hero__media{ grid-column:1; grid-row:1; }
+  .hero--carousel-side .hero__story .hero__news{ grid-column:1; grid-row:2; }
+  .hero--carousel-side .hero__peek{ display:none; }
+  .hero--carousel-side .hero__switch{
     grid-column:1; grid-row:2;
     flex-direction:row;
     align-self:auto;
     margin-top:22px;
     padding:0 6px;
   }
-  .hero--stacked .hero__switch::before{ top:50%; bottom:auto; left:12px; right:12px; width:auto; height:1.5px; margin:-.75px 0 0; }
+  .hero--carousel-side .hero__switch::before{ top:50%; bottom:auto; left:12px; right:12px; width:auto; height:1.5px; margin:-.75px 0 0; }
+}
+
+/* Carrousel « classic » : photo à gauche, panneau marine à droite, compteur /
+   points / flèches. Pleine largeur d'écran, sauf au-delà de 15" (≥ 1500px) où
+   il rentre dans les marges de la page. */
+.hero--float.hero--carousel-classic .hero__carousel{ margin:0; border-radius:0; }
+.hero--carousel-classic .hero__news .news__link{ margin-top:clamp(14px, 2.4vh, 26px); }
+@media (min-width:901px){
+  /* hauteur fixe : l'extrait s'ajuste à la place laissée (fitExcerpts) */
+  .hero--carousel-classic .hero__carousel{ height:clamp(420px, 60vh, 620px); }
+}
+@media (min-width:1500px){
+  .hero--float.hero--carousel-classic{ padding-bottom:clamp(28px, 5vh, 56px); }
+  .hero--float.hero--carousel-classic .hero__carousel{ margin:0 var(--gutter); border-radius:8px; }
 }
