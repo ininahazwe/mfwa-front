@@ -335,6 +335,14 @@ export async function getKeyStats() {
       " journalists and civic actors with ", 3, " impactful stories and carrying out ", 4,
       " actions contributing to free expression and democratic governance in West Africa.",
     ],
+    // 2026-11-20 (at Yv's call): version "figures" of the band (see
+    // KEY_FIGURES_VARIANT in components/KeyStats.js) — the same sentence
+    // without the figures, which are shown below it with their labels.
+    statementPlain: [
+      "Supporting media houses, training journalists and civic actors, telling impactful stories and carrying out actions that contribute to ",
+      { strong: "free expression and democratic governance" },
+      " in West Africa.",
+    ],
   };
 }
 

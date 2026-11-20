@@ -10,8 +10,39 @@ import StatCounter from "./StatCounter";
 // the Mediascape section (components/Reach.js), instead of a band of its own.
 // 2026-11-03 (retours com round 2): variant="bar" = thin dark band right
 // after the Hero (number + label side by side).
+// 2026-11-20 (at Yv's call): TWO versions of the "statement" band — pick one:
+//   "inline"  : one centred sentence with the figures woven into it
+//               (data.statement);
+//   "figures" : the same centred sentence WITHOUT the figures
+//               (data.statementPlain), and the figures pulled out below it,
+//               in a horizontal row, each with its description line.
+const KEY_FIGURES_VARIANT = "figures"; // "inline" | "figures"
+
 export default function KeyStats({ data, embedded = false, variant }) {
   if (!data?.stats?.length) return null;
+  if (variant === "statement" && KEY_FIGURES_VARIANT === "figures" && data.statementPlain) {
+    return (
+      <section className="keystats keystats--statement keystats--figures" id="key-figures" aria-label={data.label}>
+        <Reveal as="h2" className="keystats__statement">
+          {data.statementPlain.map((part, i) =>
+            typeof part === "string" ? (
+              <span key={i} className="title-soft">{part}</span>
+            ) : (
+              <span key={i}>{part.strong}</span>
+            ),
+          )}
+        </Reveal>
+        <Reveal as="ul" className="keystats__figures" style={{ "--keystats-n": data.stats.length }}>
+          {data.stats.map((stat) => (
+            <li className="keystats__figure" key={stat.label}>
+              <StatCounter className="keystats__figure-num" count={stat.count} suffix={stat.suffix} />
+              <span className="keystats__figure-label">{stat.label}</span>
+            </li>
+          ))}
+        </Reveal>
+      </section>
+    );
+  }
   // 2026-11-04 (step D, at Yv's call): variant="statement" replaces the thin
   // bar by one large centred sentence; the figures are woven into it.
   // data.statement = array of strings and stat indexes (numbers).
