@@ -161,9 +161,9 @@ const STACKED_TOPO_VIEWBOX = "0 0 1650 500";
 //               peeking in on the right. Content width.
 //   "classic" : the previous look — photo left, navy panel right, counter /
 //               dots / arrows. Full screen width on every screen except
-//               beyond 15" (>= 1500px), where it sits within the page margins.
+//               beyond 15" (>= 1720px wide, i.e. 16" screens), where it sits within the page margins.
 // CSS: "Carrousel « side »" and "Carrousel « classic »" blocks at the end of
-// globals.css (breakpoint 1500px).
+// globals.css (the "classic" width limit is 1720px).
 const CAROUSEL_VARIANT = "side"; // "side" | "classic"
 const SIDE = CAROUSEL_VARIANT === "classic";
 

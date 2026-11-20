@@ -6615,7 +6615,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
 }
 
 /* Carrousel « classic » : photo à gauche, panneau marine à droite, compteur /
-   points / flèches. Pleine largeur d'écran, sauf au-delà de 15" (≥ 1500px) où
+   points / flèches. Pleine largeur d'écran, sauf au-delà de 15" (≥ 1720px, soit les 16" ; les MacBook 13", 14" et 15" restent en pleine largeur) où
    il rentre dans les marges de la page. */
 .hero--float.hero--carousel-classic .hero__carousel{ margin:0; border-radius:0; }
 .hero--carousel-classic .hero__news .news__link{ margin-top:clamp(14px, 2.4vh, 26px); }
@@ -6623,7 +6623,7 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
   /* hauteur fixe : l'extrait s'ajuste à la place laissée (fitExcerpts) */
   .hero--carousel-classic .hero__carousel{ height:clamp(420px, 60vh, 620px); }
 }
-@media (min-width:1500px){
+@media (min-width:1720px){
   .hero--float.hero--carousel-classic{ padding-bottom:clamp(28px, 5vh, 56px); }
   .hero--float.hero--carousel-classic .hero__carousel{ margin:0 var(--gutter); border-radius:8px; }
 }
