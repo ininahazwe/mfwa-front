@@ -170,7 +170,7 @@ const STACKED_TOPO_VIEWBOX = "0 0 1650 500";
 // CSS: "Carrousel « side »" and "Carrousel « classic »" blocks at the end of
 // globals.css (the "classic" width limit is 1720px).
 const CAROUSEL_VARIANT = "side"; // "side" | "classic"
-const SIDE = CAROUSEL_VARIANT === "classic";
+const SIDE = CAROUSEL_VARIANT === "side";
 
 const ICON_PROPS = {
   width: 30, height: 30, viewBox: "0 0 32 32", fill: "none", stroke: "currentColor",
