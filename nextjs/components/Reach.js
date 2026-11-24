@@ -53,8 +53,10 @@ function Swatch({ color }) {
 export default function Reach({ data, children }) {
   const [activeCountry, setActiveCountry] = useState(null);
 
-  const col1 = data.countries.slice(0, 8);
-  const col2 = data.countries.slice(8, 16);
+  // 4 columns (2026-11-24, at Yv's call), filled top to bottom
+  const COLS = 4;
+  const perCol = Math.ceil(data.countries.length / COLS);
+  const cols = Array.from({ length: COLS }, (_, i) => data.countries.slice(i * perCol, (i + 1) * perCol)).filter((c) => c.length);
   const coveredIds = new Set(data.countries.map((c) => c.id));
 
   function clearActive() {
@@ -163,36 +165,23 @@ export default function Reach({ data, children }) {
         </div>
 
         <div className="reach__list" onMouseLeave={clearActive}>
-          <ul className="reach__col">
-            {col1.map((country) => (
-              <li
-                key={country.name}
-                data-country={country.name}
-                className={activeCountry === country.name ? "is-active" : undefined}
-                onMouseEnter={() => setActiveCountry(country.name)}
-              >
-                <a href={country.link} target="_blank" rel="noopener noreferrer" onFocus={() => setActiveCountry(country.name)}>
-                  <Swatch color={country.color} />
-                  {country.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <ul className="reach__col">
-            {col2.map((country) => (
-              <li
-                key={country.name}
-                data-country={country.name}
-                className={activeCountry === country.name ? "is-active" : undefined}
-                onMouseEnter={() => setActiveCountry(country.name)}
-              >
-                <a href={country.link} target="_blank" rel="noopener noreferrer" onFocus={() => setActiveCountry(country.name)}>
-                  <Swatch color={country.color} />
-                  {country.name}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {cols.map((col, i) => (
+            <ul className="reach__col" key={i}>
+              {col.map((country) => (
+                <li
+                  key={country.name}
+                  data-country={country.name}
+                  className={activeCountry === country.name ? "is-active" : undefined}
+                  onMouseEnter={() => setActiveCountry(country.name)}
+                >
+                  <a href={country.link} target="_blank" rel="noopener noreferrer" onFocus={() => setActiveCountry(country.name)}>
+                    <Swatch color={country.color} />
+                    {country.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ))}
         </div>
       </div>
     </section>

@@ -377,20 +377,6 @@ export default function Hero({ data }) {
             <div className="hero-slide is-active">
               <h1 className="hero__title">{intro.title}</h1>
               {/*<p className="hero__lede">{intro.lede}</p>*/}
-              <div className="hero__actions">
-                {/*<a className="btn btn--hero hero__cta" href={intro.primary.href}>
-                  {STACKED ? ICON_EXPLORE : null}
-                  <span className="hero__action-label">{intro.primary.label}</span>
-                  {STACKED ? null : HERO_ARROW}
-                </a>*/}
-                {/*{intro.secondary && (
-                  <a className="hero__secondary" href={intro.secondary.href}>
-                    {STACKED ? ICON_ABOUT : null}
-                    <span className="hero__action-label">{intro.secondary.label}</span>
-                    {STACKED ? null : NEWS_ARROW}
-                  </a>
-                )}*/}
-              </div>
             </div>
           </div>
         ) : (
@@ -523,20 +509,6 @@ export default function Hero({ data }) {
                     {SIDE ? null : NEWS_ARROW}
                   </a>
                 </div>
-
-                {/* Stacked hero: the next story's photo peeks in on the right
-                    (about 1/8 of the photo's width); a click moves on to it. */}
-                {SIDE && storyTotal > 1 && (
-                  <button
-                    type="button"
-                    className="hero__peek"
-                    tabIndex={-1}
-                    aria-hidden="true"
-                    onClick={() => goToStory(i + 1)}
-                  >
-                    <FadeImg src={stories[(i + 1) % storyTotal].image.src} alt="" removeOnError />
-                  </button>
-                )}
               </article>
             );
           })}
