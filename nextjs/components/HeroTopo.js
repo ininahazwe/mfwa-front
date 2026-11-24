@@ -12,7 +12,7 @@
 // and its pattern drifting continuously; on leave they ease back to their
 // rest shape. Nothing runs while the hero isn't hovered. Disabled under
 // prefers-reduced-motion.
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { TOPO_PATHS } from "../lib/topoPaths";
 
 // A square window on the (mirrored) relief, around its summit rings — the
@@ -32,6 +32,8 @@ export default function HeroTopo({ paths = TOPO_PATHS, viewBox = VIEWBOX, mirror
   const svgRef = useRef(null);
   const turbRef = useRef(null);
   const dispRef = useRef(null);
+  // unique filter id: several HeroTopo can live on one page (hero + key figures)
+  const filterId = `hero-topo-morph-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -80,12 +82,12 @@ export default function HeroTopo({ paths = TOPO_PATHS, viewBox = VIEWBOX, mirror
   return (
     <svg ref={svgRef} className={`hero-topo${className ? ` ${className}` : ""}`} viewBox={viewBox} preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
       <defs>
-        <filter id="hero-topo-morph" x="-5%" y="-10%" width="110%" height="120%" filterUnits="objectBoundingBox">
+        <filter id={filterId} x="-5%" y="-10%" width="110%" height="120%" filterUnits="objectBoundingBox">
           <feTurbulence ref={turbRef} type="fractalNoise" baseFrequency="0.0042 0.0068" numOctaves="2" seed="7" result="noise" />
           <feDisplacementMap ref={dispRef} in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </defs>
-      <g filter="url(#hero-topo-morph)">
+      <g filter={`url(#${filterId})`}>
         <g transform={mirror ? "translate(1650 0) scale(-1 1)" : undefined}>
           {[0, 1].map((parity) => (
             <g key={parity} className={`hero-topo__layer hero-topo__layer--${parity ? "b" : "a"}`}>

@@ -6688,3 +6688,33 @@ img{ transition:opacity var(--dur-slow) var(--ease); }
     gap:clamp(28px, 4vw, 56px);
   }
 }
+
+/* Country list in 4 columns: 2 × 2 on small screens so names keep their room */
+@media (max-width:560px){
+  .reach .reach__list{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:22px clamp(20px, 8vw, 32px);
+  }
+}
+
+/* ============================================================
+   2026-11-24 (at Yv's call) — key figures: animated contour lines behind the
+   figures, same drift animation as the hero (.hero-topo__layer), with a shape
+   from the /programmes hero relief (lib/pageTopo.js), same opacities as there. To remove: delete the <HeroTopo> line in KeyStats.js.
+   ============================================================ */
+.keystats--figures{ position:relative; isolation:isolate; overflow:hidden; }
+.keystats--figures > *:not(.hero-topo){ position:relative; z-index:1; }
+.keystats--figures .hero-topo.keystats-topo{
+  position:absolute;
+  grid-column:auto; grid-row:auto;
+  top:0; left:0; right:auto; bottom:auto;
+  width:100%; height:100%;
+  z-index:0;
+  -webkit-mask-image:radial-gradient(ellipse 75% 85% at 50% 50%, #000 45%, rgba(0,0,0,.6) 75%, transparent 100%);
+          mask-image:radial-gradient(ellipse 75% 85% at 50% 50%, #000 45%, rgba(0,0,0,.6) 75%, transparent 100%);
+}
+/* opacities: same as the page heroes (.hero-topo path: .09 / .15) */
+@media (max-width:900px){
+  .keystats--figures .hero-topo.keystats-topo{ left:-25%; width:150%; }
+}

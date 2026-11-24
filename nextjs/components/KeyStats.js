@@ -5,6 +5,12 @@
 // list when fewer than 3 are — the band is then not rendered at all.
 import Reveal from "./Reveal";
 import StatCounter from "./StatCounter";
+import HeroTopo from "./HeroTopo";
+import { PAGE_TOPO } from "../lib/pageTopo";
+
+// Relief of the /programmes hero (lib/pageTopo.js), cropped to its lower, flowing
+// part: the band is short and wide, so only a strip of the square terrain shows.
+const TOPO_STRIP = "0 405 600 170";
 
 // 2026-11-02 (design review N2): `embedded` renders the list alone, for
 // the Mediascape section (components/Reach.js), instead of a band of its own.
@@ -23,6 +29,7 @@ export default function KeyStats({ data, embedded = false, variant }) {
   if (variant === "statement" && KEY_FIGURES_VARIANT === "figures" && data.statementPlain) {
     return (
       <section className="keystats keystats--statement keystats--figures" id="key-figures" aria-label={data.label}>
+        <HeroTopo paths={PAGE_TOPO.programmes.paths} viewBox={TOPO_STRIP} mirror={false} host=".keystats" className="keystats-topo" />
         <Reveal as="h2" className="keystats__statement">
           {data.statementPlain.map((part, i) =>
             typeof part === "string" ? (
